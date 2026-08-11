@@ -1,0 +1,3535 @@
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Helpers\PaginatedList.cs ---
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace AtilsonCargoSpa.Helpers
+{
+    public class PaginatedList<T> : List<T>
+    {
+        public int PageIndex { get; private set; }
+        public int TotalPages { get; private set; }
+
+        public PaginatedList(List<T> items, int count, int pageIndex, int pageSize)
+        {
+            PageIndex = pageIndex;
+            TotalPages = (int)Math.Ceiling(count / (double)pageSize);
+            this.AddRange(items);
+        }
+
+        public bool HasPreviousPage => PageIndex > 1;
+        public bool HasNextPage => PageIndex < TotalPages;
+
+        public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> source, int pageIndex, int pageSize)
+        {
+            var count = await source.CountAsync();
+            var items = await source.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
+            return new PaginatedList<T>(items, count, pageIndex, pageSize);
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\ArchivoOperacion.cs ---
+using System;
+
+namespace AtilsonCargoSpa.Models
+{
+    public partial class ArchivoOperacion
+    {
+        public int Id { get; set; }
+        public int? IdOperacion { get; set; }
+        public string? NombreArchivo { get; set; }
+        public string? RutaArchivo { get; set; }
+        public DateTime? FechaSubida { get; set; }
+
+        // Agregamos los campos que te ped�a el error:
+        public string? TipoDocumento { get; set; }
+        public string? UsuarioSubida { get; set; }
+
+        public virtual Operacione? IdOperacionNavigation { get; set; }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\AtilsonContext.cs ---
+using Microsoft.EntityFrameworkCore;
+
+namespace AtilsonCargoSpa.Models
+{
+    public partial class AtilsonContext : DbContext
+    {
+        public AtilsonContext() { }
+        public AtilsonContext(DbContextOptions<AtilsonContext> options) : base(options) { }
+
+        public virtual DbSet<Cliente> Clientes { get; set; }
+        public virtual DbSet<Operacione> Operaciones { get; set; }
+        public virtual DbSet<OperacionesTerrestre> OperacionesTerrestres { get; set; }
+        public virtual DbSet<OperacionesDocumentale> OperacionesDocumentales { get; set; }
+        public virtual DbSet<Naviera> Navieras { get; set; }
+        public virtual DbSet<Puerto> Puertos { get; set; }
+        public virtual DbSet<Unidadestecnica> Unidadestecnicas { get; set; }
+        public virtual DbSet<ArchivoOperacion> ArchivosOperaciones { get; set; }
+        public virtual DbSet<Ciudade> Ciudades { get; set; }
+        public virtual DbSet<Tarifasterrestre> TarifasTerrestres { get; set; }
+        public virtual DbSet<Usuario> Usuarios { get; set; }
+        public virtual DbSet<Subparametro> Subparametros { get; set; }
+        public virtual DbSet<ExtracostosOperacion> ExtracostosOperacions { get; set; }
+        public virtual DbSet<Finanzasoperacion> Finanzasoperacions { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer("Server=localhost\\ATILSON;Database=AtilsonLogistica;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True");
+            }
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // EL FIX PARA EL ERROR DE CIUDADES Y TARIFAS
+            modelBuilder.Entity<Tarifasterrestre>(entity =>
+            {
+                entity.ToTable("tarifasterrestres");
+                // Le decimos a EF que ignore las relaciones autom�ticas que lo confunden
+                entity.HasOne(d => d.IdCiudadOrigenNavigation)
+                    .WithMany(p => p.TarifasterrestreIdCiudadOrigenNavigations)
+                    .HasForeignKey(d => d.IdCiudadOrigen)
+                    .OnDelete(DeleteBehavior.ClientSetNull);
+
+                entity.HasOne(d => d.IdCiudadDestinoNavigation)
+                    .WithMany(p => p.TarifasterrestreIdCiudadDestinoNavigations)
+                    .HasForeignKey(d => d.IdCiudadDestino)
+                    .OnDelete(DeleteBehavior.ClientSetNull);
+            });
+
+            // Mapeo de Archivos
+            modelBuilder.Entity<ArchivoOperacion>(entity => {
+                entity.ToTable("ArchivosOperacion");
+                entity.HasKey(e => e.Id);
+            });
+
+            // Forzar nombres de tablas para evitar errores
+            modelBuilder.Entity<Operacione>().ToTable("Operaciones");
+            modelBuilder.Entity<OperacionesTerrestre>().ToTable("OperacionesTerrestres");
+            modelBuilder.Entity<OperacionesDocumentale>().ToTable("OperacionesDocumentales");
+            modelBuilder.Entity<Finanzasoperacion>().ToTable("FinanzasOperacion");
+            modelBuilder.Entity<ExtracostosOperacion>().ToTable("ExtracostosOperacion");
+
+            base.OnModelCreating(modelBuilder);
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Ciudade.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Ciudade
+{
+    public int Id { get; set; }
+
+    public int IdPais { get; set; }
+
+    public string Nombre { get; set; } = null!;
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public virtual ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();
+
+    public virtual ICollection<Deposito> Depositos { get; set; } = new List<Deposito>();
+
+    public virtual Paise IdPaisNavigation { get; set; } = null!;
+
+    public virtual ICollection<Origenescarga> Origenescargas { get; set; } = new List<Origenescarga>();
+
+    public virtual ICollection<Puerto> Puertos { get; set; } = new List<Puerto>();
+
+    public virtual ICollection<Tarifasterrestre> TarifasterrestreIdCiudadDestinoNavigations { get; set; } = new List<Tarifasterrestre>();
+
+    public virtual ICollection<Tarifasterrestre> TarifasterrestreIdCiudadOrigenNavigations { get; set; } = new List<Tarifasterrestre>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Cliente.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Cliente
+{
+    public int Id { get; set; }
+
+    public string? Rut { get; set; }
+
+    public string? NombreCliente { get; set; }
+
+    public string RazonSocial { get; set; } = null!;
+
+    public int? IdCiudad { get; set; }
+
+    public string? Direccion { get; set; }
+
+    public string? Contacto { get; set; }
+
+    public byte? Activo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public string? UsuarioCreador { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public string? UsuarioModificador { get; set; }
+
+    public bool IsDeleted { get; set; }
+
+    public virtual Ciudade? IdCiudadNavigation { get; set; }
+
+    public virtual ICollection<Operacione> Operaciones { get; set; } = new List<Operacione>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Deposito.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Deposito
+{
+    public int Id { get; set; }
+
+    public int? IdNaviera { get; set; }
+
+    public string NombreDeposito { get; set; } = null!;
+
+    public string? Direccion { get; set; }
+
+    public int? IdCiudad { get; set; }
+
+    public byte? Activo { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public virtual Ciudade? IdCiudadNavigation { get; set; }
+
+    public virtual Naviera? IdNavieraNavigation { get; set; }
+
+    public virtual ICollection<Operacione> Operaciones { get; set; } = new List<Operacione>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\ExtracostosOperacion.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class ExtracostosOperacion
+{
+    public int Id { get; set; }
+
+    public int IdOperacion { get; set; }
+
+    public string TipoCosto { get; set; } = null!;
+
+    public string? Motivo { get; set; }
+
+    public decimal Monto { get; set; }
+
+    public string Moneda { get; set; } = null!;
+
+    public string Evidencia { get; set; } = null!;
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public virtual Operacione IdOperacionNavigation { get; set; } = null!;
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Finanzasoperacion.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Finanzasoperacion
+{
+    public int Id { get; set; }
+
+    public int IdOperacion { get; set; }
+
+    public decimal? VentaMaritimo { get; set; }
+
+    public decimal? VentaTerrestre { get; set; }
+
+    public decimal? VentaDocumental { get; set; }
+
+    public decimal? CostoMaritimoNeto { get; set; }
+
+    public decimal? CostoTerrestreNeto { get; set; }
+
+    public decimal? CostoAgenciaNeto { get; set; }
+
+    public int? IdCondicionFlete { get; set; }
+
+    public int? DiasLibresOrigen { get; set; }
+
+    public int? DiasLibresDestino { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public virtual Operacione IdOperacionNavigation { get; set; } = null!;
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Nafe.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Nafe
+{
+    public int Id { get; set; }
+
+    public string Nombre { get; set; } = null!;
+
+    public int? IdNaviera { get; set; }
+
+    public bool IsDeleted { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public virtual Naviera? IdNavieraNavigation { get; set; }
+
+    public virtual ICollection<Operacione> Operaciones { get; set; } = new List<Operacione>();
+
+    public virtual ICollection<Viaje> Viajes { get; set; } = new List<Viaje>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Naviera.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Naviera
+{
+    public int Id { get; set; }
+
+    public string NombreNaviera { get; set; } = null!;
+
+    public string? ColorRepresentativo { get; set; }
+
+    public string? LinkTracking { get; set; }
+
+    public byte? Activo { get; set; }
+
+    public bool IsDeleted { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public virtual ICollection<Deposito> Depositos { get; set; } = new List<Deposito>();
+
+    public virtual ICollection<Nafe> Naves { get; set; } = new List<Nafe>();
+
+    public virtual ICollection<Operacione> Operaciones { get; set; } = new List<Operacione>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Operacione.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Operacione
+{
+    public int Id { get; set; }
+
+    public string NumeroBooking { get; set; } = null!;
+
+    public int IdCliente { get; set; }
+
+    public int IdNaviera { get; set; }
+
+    public int? IdOrigen { get; set; }
+
+    public int? IdDeposito { get; set; }
+
+    public int? IdPuertoOrigen { get; set; }
+
+    public int? IdPuertoDestino { get; set; }
+
+    public int? IdViaje { get; set; }
+
+    public int IdTipoCarga { get; set; }
+
+    public string? Commodity { get; set; }
+
+    public DateTime? FechaStacking { get; set; }
+
+    public DateTime? CutOffMatriz { get; set; }
+
+    public int? IdEstadoOperacion { get; set; }
+
+    public int? IdTipoMovimiento { get; set; }
+
+    public int? IdTipoServicio { get; set; }
+
+    public byte? Activo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public string? UsuarioCreador { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public string? UsuarioModificador { get; set; }
+
+    public DateTime? LateArrival { get; set; }
+
+    public DateTime? ExtraLateArrival { get; set; }
+
+    public string? Nave { get; set; }
+
+    public string? Transbordo { get; set; }
+
+    public string? Comentarios { get; set; }
+
+    public double? Temperatura { get; set; }
+
+    public string? Atmosfera { get; set; }
+
+    public double? Co2 { get; set; }
+
+    public double? O2 { get; set; }
+
+    public double? Ventilacion { get; set; }
+
+    public double? Humedad { get; set; }
+
+    public bool IsDeleted { get; set; }
+
+    public int? CondicionPago { get; set; }
+
+    public string? NumeroContenedor { get; set; }
+
+    public string? SelloNaviera { get; set; }
+
+    public int? CantidadBultos { get; set; }
+
+    public string? TipoContenedor { get; set; }
+
+    public bool RequiereGenset { get; set; }
+
+    public int? DiasLibresDemurrage { get; set; }
+
+    public int? DiasLibresDetention { get; set; }
+
+    public DateTime? EtdPol { get; set; }
+
+    public DateTime? EtaPod { get; set; }
+
+    public int? IdNave { get; set; }
+
+    public string? CondicionReefer { get; set; }
+
+    public string? MarcaAc { get; set; }
+
+    public string? TipoViaje { get; set; }
+
+    public string? CodigoAtilson { get; set; }
+
+    public string? EstadoWorkflow { get; set; }
+
+    public string? EvidenciaContenedor { get; set; }
+
+    public string? EstadoLar { get; set; }
+
+    public string? EvidenciaLar { get; set; }
+
+    public bool ContenedorIngresado { get; set; }
+
+    public string? TerminalPortuario { get; set; }
+
+    public decimal? Kilos { get; set; }
+
+    public decimal? Vgm { get; set; }
+
+    public virtual ICollection<ArchivoOperacion> ArchivosOperacions { get; set; } = new List<ArchivoOperacion>();
+
+    public virtual ICollection<ExtracostosOperacion> ExtracostosOperacions { get; set; } = new List<ExtracostosOperacion>();
+
+    public virtual ICollection<Finanzasoperacion> Finanzasoperacions { get; set; } = new List<Finanzasoperacion>();
+
+    public virtual Cliente IdClienteNavigation { get; set; } = null!;
+
+    public virtual Deposito? IdDepositoNavigation { get; set; }
+
+    public virtual Nafe? IdNaveNavigation { get; set; }
+
+    public virtual Naviera IdNavieraNavigation { get; set; } = null!;
+
+    public virtual Origenescarga? IdOrigenNavigation { get; set; }
+
+    public virtual Puerto? IdPuertoDestinoNavigation { get; set; }
+
+    public virtual Puerto? IdPuertoOrigenNavigation { get; set; }
+
+    public virtual Viaje? IdViajeNavigation { get; set; }
+
+    public virtual ICollection<OperacionesDocumentale> OperacionesDocumentales { get; set; } = new List<OperacionesDocumentale>();
+
+    public virtual ICollection<OperacionesTerrestre> OperacionesTerrestres { get; set; } = new List<OperacionesTerrestre>();
+
+    public virtual ICollection<Unidadestecnica> Unidadestecnicas { get; set; } = new List<Unidadestecnica>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\OperacionesDocumentale.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class OperacionesDocumentale
+{
+    public int Id { get; set; }
+
+    public int IdOperacion { get; set; }
+
+    public string? AgenciaAduana { get; set; }
+
+    public string? DusDin { get; set; }
+
+    public string? EstadoDocumental { get; set; }
+
+    public bool? Activo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public string? UsuarioCreador { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public string? UsuarioModificador { get; set; }
+
+    public bool MatrizPresentada { get; set; }
+
+    public string? EvidenciaMatriz { get; set; }
+
+    public bool ExtensionDocumental { get; set; }
+
+    public bool GuiaVisado { get; set; }
+
+    public bool? CertificadoOrigen { get; set; }
+
+    public bool? CertificadoSeguro { get; set; }
+
+    public bool? CertificadoFito { get; set; }
+
+    public string? Mandato { get; set; }
+
+    public string? Consignatario { get; set; }
+
+    public string? NotificarA { get; set; }
+
+    public decimal? ValorAduana { get; set; }
+
+    public virtual Operacione IdOperacionNavigation { get; set; } = null!;
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\OperacionesTerrestre.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class OperacionesTerrestre
+{
+    public int Id { get; set; }
+
+    public int IdOperacion { get; set; }
+
+    public string? EmpresaTransporte { get; set; }
+
+    public string? RutTransporte { get; set; }
+
+    public string? CorreoTransporte { get; set; }
+
+    public string? NombreConductor { get; set; }
+
+    public string? TelefonoConductor { get; set; }
+
+    public string? Patente { get; set; }
+
+    public string? TipoUnidadTransporte { get; set; }
+
+    public string? DepositoRetiro { get; set; }
+
+    public string? PlantaCarga { get; set; }
+
+    public string? ZonaEmbarque { get; set; }
+
+    public DateTime? FechaCarga { get; set; }
+
+    public string? LinkTracking { get; set; }
+
+    public bool? Activo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public string? UsuarioCreador { get; set; }
+
+    public DateTime? FechaModificacion { get; set; }
+
+    public string? UsuarioModificador { get; set; }
+
+    public DateTime? LlegadaPlanta { get; set; }
+
+    public DateTime? SalidaPlanta { get; set; }
+
+    public DateTime? LlegadaPuerto { get; set; }
+
+    public DateTime? SalidaPuerto { get; set; }
+
+    public bool SorteoEscaner { get; set; }
+
+    public string? RutConductor { get; set; }
+
+    public string? Rampla { get; set; }
+
+    public string? ReferenciaCliente { get; set; }
+
+    public string? DepositoDevolucion { get; set; }
+
+    public virtual Operacione IdOperacionNavigation { get; set; } = null!;
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Origenescarga.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Origenescarga
+{
+    public int Id { get; set; }
+
+    public string NombrePlanta { get; set; } = null!;
+
+    public int? IdCiudad { get; set; }
+
+    public string? Direccion { get; set; }
+
+    public byte? Activo { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public virtual Ciudade? IdCiudadNavigation { get; set; }
+
+    public virtual ICollection<Operacione> Operaciones { get; set; } = new List<Operacione>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Paise.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Paise
+{
+    public int Id { get; set; }
+
+    public string Nombre { get; set; } = null!;
+
+    public string? CodigoAlfa { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public virtual ICollection<Ciudade> Ciudades { get; set; } = new List<Ciudade>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Parametro.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Parametro
+{
+    public int Id { get; set; }
+
+    public string Categoria { get; set; } = null!;
+
+    public string? Descripcion { get; set; }
+
+    public bool IsDeleted { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public virtual ICollection<Subparametro> Subparametros { get; set; } = new List<Subparametro>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Proveedore.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Proveedore
+{
+    public int Id { get; set; }
+
+    public string? Rut { get; set; }
+
+    public string NombreProveedor { get; set; } = null!;
+
+    public int IdTipoProveedor { get; set; }
+
+    public string? Contacto { get; set; }
+
+    public string? CorreoOperativo { get; set; }
+
+    public byte? Activo { get; set; }
+
+    public virtual ICollection<Tarifasterrestre> Tarifasterrestres { get; set; } = new List<Tarifasterrestre>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Puerto.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Puerto
+{
+    public int Id { get; set; }
+
+    public int? IdCiudad { get; set; }
+
+    public string NombrePuerto { get; set; } = null!;
+
+    public string? TerminalPortuario { get; set; }
+
+    public int? IdTipoPuerto { get; set; }
+
+    public byte? Activo { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public virtual Ciudade? IdCiudadNavigation { get; set; }
+
+    public virtual ICollection<Operacione> OperacioneIdPuertoDestinoNavigations { get; set; } = new List<Operacione>();
+
+    public virtual ICollection<Operacione> OperacioneIdPuertoOrigenNavigations { get; set; } = new List<Operacione>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Subparametro.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Subparametro
+{
+    public int Id { get; set; }
+
+    public int ParametroId { get; set; }
+
+    public string Valor { get; set; } = null!;
+
+    public string? Descripcion { get; set; }
+
+    public bool IsDeleted { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public virtual Parametro Parametro { get; set; } = null!;
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Tarifasterrestre.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Tarifasterrestre
+{
+    public int Id { get; set; }
+
+    public int? IdProveedor { get; set; }
+
+    public int? IdCiudadOrigen { get; set; }
+
+    public int? IdCiudadDestino { get; set; }
+
+    public int? IdTipoCarga { get; set; }
+
+    public decimal? ValorNeto { get; set; }
+
+    public DateOnly? FechaInicio { get; set; }
+
+    public DateOnly? FechaFin { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public virtual Ciudade? IdCiudadDestinoNavigation { get; set; }
+
+    public virtual Ciudade? IdCiudadOrigenNavigation { get; set; }
+
+    public virtual Proveedore? IdProveedorNavigation { get; set; }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Unidadestecnica.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Unidadestecnica
+{
+    public int Id { get; set; }
+
+    public int IdOperacion { get; set; }
+
+    public string? NroContenedor { get; set; }
+
+    public string? SelloNaviera { get; set; }
+
+    public decimal? Tara { get; set; }
+
+    public decimal? PesoCarga { get; set; }
+
+    public decimal? VgmTotal { get; set; }
+
+    public decimal? Temperatura { get; set; }
+
+    public int? Humedad { get; set; }
+
+    public int? Ventilacion { get; set; }
+
+    public byte? AtmosferaControlada { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public string? TipoAtmosfera { get; set; }
+
+    public decimal? NivelO2 { get; set; }
+
+    public decimal? NivelCo2 { get; set; }
+
+    public int? IdTipoCarga { get; set; }
+
+    public string? TipoContenedor { get; set; }
+
+    public string? Commodity { get; set; }
+
+    public string? CondicionReefer { get; set; }
+
+    public string? MarcaAc { get; set; }
+
+    public string? EvidenciaContenedor { get; set; }
+
+    public virtual Operacione IdOperacionNavigation { get; set; } = null!;
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Usuario.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Usuario
+{
+    public int Id { get; set; }
+
+    public string NombreCompleto { get; set; } = null!;
+
+    public string Correo { get; set; } = null!;
+
+    public string Password { get; set; } = null!;
+
+    public string Rol { get; set; } = null!;
+
+    public byte? Activo { get; set; }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Models\Viaje.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Models;
+
+public partial class Viaje
+{
+    public int Id { get; set; }
+
+    public string? NumeroViaje { get; set; }
+
+    public DateOnly? EtdZarpe { get; set; }
+
+    public DateOnly? EtaArribo { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public string UsuarioCreador { get; set; } = null!;
+
+    public DateTime FechaModificacion { get; set; }
+
+    public string UsuarioModificador { get; set; } = null!;
+
+    public int? IdNave { get; set; }
+
+    public virtual Nafe? IdNaveNavigation { get; set; }
+
+    public virtual ICollection<Operacione> Operaciones { get; set; } = new List<Operacione>();
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Clientes\Create.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+
+namespace AtilsonCargoSpa.Pages.Clientes
+{
+    public class CreateModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public CreateModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        [BindProperty]
+        public Cliente Cliente { get; set; } = default!;
+
+        public async Task<IActionResult> OnGetAsync()
+        {
+            // Cargamos las ciudades para el formulario
+            ViewData["IdCiudad"] = new SelectList(await _context.Ciudades.ToListAsync(), "Id", "Nombre");
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid) return Page();
+
+            Cliente.FechaCreacion = DateTime.Now;
+            Cliente.UsuarioCreador = "Admin Atilson";
+            Cliente.Activo = 1;
+
+            _context.Clientes.Add(Cliente);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("./Index");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Clientes\Edit.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+
+namespace AtilsonCargoSpa.Pages.Clientes
+{
+    public class EditModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public EditModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        [BindProperty]
+        public Cliente Cliente { get; set; } = default!;
+
+        public async Task<IActionResult> OnGetAsync(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var cliente = await _context.Clientes.FirstOrDefaultAsync(m => m.Id == id);
+            if (cliente == null) return NotFound();
+
+            Cliente = cliente;
+
+            // Cargamos las ciudades para el desplegable
+            ViewData["IdCiudad"] = new SelectList(_context.Ciudades, "Id", "Nombre");
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid) return Page();
+
+            // Marcamos el objeto como modificado
+            _context.Attach(Cliente).State = EntityState.Modified;
+
+            // Actualizamos auditoría
+            Cliente.FechaModificacion = DateTime.Now;
+            Cliente.UsuarioModificador = "Admin Atilson";
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ClienteExists(Cliente.Id)) return NotFound();
+                else throw;
+            }
+
+            return RedirectToPage("./Index");
+        }
+
+        private bool ClienteExists(int id)
+        {
+            return _context.Clientes.Any(e => e.Id == id);
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Clientes\Index.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using AtilsonCargoSpa.Helpers; // Agregamos el Helper
+using ClosedXML.Excel;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using System.IO;
+
+namespace AtilsonCargoSpa.Pages.Clientes
+{
+    public class IndexModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public IndexModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        // CAMBIO 1: Ahora usamos PaginatedList en lugar de IList
+        public PaginatedList<Cliente> Clientes { get; set; } = default!;
+
+        [BindProperty(SupportsGet = true)]
+        public string? SearchString { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int? CiudadId { get; set; }
+
+        public SelectList Ciudades { get; set; } = default!;
+
+        // CAMBIO 2: Recibimos el número de página (por defecto 1)
+        public async Task OnGetAsync(int? pageIndex)
+        {
+            Ciudades = new SelectList(await _context.Ciudades.ToListAsync(), "Id", "Nombre");
+
+            var query = _context.Clientes.Where(c => c.Activo == 1);
+
+            if (!string.IsNullOrEmpty(SearchString))
+            {
+                query = query.Where(s => s.RazonSocial.Contains(SearchString)
+                                      || s.Rut.Contains(SearchString)
+                                      || s.NombreCliente.Contains(SearchString));
+            }
+
+            if (CiudadId.HasValue)
+            {
+                query = query.Where(x => x.IdCiudad == CiudadId);
+            }
+
+            // Ordenamos por fecha de creación (los más nuevos primero)
+            query = query.OrderByDescending(c => c.Id);
+
+            // CAMBIO 3: Tamaño de página (ej. 10 registros por página)
+            int pageSize = 10;
+            Clientes = await PaginatedList<Cliente>.CreateAsync(query.AsNoTracking(), pageIndex ?? 1, pageSize);
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        {
+            var cliente = await _context.Clientes.FindAsync(id);
+            if (cliente != null)
+            {
+                cliente.Activo = 0;
+                cliente.FechaModificacion = DateTime.Now;
+                cliente.UsuarioModificador = "Admin Atilson";
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage("./Index");
+        }
+
+        // ... Mismos métodos de exportación Excel y PDF sin cambios ...
+        public async Task<IActionResult> OnPostExportExcelAsync()
+        {
+            var query = _context.Clientes.Where(c => c.Activo == 1);
+
+            if (!string.IsNullOrEmpty(SearchString))
+            {
+                query = query.Where(s => s.RazonSocial.Contains(SearchString)
+                                      || s.Rut.Contains(SearchString)
+                                      || s.NombreCliente.Contains(SearchString));
+            }
+            if (CiudadId.HasValue)
+            {
+                query = query.Where(x => x.IdCiudad == CiudadId);
+            }
+
+            var lista = await query.ToListAsync();
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Clientes Atilson");
+                var currentRow = 1;
+
+                worksheet.Cell(currentRow, 1).Value = "RUT";
+                worksheet.Cell(currentRow, 2).Value = "Razón Social";
+                worksheet.Cell(currentRow, 3).Value = "Nombre Fantasía";
+                worksheet.Cell(currentRow, 4).Value = "Contacto";
+
+                var headerRange = worksheet.Range("A1:D1");
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#2c1b4d");
+                headerRange.Style.Font.FontColor = XLColor.White;
+
+                foreach (var c in lista)
+                {
+                    currentRow++;
+                    worksheet.Cell(currentRow, 1).Value = c.Rut;
+                    worksheet.Cell(currentRow, 2).Value = c.RazonSocial;
+                    worksheet.Cell(currentRow, 3).Value = c.NombreCliente;
+                    worksheet.Cell(currentRow, 4).Value = c.Contacto;
+                }
+
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Reporte_Clientes_Atilson.xlsx");
+                }
+            }
+        }
+
+        public async Task<IActionResult> OnPostExportPdfAsync()
+        {
+            var query = _context.Clientes.Where(c => c.Activo == 1);
+
+            if (!string.IsNullOrEmpty(SearchString))
+            {
+                query = query.Where(s => s.RazonSocial.Contains(SearchString)
+                                      || s.Rut.Contains(SearchString)
+                                      || s.NombreCliente.Contains(SearchString));
+            }
+            if (CiudadId.HasValue)
+            {
+                query = query.Where(x => x.IdCiudad == CiudadId);
+            }
+
+            var lista = await query.ToListAsync();
+
+            using (var stream = new MemoryStream())
+            {
+                Document pdfDoc = new Document(PageSize.LETTER.Rotate(), 25, 25, 30, 30);
+                PdfWriter.GetInstance(pdfDoc, stream);
+                pdfDoc.Open();
+
+                var titleFont = FontFactory.GetFont("Arial", 16, Font.BOLD, new BaseColor(44, 27, 77));
+                pdfDoc.Add(new Paragraph("ATILSON CARGO - REPORTE MAESTRO DE CLIENTES\n\n", titleFont));
+
+                PdfPTable table = new PdfPTable(4);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 15f, 40f, 25f, 20f });
+
+                string[] headers = { "RUT", "Razón Social", "Nombre Fantasía", "Contacto" };
+                foreach (var h in headers)
+                {
+                    PdfPCell cell = new PdfPCell(new Phrase(h, FontFactory.GetFont("Arial", 10, Font.BOLD, BaseColor.WHITE)));
+                    cell.BackgroundColor = new BaseColor(44, 27, 77);
+                    cell.Padding = 8;
+                    table.AddCell(cell);
+                }
+
+                var normalFont = FontFactory.GetFont("Arial", 9);
+                foreach (var c in lista)
+                {
+                    table.AddCell(new PdfPCell(new Phrase(c.Rut ?? "", normalFont)) { Padding = 5 });
+                    table.AddCell(new PdfPCell(new Phrase(c.RazonSocial ?? "", normalFont)) { Padding = 5 });
+                    table.AddCell(new PdfPCell(new Phrase(c.NombreCliente ?? "", normalFont)) { Padding = 5 });
+                    table.AddCell(new PdfPCell(new Phrase(c.Contacto ?? "", normalFont)) { Padding = 5 });
+                }
+
+                pdfDoc.Add(table);
+                pdfDoc.Close();
+                return File(stream.ToArray(), "application/pdf", "Reporte_Clientes_Atilson.pdf");
+            }
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Comercial\Index.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
+
+namespace AtilsonCargoSpa.Pages.Comercial
+{
+    // DTO Temporal para mostrar la UI mientras creamos la tabla real en la BD
+    public class TarifaTerrestreDto
+    {
+        public int Id { get; set; }
+        public string Proveedor { get; set; }
+        public string Tramo { get; set; }
+        public string TipoUnidad { get; set; }
+        public decimal ValorAcordado { get; set; }
+        public DateTime Vigencia { get; set; }
+        public string Estado { get; set; }
+    }
+
+    public class IndexModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public IndexModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public List<TarifaTerrestreDto> Tarifas { get; set; } = new();
+        public IList<ExtracostosOperacion> ExcepcionesFinanzas { get; set; } = default!;
+
+        public int AlertasExpiracion { get; set; }
+
+        public async Task OnGetAsync()
+        {
+            // 1. SIMULACIÓN DE LA BASE DE DATOS DE TARIFAS (Para armar el panel visual)
+            Tarifas = new List<TarifaTerrestreDto>
+            {
+                new TarifaTerrestreDto { Id = 1, Proveedor = "TRANSPORTES SOTO", Tramo = "San Antonio - San Felipe - San Antonio", TipoUnidad = "Rampa / Genset", ValorAcordado = 300000, Vigencia = DateTime.Now.AddMonths(2), Estado = "ACTIVA" },
+                new TarifaTerrestreDto { Id = 2, Proveedor = "TRANSPORTES MUÑOZ", Tramo = "Valparaíso - Santiago - Valparaíso", TipoUnidad = "Rampa Standard", ValorAcordado = 280000, Vigencia = DateTime.Now.AddDays(5), Estado = "POR EXPIRAR" },
+                new TarifaTerrestreDto { Id = 3, Proveedor = "LOGÍSTICA PÉREZ", Tramo = "San Vicente - Coronel", TipoUnidad = "Camión Plano", ValorAcordado = 150000, Vigencia = DateTime.Now.AddDays(-10), Estado = "VENCIDA" }
+            };
+
+            AlertasExpiracion = Tarifas.Count(t => t.Vigencia <= DateTime.Now.AddDays(15));
+
+            // 2. AUDITORÍA DE EXCEPCIONES REALES (Lo que envían desde Finanzas u Operaciones)
+            ExcepcionesFinanzas = await _context.ExtracostosOperacions
+                .Include(e => e.IdOperacionNavigation)
+                .ThenInclude(o => o.IdClienteNavigation)
+                .OrderByDescending(e => e.FechaCreacion)
+                .ToListAsync();
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Finanzas\Edit.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace AtilsonCargoSpa.Pages.Finanzas
+{
+    public class EditModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public EditModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        [BindProperty]
+        public Finanzasoperacion Finanzas { get; set; } = new();
+
+        public Operacione OperacionBase { get; set; } = default!;
+
+        public async Task<IActionResult> OnGetAsync(int id)
+        {
+            // Traemos la operación cruzada con su cliente y TODOS sus Extra Costos
+            OperacionBase = await _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.ExtracostosOperacions)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (OperacionBase == null) return NotFound();
+
+            var finanzasDb = await _context.Finanzasoperacions.FirstOrDefaultAsync(f => f.IdOperacion == id);
+
+            if (finanzasDb != null)
+            {
+                Finanzas = finanzasDb;
+            }
+            else
+            {
+                Finanzas = new Finanzasoperacion { IdOperacion = id };
+            }
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync(int id)
+        {
+            var finanzasDb = await _context.Finanzasoperacions.FirstOrDefaultAsync(f => f.IdOperacion == id);
+            string currentUser = User.Identity?.Name ?? "Sistema";
+
+            // 1. GUARDAR FLETES BASE
+            if (finanzasDb == null)
+            {
+                Finanzas.IdOperacion = id;
+                Finanzas.FechaCreacion = DateTime.Now;
+                Finanzas.UsuarioCreador = currentUser;
+                Finanzas.FechaModificacion = DateTime.Now;
+                Finanzas.UsuarioModificador = currentUser;
+
+                _context.Finanzasoperacions.Add(Finanzas);
+            }
+            else
+            {
+                finanzasDb.VentaMaritimo = Finanzas.VentaMaritimo;
+                finanzasDb.VentaTerrestre = Finanzas.VentaTerrestre;
+                finanzasDb.VentaDocumental = Finanzas.VentaDocumental;
+
+                finanzasDb.CostoMaritimoNeto = Finanzas.CostoMaritimoNeto;
+                finanzasDb.CostoTerrestreNeto = Finanzas.CostoTerrestreNeto;
+                finanzasDb.CostoAgenciaNeto = Finanzas.CostoAgenciaNeto;
+
+                finanzasDb.DiasLibresOrigen = Finanzas.DiasLibresOrigen;
+                finanzasDb.DiasLibresDestino = Finanzas.DiasLibresDestino;
+                finanzasDb.IdCondicionFlete = Finanzas.IdCondicionFlete;
+
+                finanzasDb.FechaModificacion = DateTime.Now;
+                finanzasDb.UsuarioModificador = currentUser;
+            }
+
+            // 2. MAGIA ATILSON: GUARDAR EL PRECIO DE LOS EXTRA COSTOS
+            // Buscamos los extracostos de esta operación en la base de datos
+            var extraCostosDb = await _context.ExtracostosOperacions.Where(e => e.IdOperacion == id).ToListAsync();
+
+            foreach (var costo in extraCostosDb)
+            {
+                // Capturar la Moneda (USD, CLP, EUR)
+                if (Request.Form.TryGetValue($"Moneda_{costo.Id}", out var monedaVal))
+                {
+                    costo.Moneda = monedaVal.ToString();
+                }
+
+                // Capturar el Monto (arreglando problemas de puntos y comas)
+                if (Request.Form.TryGetValue($"Monto_{costo.Id}", out var montoVal))
+                {
+                    string montoStr = montoVal.ToString().Replace(",", "."); // Homologar a punto decimal
+                    if (decimal.TryParse(montoStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal montoParseado))
+                    {
+                        costo.Monto = montoParseado;
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToPage("./Index");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Finanzas\Facturacion.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace AtilsonCargoSpa.Pages.Finanzas
+{
+    public class FacturacionModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public FacturacionModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public IList<Operacione> OperacionesFacturacion { get; set; } = default!;
+
+        [BindProperty(SupportsGet = true)]
+        public string? SearchString { get; set; }
+
+        public async Task OnGetAsync()
+        {
+            var query = _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.Finanzasoperacions)
+                .Include(o => o.ExtracostosOperacions)
+                .Where(o => !o.IsDeleted && o.Finanzasoperacions.Any())
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(SearchString))
+            {
+                string s = SearchString.ToLower();
+                query = query.Where(o =>
+                    (o.NumeroBooking != null && o.NumeroBooking.ToLower().Contains(s)) ||
+                    (o.IdClienteNavigation != null && o.IdClienteNavigation.RazonSocial != null && o.IdClienteNavigation.RazonSocial.ToLower().Contains(s))
+                );
+            }
+
+            OperacionesFacturacion = await query.OrderByDescending(o => o.Id).ToListAsync();
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Finanzas\Index.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace AtilsonCargoSpa.Pages.Finanzas
+{
+    public class IndexModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public IndexModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public IList<Operacione> ListaOperaciones { get; set; } = default!;
+        public IList<ExtracostosOperacion> TodosExtraCostos { get; set; } = default!;
+
+        public decimal TotalVentasMes { get; set; }
+        public decimal TotalCostosMes { get; set; }
+        public decimal ProfitMensual { get; set; }
+        public int AlertasDemurrage { get; set; }
+
+        public decimal TotalExtraUSD { get; set; }
+        public decimal TotalExtraCLP { get; set; }
+
+        public async Task OnGetAsync()
+        {
+            // 1. TRAEMOS TODO EL CRUCE
+            ListaOperaciones = await _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.Finanzasoperacions)
+                .Include(o => o.ExtracostosOperacions)
+                .Where(o => !o.IsDeleted)
+                .OrderByDescending(o => o.Id)
+                .ToListAsync();
+
+            // 2. EXTRA COSTOS PUROS
+            TodosExtraCostos = await _context.ExtracostosOperacions
+                .Include(e => e.IdOperacionNavigation)
+                .ThenInclude(o => o.IdClienteNavigation)
+                .OrderByDescending(e => e.FechaCreacion)
+                .ToListAsync();
+
+            // 3. CÁLCULO DE KPIs INTELIGENTES
+            foreach (var op in ListaOperaciones)
+            {
+                var f = op.Finanzasoperacions?.FirstOrDefault();
+                if (f != null)
+                {
+                    TotalVentasMes += (f.VentaMaritimo ?? 0) + (f.VentaTerrestre ?? 0) + (f.VentaDocumental ?? 0);
+                    TotalCostosMes += (f.CostoMaritimoNeto ?? 0) + (f.CostoTerrestreNeto ?? 0) + (f.CostoAgenciaNeto ?? 0);
+
+                    if (f.DiasLibresDestino > 0 && f.DiasLibresDestino <= 5)
+                    {
+                        AlertasDemurrage++;
+                    }
+                }
+            }
+            ProfitMensual = TotalVentasMes - TotalCostosMes;
+
+            TotalExtraUSD = TodosExtraCostos.Where(e => e.Moneda == "USD").Sum(e => e.Monto);
+            TotalExtraCLP = TodosExtraCostos.Where(e => e.Moneda == "CLP").Sum(e => e.Monto);
+        }
+    }
+}   
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Finanzas\OrdenesCompra.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace AtilsonCargoSpa.Pages.Finanzas
+{
+    public class OrdenesCompraModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public OrdenesCompraModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public IList<Operacione> ListaOrdenes { get; set; } = default!;
+
+        [BindProperty(SupportsGet = true)]
+        public string? SearchString { get; set; }
+
+        public async Task OnGetAsync()
+        {
+            var query = _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.OperacionesTerrestres)
+                .Include(o => o.Finanzasoperacions)
+                .Where(o => !o.IsDeleted && o.OperacionesTerrestres.Any())
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(SearchString))
+            {
+                string s = SearchString.ToLower();
+                query = query.Where(o =>
+                    (o.OperacionesTerrestres.Any(t => t.EmpresaTransporte != null && t.EmpresaTransporte.ToLower().Contains(s))) ||
+                    (o.NumeroBooking != null && o.NumeroBooking.ToLower().Contains(s))
+                );
+            }
+
+            ListaOrdenes = await query.OrderByDescending(o => o.Id).ToListAsync();
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Navieras\Create.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using AtilsonCargoSpa.Models;
+
+namespace AtilsonCargoSpa.Pages.Navieras
+{
+    public class CreateModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public CreateModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        [BindProperty]
+        public Naviera Naviera { get; set; } = default!;
+
+        public IActionResult OnGet()
+        {
+            // Inicializamos valores por defecto
+            Naviera = new Naviera { Activo = 1, ColorRepresentativo = "#6c757d" };
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid) return Page();
+
+            _context.Navieras.Add(Naviera);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("./Index");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Navieras\Edit.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+
+namespace AtilsonCargoSpa.Pages.Navieras
+{
+    public class EditModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public EditModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        [BindProperty]
+        public Naviera Naviera { get; set; } = default!;
+
+        public async Task<IActionResult> OnGetAsync(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var naviera = await _context.Navieras.FirstOrDefaultAsync(m => m.Id == id);
+            if (naviera == null) return NotFound();
+
+            Naviera = naviera;
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid) return Page();
+
+            _context.Attach(Naviera).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Navieras.Any(e => e.Id == Naviera.Id)) return NotFound();
+                else throw;
+            }
+
+            return RedirectToPage("./Index");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Navieras\Index.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+
+namespace AtilsonCargoSpa.Pages.Navieras
+{
+    public class IndexModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public IndexModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public IList<Naviera> Navieras { get; set; } = default!;
+
+        [BindProperty(SupportsGet = true)]
+        public string? SearchString { get; set; }
+
+        public async Task OnGetAsync()
+        {
+            // Filtramos solo las navieras activas
+            var query = _context.Navieras.Where(n => n.Activo == 1);
+
+            // Filtro de búsqueda en tiempo real
+            if (!string.IsNullOrEmpty(SearchString))
+            {
+                query = query.Where(s => s.NombreNaviera.Contains(SearchString));
+            }
+
+            // Ordenamos alfabéticamente
+            Navieras = await query.OrderBy(n => n.NombreNaviera).ToListAsync();
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        {
+            var naviera = await _context.Navieras.FindAsync(id);
+
+            if (naviera != null)
+            {
+                // Borrado Lógico
+                naviera.Activo = 0;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToPage("./Index");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\Almacenamiento.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class AlmacenamientoModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public AlmacenamientoModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public IList<Operacione> Operaciones { get; set; } = default!;
+
+        public void OnGet()
+        {
+            // Módulo en construcción
+            Operaciones = new List<Operacione>();
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\Archivos.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class ArchivosModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+        private readonly IWebHostEnvironment _env;
+
+        public ArchivosModel(AtilsonContext context, IWebHostEnvironment env)
+        {
+            _context = context;
+            _env = env;
+        }
+
+        public Operacione OperacionActual { get; set; } = default!;
+        public List<ArchivoOperacion> ListaArchivos { get; set; } = new();
+
+        [BindProperty]
+        public IFormFile? ArchivoSubido { get; set; }
+
+        [BindProperty]
+        public string TipoDocumento { get; set; } = string.Empty;
+
+        public async Task<IActionResult> OnGetAsync(int id)
+        {
+            OperacionActual = await _context.Operaciones.FirstOrDefaultAsync(o => o.Id == id);
+            if (OperacionActual == null) return NotFound();
+
+            ListaArchivos = await _context.ArchivosOperaciones
+                .Where(a => a.IdOperacion == id)
+                .OrderByDescending(a => a.FechaSubida)
+                .ToListAsync();
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync(int id)
+        {
+            if (ArchivoSubido == null || ArchivoSubido.Length == 0) return RedirectToPage(new { id = id });
+
+            // 1. Definir carpeta única 'documentos'
+            string carpetaDestino = Path.Combine(_env.WebRootPath, "uploads", "documentos");
+            if (!Directory.Exists(carpetaDestino)) Directory.CreateDirectory(carpetaDestino);
+
+            // 2. Crear nombre único para el servidor (ID_Ticks_NombreOriginal.pdf)
+            string nombreOriginal = Path.GetFileName(ArchivoSubido.FileName).Replace(" ", "_");
+            string nombreUnico = $"{id}_{DateTime.Now.Ticks}_{nombreOriginal}";
+            string rutaFisica = Path.Combine(carpetaDestino, nombreUnico);
+
+            // 3. Guardar físicamente
+            using (var stream = new FileStream(rutaFisica, FileMode.Create))
+            {
+                await ArchivoSubido.CopyToAsync(stream);
+            }
+
+            // 4. Guardar en Base de Datos
+            var nuevoDoc = new ArchivoOperacion
+            {
+                IdOperacion = id,
+                NombreArchivo = nombreOriginal,
+                RutaArchivo = $"/uploads/documentos/{nombreUnico}",
+                TipoDocumento = TipoDocumento,
+                FechaSubida = DateTime.Now,
+                UsuarioSubida = User.Identity?.Name ?? "Sistema"
+            };
+
+            _context.ArchivosOperaciones.Add(nuevoDoc);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage(new { id = id });
+        }
+
+        public async Task<IActionResult> OnPostEliminarAsync(int id, int idArchivo)
+        {
+            var doc = await _context.ArchivosOperaciones.FindAsync(idArchivo);
+            if (doc != null)
+            {
+                // Borrar archivo físico
+                string rutaFisica = Path.Combine(_env.WebRootPath, doc.RutaArchivo.TrimStart('/'));
+                if (System.IO.File.Exists(rutaFisica)) System.IO.File.Delete(rutaFisica);
+
+                // Borrar de BD
+                _context.ArchivosOperaciones.Remove(doc);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage(new { id = id });
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\Create.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class CreateModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public CreateModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public IActionResult OnGet()
+        {
+            ViewData["IdCliente"] = new SelectList(_context.Clientes.Where(c => c.Activo == 1), "Id", "RazonSocial");
+            ViewData["IdNaviera"] = new SelectList(_context.Navieras.Where(n => n.Activo == 1), "Id", "NombreNaviera");
+            ViewData["IdPuertoOrigen"] = new SelectList(_context.Puertos.Where(p => p.Activo == 1), "Id", "NombrePuerto");
+            ViewData["IdPuertoDestino"] = new SelectList(_context.Puertos.Where(p => p.Activo == 1), "Id", "NombrePuerto");
+            ViewData["IdTipoMovimiento"] = new SelectList(_context.Subparametros.Where(p => p.Parametro.Categoria == "TipoMovimiento"), "Id", "Valor");
+            return Page();
+        }
+
+        [BindProperty]
+        public Operacione Operacione { get; set; } = default!;
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            ModelState.Clear();
+
+            // PREVENIR CHOQUES POR BOOKING DUPLICADO
+            bool bookingExiste = await _context.Operaciones.AnyAsync(o => o.NumeroBooking == Operacione.NumeroBooking);
+            if (bookingExiste)
+            {
+                TempData["ErrorBooking"] = $"El número de Booking '{Operacione.NumeroBooking}' ya se encuentra registrado en el sistema. Por favor, verifique el dato.";
+
+                ViewData["IdCliente"] = new SelectList(_context.Clientes.Where(c => c.Activo == 1), "Id", "RazonSocial");
+                ViewData["IdNaviera"] = new SelectList(_context.Navieras.Where(n => n.Activo == 1), "Id", "NombreNaviera");
+                ViewData["IdPuertoOrigen"] = new SelectList(_context.Puertos.Where(p => p.Activo == 1), "Id", "NombrePuerto");
+                ViewData["IdPuertoDestino"] = new SelectList(_context.Puertos.Where(p => p.Activo == 1), "Id", "NombrePuerto");
+                ViewData["IdTipoMovimiento"] = new SelectList(_context.Subparametros.Where(p => p.Parametro.Categoria == "TipoMovimiento"), "Id", "Valor");
+
+                return Page();
+            }
+
+            // SPRINT A: CAPTURAR EL USUARIO REAL QUE CREA LA RESERVA
+            string nombreUsuario = User.Identity?.Name ?? "Sistema";
+
+            var serv = Operacione.IdTipoServicio ?? 0;
+            bool esMaritimo = serv == 1 || serv == 2 || serv == 3 || serv == 5 || serv == 8 || serv == 9 || serv == 10 || serv == 12;
+
+            if (!esMaritimo)
+            {
+                Operacione.IdNaviera = _context.Navieras.FirstOrDefault()?.Id ?? 1;
+                Operacione.IdTipoCarga = 1;
+                Operacione.IdPuertoOrigen = null;
+                Operacione.IdPuertoDestino = null;
+            }
+            else
+            {
+                if (Operacione.IdNaviera == 0) Operacione.IdNaviera = _context.Navieras.FirstOrDefault()?.Id ?? 1;
+                if (Operacione.IdTipoCarga == 0) Operacione.IdTipoCarga = 1;
+            }
+
+            if (Operacione.IdCliente == 0) Operacione.IdCliente = _context.Clientes.FirstOrDefault()?.Id ?? 1;
+
+            Operacione.FechaCreacion = DateTime.Now;
+            Operacione.UsuarioCreador = nombreUsuario;
+            Operacione.Activo = 1;
+            Operacione.IsDeleted = false;
+
+            // VALORES POR DEFECTO PARA LOS CAMPOS NUEVOS
+            Operacione.ContenedorIngresado = false;
+            Operacione.EstadoLar = "No Solicitado";
+            Operacione.EvidenciaLar = null;
+            Operacione.TerminalPortuario = Request.Form["Operacione.TerminalPortuario"];
+
+            // MAGIA ATILSON: GENERACIÓN AUTOMÁTICA DEL CORRELATIVO
+            int anioActual = DateTime.Now.Year;
+            int mesActual = DateTime.Now.Month;
+
+            int conteoMes = _context.Operaciones.Count(o =>
+                o.FechaCreacion != null &&
+                o.FechaCreacion.Value.Year == anioActual &&
+                o.FechaCreacion.Value.Month == mesActual) + 1;
+
+            Operacione.CodigoAtilson = $"ATL-{anioActual}{mesActual:D2}-{conteoMes:D3}";
+            Operacione.EstadoWorkflow = "EN PROCESO";
+
+            if (string.IsNullOrWhiteSpace(Operacione.NumeroContenedor)) Operacione.NumeroContenedor = null;
+
+            Operacione.CondicionReefer = Request.Form["CondicionReefer"];
+            Operacione.MarcaAc = Request.Form["MarcaAc"];
+            Operacione.Atmosfera = Request.Form["TipoAtmosfera"];
+
+            if (double.TryParse(Request.Form["TempSeteada"], out double temp)) Operacione.Temperatura = temp;
+            if (double.TryParse(Request.Form["Ventilacion"], out double vent)) Operacione.Ventilacion = vent;
+            if (double.TryParse(Request.Form["Humedad"], out double hum)) Operacione.Humedad = hum;
+            if (double.TryParse(Request.Form["NivelO2"], out double o2)) Operacione.O2 = o2;
+            if (double.TryParse(Request.Form["NivelCO2"], out double co2)) Operacione.Co2 = co2;
+
+            int[] serviciosTerrestres = { 1, 2, 4, 6, 8, 9, 11, 13 };
+            int[] serviciosDocumentales = { 1, 3, 4, 7, 8, 10, 11, 14 };
+
+            Operacione.OperacionesTerrestres ??= new List<OperacionesTerrestre>();
+            Operacione.OperacionesDocumentales ??= new List<OperacionesDocumentale>();
+            Operacione.Unidadestecnicas ??= new List<Unidadestecnica>();
+
+            if (serviciosTerrestres.Contains(serv))
+            {
+                DateTime? fechaCarga = DateTime.TryParse(Request.Form["TransFechaCarga"], out DateTime dt) ? dt : null;
+                Operacione.OperacionesTerrestres.Add(new OperacionesTerrestre
+                {
+                    EmpresaTransporte = Request.Form["TransEmpresa"],
+                    RutTransporte = Request.Form["TransRut"],
+                    CorreoTransporte = Request.Form["TransCorreo"],
+                    NombreConductor = Request.Form["TransConductor"],
+                    TelefonoConductor = Request.Form["TransTelefono"],
+                    Patente = Request.Form["TransPatente"],
+                    TipoUnidadTransporte = Request.Form["TransTipoUnidad"],
+                    DepositoRetiro = Request.Form["TransDeposito"],
+                    PlantaCarga = Request.Form["TransPlanta"],
+                    ZonaEmbarque = Request.Form["TransZonaEmbarque"],
+                    FechaCarga = fechaCarga,
+                    LinkTracking = Request.Form["TransTracking"],
+                    FechaCreacion = DateTime.Now,
+                    UsuarioCreador = nombreUsuario,
+                    Activo = true,
+                    SorteoEscaner = false
+                });
+            }
+
+            if (serviciosDocumentales.Contains(serv))
+            {
+                Operacione.OperacionesDocumentales.Add(new OperacionesDocumentale
+                {
+                    AgenciaAduana = Request.Form["DocAgencia"],
+                    DusDin = Request.Form["DocDus"],
+                    EstadoDocumental = Request.Form["DocEstado"],
+                    GuiaVisado = Request.Form.TryGetValue("GuiaVisado", out var gv) && gv == "true",
+                    MatrizPresentada = false,
+                    ExtensionDocumental = false,
+                    FechaCreacion = DateTime.Now,
+                    UsuarioCreador = nombreUsuario,
+                    Activo = true
+                });
+            }
+
+            for (int i = 2; i <= 20; i++)
+            {
+                var tipoCargaKey = $"ContenedoresExtra[{i}].IdTipoCarga";
+                if (Request.Form.ContainsKey(tipoCargaKey) && !string.IsNullOrWhiteSpace(Request.Form[tipoCargaKey]))
+                {
+                    string nroCont = Request.Form[$"ContenedoresExtra[{i}].NumeroContenedor"];
+                    if (string.IsNullOrWhiteSpace(nroCont)) nroCont = null;
+
+                    var nuevaUnidad = new Unidadestecnica
+                    {
+                        IdTipoCarga = int.TryParse(Request.Form[tipoCargaKey], out int tc) ? tc : 1,
+                        TipoContenedor = Request.Form[$"ContenedoresExtra[{i}].TipoContenedor"],
+                        Commodity = Request.Form[$"ContenedoresExtra[{i}].Commodity"],
+                        CondicionReefer = Request.Form[$"ContenedoresExtra[{i}].CondicionReefer"],
+                        TipoAtmosfera = Request.Form[$"ContenedoresExtra[{i}].TipoAtmosfera"],
+                        MarcaAc = Request.Form[$"ContenedoresExtra[{i}].MarcaAc"],
+                        NroContenedor = nroCont,
+                        FechaCreacion = DateTime.Now,
+                        UsuarioCreador = nombreUsuario
+                    };
+
+                    if (decimal.TryParse(Request.Form[$"ContenedoresExtra[{i}].TempSeteada"], out decimal tempExt)) nuevaUnidad.Temperatura = tempExt;
+                    if (int.TryParse(Request.Form[$"ContenedoresExtra[{i}].Humedad"], out int humExt)) nuevaUnidad.Humedad = humExt;
+                    if (int.TryParse(Request.Form[$"ContenedoresExtra[{i}].Ventilacion"], out int ventExt)) nuevaUnidad.Ventilacion = ventExt;
+                    if (decimal.TryParse(Request.Form[$"ContenedoresExtra[{i}].NivelO2"], out decimal o2Ext)) nuevaUnidad.NivelO2 = o2Ext;
+                    if (decimal.TryParse(Request.Form[$"ContenedoresExtra[{i}].NivelCO2"], out decimal co2Ext)) nuevaUnidad.NivelCo2 = co2Ext;
+
+                    Operacione.Unidadestecnicas.Add(nuevaUnidad);
+                }
+            }
+
+            _context.Operaciones.Add(Operacione);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("./Index");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\Documental.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class DocumentalModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public DocumentalModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public IList<Operacione> Operaciones { get; set; } = default!;
+
+        [BindProperty(SupportsGet = true)]
+        public string? SearchString { get; set; }
+
+        public async Task OnGetAsync()
+        {
+            int[] serviciosDoc = { 1, 3, 4, 7, 8, 10, 11, 14 };
+
+            var query = _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.OperacionesDocumentales)
+                .Where(o => !o.IsDeleted && o.IdTipoServicio.HasValue && serviciosDoc.Contains(o.IdTipoServicio.Value))
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(SearchString))
+            {
+                string s = SearchString.ToLower();
+                query = query.Where(o =>
+                    (o.NumeroBooking != null && o.NumeroBooking.ToLower().Contains(s)) ||
+                    (o.IdClienteNavigation != null && o.IdClienteNavigation.RazonSocial != null && o.IdClienteNavigation.RazonSocial.ToLower().Contains(s)) ||
+                    o.OperacionesDocumentales.Any(d => d.DusDin != null && d.DusDin.ToLower().Contains(s)) ||
+                    o.OperacionesDocumentales.Any(d => d.AgenciaAduana != null && d.AgenciaAduana.ToLower().Contains(s))
+                );
+            }
+
+            Operaciones = await query.OrderByDescending(o => o.Id).ToListAsync();
+        }
+
+        // HANDLER PARA GUARDAR LA EDICIÓN DESDE EL MODAL RÁPIDO DOCUMENTAL
+        public async Task<IActionResult> OnPostUpdateDocumentalAsync(int id)
+        {
+            var opDb = await _context.Operaciones
+                .Include(o => o.OperacionesDocumentales)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (opDb != null)
+            {
+                var docDb = opDb.OperacionesDocumentales.FirstOrDefault();
+                if (docDb == null)
+                {
+                    docDb = new OperacionesDocumentale
+                    {
+                        FechaCreacion = DateTime.Now,
+                        UsuarioCreador = User.Identity?.Name ?? "Sistema",
+                        Activo = true
+                    };
+                    opDb.OperacionesDocumentales.Add(docDb);
+                }
+
+                // Actualizar campos documentales desde el Modal
+                docDb.AgenciaAduana = Request.Form["ModAgencia"];
+                docDb.DusDin = Request.Form["ModDus"];
+                docDb.EstadoDocumental = Request.Form["ModEstadoDoc"];
+
+                docDb.MatrizPresentada = Request.Form.TryGetValue("ModMatriz", out var mVal) && mVal == "true";
+                docDb.GuiaVisado = Request.Form.TryGetValue("ModVisado", out var vVal) && vVal == "true";
+                docDb.ExtensionDocumental = Request.Form.TryGetValue("ModExtension", out var eVal) && eVal == "true";
+
+                opDb.FechaModificacion = DateTime.Now;
+                opDb.UsuarioModificador = User.Identity?.Name ?? "Sistema";
+
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage("./Documental");
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int? id)
+        {
+            if (id == null) return NotFound();
+            var operacion = await _context.Operaciones.FindAsync(id);
+            if (operacion != null) { operacion.IsDeleted = true; await _context.SaveChangesAsync(); }
+            return RedirectToPage("./Documental");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\Edit.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class EditModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+        private readonly IWebHostEnvironment _env;
+
+        public EditModel(AtilsonContext context, IWebHostEnvironment env)
+        {
+            _context = context;
+            _env = env;
+        }
+
+        [BindProperty]
+        public Operacione Operacione { get; set; } = default!;
+
+        public async Task<IActionResult> OnGetAsync(int? id)
+        {
+            if (id == null) return NotFound();
+
+            Operacione = await _context.Operaciones
+                .Include(o => o.OperacionesTerrestres)
+                .Include(o => o.OperacionesDocumentales)
+                .Include(o => o.Unidadestecnicas)
+                .Include(o => o.ExtracostosOperacions) // Incluimos extra costos
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (Operacione == null) return NotFound();
+
+            ViewData["IdCliente"] = new SelectList(_context.Clientes.Where(c => c.Activo == 1), "Id", "RazonSocial");
+            ViewData["IdNaviera"] = new SelectList(_context.Navieras.Where(n => n.Activo == 1), "Id", "NombreNaviera");
+            ViewData["IdPuertoOrigen"] = new SelectList(_context.Puertos.Where(p => p.Activo == 1), "Id", "NombrePuerto");
+            ViewData["IdPuertoDestino"] = new SelectList(_context.Puertos.Where(p => p.Activo == 1), "Id", "NombrePuerto");
+            ViewData["IdTipoMovimiento"] = new SelectList(_context.Subparametros.Where(p => p.Parametro.Categoria == "TipoMovimiento"), "Id", "Valor");
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            ModelState.Clear();
+            string nombreUsuario = User.Identity?.Name ?? "Sistema";
+
+            var serv = Operacione.IdTipoServicio ?? 0;
+            bool esMaritimo = serv == 1 || serv == 2 || serv == 3 || serv == 5 || serv == 8 || serv == 9 || serv == 10 || serv == 12;
+
+            if (!esMaritimo)
+            {
+                Operacione.IdNaviera = _context.Navieras.FirstOrDefault()?.Id ?? 1;
+                Operacione.IdTipoCarga = 1;
+                Operacione.IdPuertoOrigen = null;
+                Operacione.IdPuertoDestino = null;
+            }
+            else
+            {
+                if (Operacione.IdNaviera == 0) Operacione.IdNaviera = _context.Navieras.FirstOrDefault()?.Id ?? 1;
+                if (Operacione.IdTipoCarga == 0) Operacione.IdTipoCarga = 1;
+            }
+
+            if (Operacione.IdCliente == 0) Operacione.IdCliente = _context.Clientes.FirstOrDefault()?.Id ?? 1;
+
+            var opDb = await _context.Operaciones
+                .Include(o => o.OperacionesTerrestres)
+                .Include(o => o.OperacionesDocumentales)
+                .Include(o => o.Unidadestecnicas)
+                .FirstOrDefaultAsync(m => m.Id == Operacione.Id);
+
+            if (opDb != null)
+            {
+                opDb.NumeroBooking = Operacione.NumeroBooking;
+                opDb.IdCliente = Operacione.IdCliente;
+                opDb.IdTipoServicio = Operacione.IdTipoServicio;
+                opDb.CondicionPago = Operacione.CondicionPago;
+                opDb.IdTipoMovimiento = Operacione.IdTipoMovimiento;
+                opDb.EstadoWorkflow = Operacione.EstadoWorkflow;
+                opDb.IdNaviera = Operacione.IdNaviera;
+                opDb.Nave = Operacione.Nave;
+                opDb.Transbordo = Operacione.Transbordo;
+                opDb.TerminalPortuario = Operacione.TerminalPortuario;
+                opDb.IdPuertoOrigen = Operacione.IdPuertoOrigen;
+                opDb.IdPuertoDestino = Operacione.IdPuertoDestino;
+                opDb.EtdPol = Operacione.EtdPol;
+                opDb.EtaPod = Operacione.EtaPod;
+                opDb.FechaStacking = Operacione.FechaStacking;
+                opDb.CutOffMatriz = Operacione.CutOffMatriz;
+
+                opDb.EstadoLar = Request.Form.TryGetValue("EstadoLar", out var elar) && !string.IsNullOrWhiteSpace(elar) ? elar.ToString() : null;
+                if (opDb.EstadoLar != null && opDb.EstadoLar.Contains("AUTORIZADO"))
+                {
+                    if (Request.Form.TryGetValue("LateArrival", out var lat) && DateTime.TryParse(lat, out DateTime ldt)) opDb.LateArrival = ldt;
+                }
+                else
+                {
+                    opDb.LateArrival = null;
+                }
+                opDb.ContenedorIngresado = Request.Form.TryGetValue("ContenedorIngresado", out var cIng) && cIng == "true";
+
+                opDb.NumeroContenedor = string.IsNullOrWhiteSpace(Operacione.NumeroContenedor) ? null : Operacione.NumeroContenedor;
+                opDb.SelloNaviera = string.IsNullOrWhiteSpace(Operacione.SelloNaviera) ? null : Operacione.SelloNaviera;
+                opDb.IdTipoCarga = Operacione.IdTipoCarga;
+                opDb.TipoContenedor = Operacione.TipoContenedor;
+                opDb.Commodity = Operacione.Commodity;
+
+                opDb.CondicionReefer = Request.Form.TryGetValue("CondicionReefer", out var cr) ? cr.ToString() : null;
+                opDb.MarcaAc = Request.Form.TryGetValue("MarcaAc", out var ma) ? ma.ToString() : null;
+                opDb.Atmosfera = Request.Form.TryGetValue("TipoAtmosfera", out var ta) ? ta.ToString() : null;
+
+                if (Request.Form.TryGetValue("TempSeteada", out var ts) && double.TryParse(ts, out double t)) opDb.Temperatura = t; else opDb.Temperatura = null;
+                if (Request.Form.TryGetValue("Ventilacion", out var v) && double.TryParse(v, out double ve)) opDb.Ventilacion = ve; else opDb.Ventilacion = null;
+                if (Request.Form.TryGetValue("Humedad", out var h) && double.TryParse(h, out double hu)) opDb.Humedad = hu; else opDb.Humedad = null;
+                if (Request.Form.TryGetValue("NivelO2", out var o2) && double.TryParse(o2, out double o2v)) opDb.O2 = o2v; else opDb.O2 = null;
+                if (Request.Form.TryGetValue("NivelCO2", out var co2) && double.TryParse(co2, out double co2v)) opDb.Co2 = co2v; else opDb.Co2 = null;
+
+                opDb.FechaModificacion = DateTime.Now;
+                opDb.UsuarioModificador = nombreUsuario;
+
+                string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "evidencias");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                var filePrincipal = Request.Form.Files.GetFile("EvidenciaPrincipal");
+                if (filePrincipal != null && filePrincipal.Length > 0)
+                {
+                    string uniqueName = $"{opDb.Id}_Main_{DateTime.Now.Ticks}_{Path.GetFileName(filePrincipal.FileName).Replace(" ", "_")}";
+                    using (var stream = new FileStream(Path.Combine(uploadsFolder, uniqueName), FileMode.Create)) { await filePrincipal.CopyToAsync(stream); }
+                    opDb.EvidenciaContenedor = $"/uploads/evidencias/{uniqueName}";
+                }
+
+                var fileLar = Request.Form.Files.GetFile("EvidenciaLar");
+                if (fileLar != null && fileLar.Length > 0)
+                {
+                    string uniqueLar = $"{opDb.Id}_LAR_{DateTime.Now.Ticks}_{Path.GetFileName(fileLar.FileName).Replace(" ", "_")}";
+                    using (var stream = new FileStream(Path.Combine(uploadsFolder, uniqueLar), FileMode.Create)) { await fileLar.CopyToAsync(stream); }
+                    opDb.EvidenciaLar = $"/uploads/evidencias/{uniqueLar}";
+                }
+
+                int[] serviciosTerrestres = { 1, 2, 4, 6, 8, 9, 11, 13 };
+                var terrDb = opDb.OperacionesTerrestres.FirstOrDefault();
+                if (serviciosTerrestres.Contains(serv))
+                {
+                    if (terrDb == null) { terrDb = new OperacionesTerrestre { FechaCreacion = DateTime.Now, UsuarioCreador = nombreUsuario, Activo = true }; opDb.OperacionesTerrestres.Add(terrDb); }
+
+                    terrDb.EmpresaTransporte = Request.Form.TryGetValue("TransEmpresa", out var te) ? te.ToString() : null;
+                    terrDb.RutTransporte = Request.Form.TryGetValue("TransRut", out var tr) ? tr.ToString() : null;
+                    terrDb.CorreoTransporte = Request.Form.TryGetValue("TransCorreo", out var tc) ? tc.ToString() : null;
+                    terrDb.NombreConductor = Request.Form.TryGetValue("TransConductor", out var nc) ? nc.ToString() : null;
+                    terrDb.TelefonoConductor = Request.Form.TryGetValue("TransTelefono", out var tt) ? tt.ToString() : null;
+                    terrDb.Patente = Request.Form.TryGetValue("TransPatente", out var tp) ? tp.ToString() : null;
+                    terrDb.TipoUnidadTransporte = Request.Form.TryGetValue("TransTipoUnidad", out var tu) ? tu.ToString() : null;
+                    terrDb.DepositoRetiro = Request.Form.TryGetValue("TransDeposito", out var dr) ? dr.ToString() : null;
+                    terrDb.PlantaCarga = Request.Form.TryGetValue("TransPlanta", out var pc) ? pc.ToString() : null;
+                    terrDb.ZonaEmbarque = Request.Form.TryGetValue("TransZonaEmbarque", out var ze) ? ze.ToString() : null;
+                    terrDb.LinkTracking = Request.Form.TryGetValue("TransTracking", out var tk) ? tk.ToString() : null;
+
+                    if (Request.Form.TryGetValue("TransFechaCarga", out var tfc) && DateTime.TryParse(tfc, out DateTime dt)) terrDb.FechaCarga = dt; else terrDb.FechaCarga = null;
+
+                    if (Request.Form.TryGetValue("TransLlegadaPlanta", out var llP) && DateTime.TryParse(llP, out DateTime dllP)) terrDb.LlegadaPlanta = dllP; else terrDb.LlegadaPlanta = null;
+                    if (Request.Form.TryGetValue("TransSalidaPlanta", out var sP) && DateTime.TryParse(sP, out DateTime dsP)) terrDb.SalidaPlanta = dsP; else terrDb.SalidaPlanta = null;
+                    if (Request.Form.TryGetValue("TransLlegadaPuerto", out var llPu) && DateTime.TryParse(llPu, out DateTime dllPu)) terrDb.LlegadaPuerto = dllPu; else terrDb.LlegadaPuerto = null;
+                    if (Request.Form.TryGetValue("TransSalidaPuerto", out var sPu) && DateTime.TryParse(sPu, out DateTime dsPu)) terrDb.SalidaPuerto = dsPu; else terrDb.SalidaPuerto = null;
+
+                    terrDb.SorteoEscaner = Request.Form.TryGetValue("SorteoEscaner", out var scan) && scan == "true";
+                }
+                else if (terrDb != null) { _context.OperacionesTerrestres.Remove(terrDb); }
+
+                int[] serviciosDocumentales = { 1, 3, 4, 7, 8, 10, 11, 14 };
+                var docDb = opDb.OperacionesDocumentales.FirstOrDefault();
+                if (serviciosDocumentales.Contains(serv))
+                {
+                    if (docDb == null) { docDb = new OperacionesDocumentale { FechaCreacion = DateTime.Now, UsuarioCreador = nombreUsuario, Activo = true }; opDb.OperacionesDocumentales.Add(docDb); }
+
+                    docDb.AgenciaAduana = Request.Form.TryGetValue("DocAgencia", out var da) ? da.ToString() : null;
+                    docDb.DusDin = Request.Form.TryGetValue("DocDus", out var dd) ? dd.ToString() : null;
+                    docDb.EstadoDocumental = Request.Form.TryGetValue("DocEstado", out var de) ? de.ToString() : null;
+
+                    docDb.MatrizPresentada = Request.Form.TryGetValue("MatrizPresentada", out var mp) && mp == "true";
+                    docDb.ExtensionDocumental = Request.Form.TryGetValue("ExtensionDocumental", out var extd) && extd == "true";
+
+                    // GUÍA PARA VISADO (SPRINT A)
+                    docDb.GuiaVisado = Request.Form.TryGetValue("GuiaVisado", out var gv) && gv == "true";
+
+                    var fileMatriz = Request.Form.Files.GetFile("EvidenciaMatriz");
+                    if (fileMatriz != null && fileMatriz.Length > 0)
+                    {
+                        string uNameMatriz = $"{opDb.Id}_Matriz_{DateTime.Now.Ticks}_{Path.GetFileName(fileMatriz.FileName).Replace(" ", "_")}";
+                        using (var stream = new FileStream(Path.Combine(uploadsFolder, uNameMatriz), FileMode.Create)) { await fileMatriz.CopyToAsync(stream); }
+                        docDb.EvidenciaMatriz = $"/uploads/evidencias/{uNameMatriz}";
+                    }
+                }
+                else if (docDb != null) { _context.OperacionesDocumentales.Remove(docDb); }
+
+                if (opDb.Unidadestecnicas.Any())
+                {
+                    _context.Unidadestecnicas.RemoveRange(opDb.Unidadestecnicas);
+                    await _context.SaveChangesAsync();
+                }
+
+                for (int i = 2; i <= 20; i++)
+                {
+                    if (Request.Form.TryGetValue($"ContenedoresExtra[{i}].IdTipoCarga", out var tcVal) && !string.IsNullOrWhiteSpace(tcVal))
+                    {
+                        var nuevaU = new Unidadestecnica
+                        {
+                            IdTipoCarga = int.TryParse(tcVal, out int tci) ? tci : 1,
+                            TipoContenedor = Request.Form.TryGetValue($"ContenedoresExtra[{i}].TipoContenedor", out var tcon) ? tcon.ToString() : null,
+                            Commodity = Request.Form.TryGetValue($"ContenedoresExtra[{i}].Commodity", out var comm) ? comm.ToString() : null,
+                            CondicionReefer = Request.Form.TryGetValue($"ContenedoresExtra[{i}].CondicionReefer", out var crExt) ? crExt.ToString() : null,
+                            TipoAtmosfera = Request.Form.TryGetValue($"ContenedoresExtra[{i}].TipoAtmosfera", out var taExt) ? taExt.ToString() : null,
+                            MarcaAc = Request.Form.TryGetValue($"ContenedoresExtra[{i}].MarcaAc", out var maExt) ? maExt.ToString() : null,
+                            NroContenedor = Request.Form.TryGetValue($"ContenedoresExtra[{i}].NumeroContenedor", out var numExt) && !string.IsNullOrWhiteSpace(numExt) ? numExt.ToString() : null,
+                            SelloNaviera = Request.Form.TryGetValue($"ContenedoresExtra[{i}].SelloNaviera", out var selExt) && !string.IsNullOrWhiteSpace(selExt) ? selExt.ToString() : null,
+                            FechaCreacion = DateTime.Now,
+                            UsuarioCreador = nombreUsuario
+                        };
+
+                        if (Request.Form.TryGetValue($"ContenedoresExtra[{i}].TempSeteada", out var tExt) && decimal.TryParse(tExt, out decimal tempExt)) nuevaU.Temperatura = tempExt;
+                        if (Request.Form.TryGetValue($"ContenedoresExtra[{i}].Humedad", out var hExt) && int.TryParse(hExt, out int humExt)) nuevaU.Humedad = humExt;
+                        if (Request.Form.TryGetValue($"ContenedoresExtra[{i}].Ventilacion", out var vExt) && int.TryParse(vExt, out int ventExt)) nuevaU.Ventilacion = ventExt;
+                        if (Request.Form.TryGetValue($"ContenedoresExtra[{i}].NivelO2", out var o2ExtVal) && decimal.TryParse(o2ExtVal, out decimal o2Ext)) nuevaU.NivelO2 = o2Ext;
+                        if (Request.Form.TryGetValue($"ContenedoresExtra[{i}].NivelCO2", out var co2ExtVal) && decimal.TryParse(co2ExtVal, out decimal co2Ext)) nuevaU.NivelCo2 = co2Ext;
+
+                        var fileExtra = Request.Form.Files.GetFile($"EvidenciaExtra_{i}");
+                        if (fileExtra != null && fileExtra.Length > 0)
+                        {
+                            string uNameEx = $"{opDb.Id}_Ex{i}_{DateTime.Now.Ticks}_{Path.GetFileName(fileExtra.FileName).Replace(" ", "_")}";
+                            using (var s = new FileStream(Path.Combine(uploadsFolder, uNameEx), FileMode.Create)) { await fileExtra.CopyToAsync(s); }
+                            nuevaU.EvidenciaContenedor = $"/uploads/evidencias/{uNameEx}";
+                        }
+                        else
+                        {
+                            if (Request.Form.TryGetValue($"ContenedoresExtra[{i}].EvidenciaAntigua", out var evAntigua) && !string.IsNullOrWhiteSpace(evAntigua))
+                            {
+                                nuevaU.EvidenciaContenedor = evAntigua.ToString();
+                            }
+                        }
+                        opDb.Unidadestecnicas.Add(nuevaU);
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage("./Index");
+        }
+
+        // ====================================================================
+        // FASE 4: REPORTAR EXTRA COSTO (Operaciones solo reporta, no cobra)
+        // ====================================================================
+        public async Task<IActionResult> OnPostAddCostoAsync(int id)
+        {
+            string nombreUsuario = User.Identity?.Name ?? "Sistema";
+
+            var tipo = Request.Form["NuevoCosto.TipoCosto"];
+            var motivo = Request.Form["NuevoCosto.Motivo"];
+            // ELIMINADO: MONTO Y MONEDA, ESO LO PONE FINANZAS DESPUÉS
+            var file = Request.Form.Files.GetFile("NuevoCosto.Evidencia");
+
+            if (!string.IsNullOrEmpty(tipo) && file != null && file.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "evidencias");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                string uName = $"{id}_Costo_{DateTime.Now.Ticks}_{Path.GetFileName(file.FileName).Replace(" ", "_")}";
+                using (var s = new FileStream(Path.Combine(uploadsFolder, uName), FileMode.Create)) { await file.CopyToAsync(s); }
+
+                var costo = new ExtracostosOperacion
+                {
+                    IdOperacion = id,
+                    TipoCosto = tipo,
+                    Motivo = motivo,
+                    Moneda = "USD", // Valor temporal, Finanzas lo editará
+                    Monto = 0,      // Valor $0 hasta que Finanzas evalúe
+                    Evidencia = $"/uploads/evidencias/{uName}",
+                    FechaCreacion = DateTime.Now,
+                    UsuarioCreador = nombreUsuario
+                };
+                _context.ExtracostosOperacions.Add(costo);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage(new { id = id });
+        }
+
+        public async Task<IActionResult> OnPostDeleteCostoAsync(int idCosto, int idOp)
+        {
+            var costo = await _context.ExtracostosOperacions.FindAsync(idCosto);
+            if (costo != null)
+            {
+                _context.ExtracostosOperacions.Remove(costo);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage(new { id = idOp });
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\Index.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc.RazorPages;
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class IndexModel : PageModel { public void OnGet() { } }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\Maritimo.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class MaritimoModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public MaritimoModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public IList<Operacione> Operaciones { get; set; } = default!;
+
+        [BindProperty(SupportsGet = true)]
+        public string? SearchString { get; set; }
+
+        public async Task OnGetAsync()
+        {
+            int[] serviciosMaritimos = { 1, 2, 3, 5, 8, 9, 10, 12 };
+
+            var query = _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.IdNavieraNavigation)
+                .Include(o => o.IdPuertoOrigenNavigation)
+                .Include(o => o.IdPuertoDestinoNavigation)
+                .Include(o => o.Unidadestecnicas)
+                .Where(o => !o.IsDeleted && o.IdTipoServicio.HasValue && serviciosMaritimos.Contains(o.IdTipoServicio.Value))
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(SearchString))
+            {
+                string s = SearchString.ToLower();
+                query = query.Where(o =>
+                    (o.NumeroBooking != null && o.NumeroBooking.ToLower().Contains(s)) ||
+                    (o.Nave != null && o.Nave.ToLower().Contains(s)) ||
+                    (o.IdClienteNavigation != null && o.IdClienteNavigation.RazonSocial != null && o.IdClienteNavigation.RazonSocial.ToLower().Contains(s))
+                );
+            }
+
+            Operaciones = await query.OrderByDescending(o => o.Id).ToListAsync();
+
+            // Listas para los selectores del Modal Rápido
+            ViewData["IdNaviera"] = new SelectList(await _context.Navieras.Where(n => n.Activo == 1).ToListAsync(), "Id", "NombreNaviera");
+            ViewData["IdPuerto"] = new SelectList(await _context.Puertos.Where(p => p.Activo == 1).ToListAsync(), "Id", "NombrePuerto");
+        }
+
+        // HANDLER PARA GUARDAR LA EDICIÓN DESDE EL MODAL RÁPIDO
+        public async Task<IActionResult> OnPostUpdateMaritimoAsync(int id)
+        {
+            var opDb = await _context.Operaciones
+                .Include(o => o.Unidadestecnicas)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (opDb != null)
+            {
+                if (int.TryParse(Request.Form["ModNaviera"], out int idNav)) opDb.IdNaviera = idNav;
+                if (int.TryParse(Request.Form["ModPol"], out int idPol)) opDb.IdPuertoOrigen = idPol;
+                if (int.TryParse(Request.Form["ModPod"], out int idPod)) opDb.IdPuertoDestino = idPod;
+
+                opDb.TerminalPortuario = Request.Form["ModTerminal"];
+                opDb.Nave = Request.Form["ModNave"];
+                opDb.Transbordo = Request.Form["ModTransbordo"];
+                opDb.EstadoLar = Request.Form["ModEstadoLar"];
+
+                opDb.NumeroContenedor = Request.Form["ModNumeroContenedor"];
+                if (string.IsNullOrWhiteSpace(opDb.NumeroContenedor)) opDb.NumeroContenedor = null;
+
+                opDb.SelloNaviera = Request.Form["ModSello"];
+                if (string.IsNullOrWhiteSpace(opDb.SelloNaviera)) opDb.SelloNaviera = null;
+
+                if (DateTime.TryParse(Request.Form["ModEtd"], out DateTime etd)) opDb.EtdPol = etd; else opDb.EtdPol = null;
+                if (DateTime.TryParse(Request.Form["ModEta"], out DateTime eta)) opDb.EtaPod = eta; else opDb.EtaPod = null;
+                if (DateTime.TryParse(Request.Form["ModStacking"], out DateTime stk)) opDb.FechaStacking = stk; else opDb.FechaStacking = null;
+                if (DateTime.TryParse(Request.Form["ModCutoff"], out DateTime cut)) opDb.CutOffMatriz = cut; else opDb.CutOffMatriz = null;
+                if (DateTime.TryParse(Request.Form["ModLateArrival"], out DateTime lar)) opDb.LateArrival = lar; else opDb.LateArrival = null;
+
+                opDb.ContenedorIngresado = Request.Form.TryGetValue("ModIngresado", out var cIng) && cIng == "true";
+
+                // MAGIA: ACTUALIZAR TODOS LOS CONTENEDORES EXTRAS DESDE EL MODAL
+                if (opDb.Unidadestecnicas != null)
+                {
+                    foreach (var u in opDb.Unidadestecnicas)
+                    {
+                        if (Request.Form.TryGetValue($"ModExtraCntr_{u.Id}", out var cVal))
+                            u.NroContenedor = string.IsNullOrWhiteSpace(cVal) ? null : cVal.ToString();
+
+                        if (Request.Form.TryGetValue($"ModExtraSello_{u.Id}", out var sVal))
+                            u.SelloNaviera = string.IsNullOrWhiteSpace(sVal) ? null : sVal.ToString();
+                    }
+                }
+
+                opDb.FechaModificacion = DateTime.Now;
+                opDb.UsuarioModificador = User.Identity?.Name ?? "Sistema";
+
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage("./Maritimo");
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int? id)
+        {
+            if (id == null) return NotFound();
+            var operacion = await _context.Operaciones.FindAsync(id);
+            if (operacion != null)
+            {
+                operacion.IsDeleted = true;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage("./Maritimo");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\OrdenCompraPdf.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class OrdenCompraPdfModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public OrdenCompraPdfModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public Operacione Operacion { get; set; } = default!;
+        public OperacionesTerrestre Transporte { get; set; } = default!;
+
+        // Variables financieras (Puedes conectarlas a tu tabla FinanzasOperacion luego)
+        public decimal CostoServicio { get; set; } = 605000m;
+        public decimal Iva { get; set; } = 114950m;
+        public decimal Total { get; set; } = 719950m;
+
+        public async Task<IActionResult> OnGetAsync(int? id)
+        {
+            if (id == null) return NotFound();
+
+            Operacion = await _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.IdPuertoOrigenNavigation)
+                .Include(o => o.IdPuertoDestinoNavigation)
+                .Include(o => o.OperacionesTerrestres)
+                .Include(o => o.Unidadestecnicas)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (Operacion == null) return NotFound();
+
+            Transporte = Operacion.OperacionesTerrestres?.FirstOrDefault() ?? new OperacionesTerrestre();
+
+            return Page();
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\ProformaPdf.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Threading.Tasks;
+using System.Linq;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class ProformaPdfModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public ProformaPdfModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public Operacione Operacion { get; set; } = default!;
+        public Finanzasoperacion Finanzas { get; set; } = default!;
+        public decimal TotalVentaUSD { get; set; }
+        public decimal TotalVentaCLP { get; set; }
+
+        public async Task<IActionResult> OnGetAsync(int id)
+        {
+            Operacion = await _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.ExtracostosOperacions)
+                .Include(o => o.Unidadestecnicas)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (Operacion == null) return NotFound();
+
+            Finanzas = await _context.Finanzasoperacions.FirstOrDefaultAsync(f => f.IdOperacion == id);
+
+            // CÁLCULO DE TOTALES
+            decimal fleteVenta = Finanzas != null ?
+                ((Finanzas.VentaMaritimo ?? 0) + (Finanzas.VentaTerrestre ?? 0) + (Finanzas.VentaDocumental ?? 0)) : 0;
+
+            decimal extrasUSD = Operacion.ExtracostosOperacions.Where(e => e.Moneda == "USD").Sum(e => e.Monto);
+            decimal extrasCLP = Operacion.ExtracostosOperacions.Where(e => e.Moneda == "CLP").Sum(e => e.Monto);
+
+            TotalVentaUSD = fleteVenta + extrasUSD;
+            TotalVentaCLP = extrasCLP;
+
+            return Page();
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\ReservaPdf.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Threading.Tasks;
+using System.Linq;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class ReservaPdfModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public ReservaPdfModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public Operacione Operacion { get; set; } = default!;
+        public OperacionesTerrestre Transporte { get; set; } = default!;
+
+        public async Task<IActionResult> OnGetAsync(int? id)
+        {
+            if (id == null) return NotFound();
+
+            Operacion = await _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.IdNavieraNavigation)
+                .Include(o => o.IdPuertoOrigenNavigation)
+                .Include(o => o.IdPuertoDestinoNavigation)
+                .Include(o => o.OperacionesTerrestres)
+                .Include(o => o.Unidadestecnicas)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (Operacion == null) return NotFound();
+
+            Transporte = Operacion.OperacionesTerrestres?.FirstOrDefault() ?? new OperacionesTerrestre();
+
+            return Page();
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\SolicitudProveedor.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Globalization;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class SolicitudProveedorModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public SolicitudProveedorModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public Operacione Operacion { get; set; } = default!;
+
+        public string CorreoTransporte { get; set; } = "";
+        public string AsuntoTransporte { get; set; } = "";
+        public string TextoTransporte { get; set; } = "";
+
+        public string CorreoAduana { get; set; } = "";
+        public string AsuntoAduana { get; set; } = "";
+        public string TextoDoc { get; set; } = "";
+
+        public async Task<IActionResult> OnGetAsync(int? id)
+        {
+            if (id == null) return NotFound();
+
+            Operacion = await _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.IdNavieraNavigation)
+                .Include(o => o.IdPuertoOrigenNavigation)
+                .Include(o => o.IdPuertoDestinoNavigation)
+                .Include(o => o.OperacionesTerrestres)
+                .Include(o => o.OperacionesDocumentales)
+                .Include(o => o.Unidadestecnicas)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (Operacion == null) return NotFound();
+
+            var terr = Operacion.OperacionesTerrestres?.FirstOrDefault();
+            var doc = Operacion.OperacionesDocumentales?.FirstOrDefault();
+
+            // Calculo de Cantidad de Contenedores y Tipo
+            int qty = 1 + (Operacion.Unidadestecnicas?.Count ?? 0);
+            string tipoCargaStr = Operacion.IdTipoCarga == 2 ? "REEFER" : "DRY";
+            string unidad = Operacion.TipoContenedor ?? "40'HC";
+            string containerStr = $"{qty}X{unidad} {tipoCargaStr}".ToUpper();
+
+            // Configuración cultural para fechas en español
+            var culture = new CultureInfo("es-ES");
+            string fechaCargaStr = "TBA";
+            if (terr?.FechaCarga != null)
+            {
+                fechaCargaStr = terr.FechaCarga.Value.ToString("dddd dd/MM – HH:mm 'Hrs.'", culture).ToUpper();
+            }
+
+            string nombreCliente = (!string.IsNullOrWhiteSpace(Operacion.IdClienteNavigation?.NombreCliente)
+                ? Operacion.IdClienteNavigation.NombreCliente
+                : Operacion.IdClienteNavigation?.RazonSocial ?? "CLIENTE").ToUpper();
+
+            string empresaTrans = (terr?.EmpresaTransporte ?? "PROVEEDOR").ToUpper();
+            string naveStr = (string.IsNullOrWhiteSpace(Operacion.Nave) ? "TBA" : Operacion.Nave).ToUpper();
+            string naviera = (Operacion.IdNavieraNavigation?.NombreNaviera ?? "TBA").ToUpper();
+            string ptoOrigen = (Operacion.IdPuertoOrigenNavigation?.NombrePuerto ?? "TBA").ToUpper();
+
+            // ==========================================
+            // PREPARACIÓN: CORREO TRANSPORTE
+            // ==========================================
+            CorreoTransporte = terr?.CorreoTransporte ?? "";
+
+            // ASUNTO EXACTO AL EJEMPLO
+            AsuntoTransporte = $"SOLICITUD SERVICIO TRANSPORTE {empresaTrans}***** MN {naveStr} // BOOKING: {Operacion.NumeroBooking} ({containerStr}) // {nombreCliente} // {naviera} // ATILSON CARGO SPA";
+
+            // CUERPO EXACTO AL EJEMPLO
+            TextoTransporte = "Estimado/a equipo, buenos días:\n\n" +
+                              "Junto con saludar.\n\n" +
+                              "Según lo conversado, favor considerar el siguiente servicio, notar detalle:\n\n" +
+                              $"BOOKING: {Operacion.NumeroBooking}\n" +
+                              $"T/UNIDAD: {containerStr}\n" +
+                              $"T/CARGA: {(Operacion.Commodity ?? "NO ESPECIFICADA").ToUpper()}\n" +
+                              $"RETIRO VACIO: {(terr?.DepositoRetiro ?? "TBA").ToUpper()}\n" +
+                              $"ENTREGA FULL: {ptoOrigen}\n" +
+                              "PAGO: 15 DÍAS UNA VEZ EMITIDA LA FACTURA POR EL SERVICIO FINALIZADO.\n" +
+                              "TARIFA: TARIFA ACORDADA\n\n";
+
+            // Fechas de presentación (Bucle por cantidad de contenedores)
+            TextoTransporte += $"PRESENTACION EN PLANTA: {fechaCargaStr} ({Operacion.NumeroBooking})\n";
+            if (Operacion.Unidadestecnicas != null && Operacion.Unidadestecnicas.Any())
+            {
+                foreach (var u in Operacion.Unidadestecnicas)
+                {
+                    TextoTransporte += $"PRESENTACION EN PLANTA: {fechaCargaStr} ({Operacion.NumeroBooking})\n";
+                }
+            }
+
+            TextoTransporte += $"\n{(terr?.PlantaCarga ?? "PLANTA TBA").ToUpper()}\n" +
+                               $"DIRECCION PLANTA: {(terr?.ZonaEmbarque ?? "TBA").ToUpper()}\n" +
+                               $"ENLACE: {(string.IsNullOrWhiteSpace(terr?.LinkTracking) ? "Pendiente" : terr.LinkTracking)}\n\n" +
+                               "Quedamos atentos a recepción de servicio.\n" +
+                               "Aguardo asignaciones una vez disponibles.\n" +
+                               "Desde ya, muchas gracias!\n\n" +
+                               "--\n" +
+                               "Saludos Cordiales / Best Regards\n\n" +
+                               "Operaciones Atilson\n" +
+                               "ATILSON CARGO SPA\n" +
+                               "___________________________________________________________\n" +
+                               "Edificio Mar del Sur, Calle Blanco Nº 1623 Of. 1104 Valparaíso, Chile.\n" +
+                               "(+56) 9 89012691\n" +
+                               "operaciones@atilson.com\n" +
+                               "www.atilson.com";
+
+            // ==========================================
+            // PREPARACIÓN: CORREO ADUANA
+            // ==========================================
+            CorreoAduana = "";
+            AsuntoAduana = $"SOLICITUD TRAMITACIÓN DUS // BOOKING: {Operacion.NumeroBooking} // {nombreCliente} // ATILSON CARGO SPA";
+
+            TextoDoc = "Estimado equipo de Aduanas, buenos días:\n\n" +
+                       "Junto con saludar, favor considerar la siguiente tramitación documental para inicio de gestión:\n\n" +
+                       $"BOOKING: {Operacion.NumeroBooking}\n" +
+                       $"EXPORTADOR: {nombreCliente}\n" +
+                       $"POL (ORIGEN): {ptoOrigen}\n" +
+                       $"POD (DESTINO): {(Operacion.IdPuertoDestinoNavigation?.NombrePuerto ?? "TBA").ToUpper()}\n" +
+                       $"NAVE: {naveStr} // NAVIERA: {naviera}\n" +
+                       $"ETD ESTIMADO: {(Operacion.EtdPol?.ToString("dd/MM/yyyy") ?? "TBA")}\n\n" +
+                       "REQUERIMIENTOS:\n" +
+                       "- Favor generar DUS en base a matriz enviada por el cliente.\n" +
+                       "- Compartir matriz de aprobación a la brevedad posible.\n\n" +
+                       "Quedamos atentos a sus comentarios.\n" +
+                       "Desde ya, muchas gracias!\n\n" +
+                       "--\n" +
+                       "Saludos Cordiales / Best Regards\n\n" +
+                       "Operaciones Atilson\n" +
+                       "ATILSON CARGO SPA\n" +
+                       "___________________________________________________________\n" +
+                       "Edificio Mar del Sur, Calle Blanco Nº 1623 Of. 1104 Valparaíso, Chile.\n" +
+                       "www.atilson.com";
+
+            return Page();
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\Transporte.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class TransporteModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public TransporteModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public IList<Operacione> Operaciones { get; set; } = default!;
+
+        [BindProperty(SupportsGet = true)]
+        public string? SearchString { get; set; }
+
+        public async Task OnGetAsync()
+        {
+            int[] serviciosTerrestres = { 1, 2, 4, 6, 8, 9, 11, 13 };
+
+            // Traemos las operaciones terrestres y cruzamos con las Unidades Técnicas para los contenedores
+            var query = _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.IdNavieraNavigation)
+                .Include(o => o.IdPuertoOrigenNavigation)
+                .Include(o => o.IdPuertoDestinoNavigation)
+                .Include(o => o.OperacionesTerrestres)
+                .Include(o => o.Unidadestecnicas)
+                .Where(o => !o.IsDeleted && o.IdTipoServicio.HasValue && serviciosTerrestres.Contains(o.IdTipoServicio.Value))
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(SearchString))
+            {
+                string s = SearchString.ToLower();
+                query = query.Where(o =>
+                    o.NumeroBooking.ToLower().Contains(s) ||
+                    o.OperacionesTerrestres.Any(t => t.EmpresaTransporte.ToLower().Contains(s)) ||
+                    o.IdClienteNavigation.RazonSocial.ToLower().Contains(s)
+                );
+            }
+
+            Operaciones = await query.OrderByDescending(o => o.Id).ToListAsync();
+        }
+
+        // HANDLER PARA GUARDAR LA EDICIÓN DESDE EL MODAL RÁPIDO TERRESTRE
+        public async Task<IActionResult> OnPostUpdateTransporteAsync(int id)
+        {
+            var opDb = await _context.Operaciones
+                .Include(o => o.OperacionesTerrestres)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (opDb != null)
+            {
+                var terrDb = opDb.OperacionesTerrestres.FirstOrDefault();
+                if (terrDb == null)
+                {
+                    terrDb = new OperacionesTerrestre
+                    {
+                        FechaCreacion = DateTime.Now,
+                        UsuarioCreador = User.Identity?.Name ?? "Sistema",
+                        Activo = true
+                    };
+                    opDb.OperacionesTerrestres.Add(terrDb);
+                }
+
+                terrDb.EmpresaTransporte = Request.Form["ModEmpresa"];
+                terrDb.RutTransporte = Request.Form["ModRut"];
+                terrDb.CorreoTransporte = Request.Form["ModCorreo"];
+                terrDb.NombreConductor = Request.Form["ModConductor"];
+                terrDb.TelefonoConductor = Request.Form["ModTelefono"];
+                terrDb.Patente = Request.Form["ModPatente"];
+                terrDb.TipoUnidadTransporte = Request.Form["ModTipoUnidad"];
+                terrDb.DepositoRetiro = Request.Form["ModDeposito"];
+                terrDb.PlantaCarga = Request.Form["ModPlanta"];
+                terrDb.ZonaEmbarque = Request.Form["ModZona"];
+                terrDb.LinkTracking = Request.Form["ModTracking"];
+
+                if (DateTime.TryParse(Request.Form["ModFechaCarga"], out DateTime dtCarga)) terrDb.FechaCarga = dtCarga; else terrDb.FechaCarga = null;
+                if (DateTime.TryParse(Request.Form["ModLlegadaPlanta"], out DateTime dtInPlanta)) terrDb.LlegadaPlanta = dtInPlanta; else terrDb.LlegadaPlanta = null;
+                if (DateTime.TryParse(Request.Form["ModSalidaPlanta"], out DateTime dtOutPlanta)) terrDb.SalidaPlanta = dtOutPlanta; else terrDb.SalidaPlanta = null;
+                if (DateTime.TryParse(Request.Form["ModLlegadaPuerto"], out DateTime dtInPuerto)) terrDb.LlegadaPuerto = dtInPuerto; else terrDb.LlegadaPuerto = null;
+                if (DateTime.TryParse(Request.Form["ModSalidaPuerto"], out DateTime dtOutPuerto)) terrDb.SalidaPuerto = dtOutPuerto; else terrDb.SalidaPuerto = null;
+
+                terrDb.SorteoEscaner = Request.Form.TryGetValue("ModEscaner", out var eScan) && eScan == "true";
+
+                opDb.FechaModificacion = DateTime.Now;
+                opDb.UsuarioModificador = User.Identity?.Name ?? "Sistema";
+
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage("./Transporte");
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int? id)
+        {
+            if (id == null) return NotFound();
+            var operacion = await _context.Operaciones.FindAsync(id);
+            if (operacion != null) { operacion.IsDeleted = true; await _context.SaveChangesAsync(); }
+            return RedirectToPage("./Transporte");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Operaciones\_PartialDetalleOperacion.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace AtilsonCargoSpa.Pages.Operaciones
+{
+    public class _PartialDetalleOperacionModel : PageModel
+    {
+        public void OnGet()
+        {
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Puertos\Create.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using AtilsonCargoSpa.Models;
+
+namespace AtilsonCargoSpa.Pages.Puertos
+{
+    public class CreateModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public CreateModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        [BindProperty]
+        public Puerto Puerto { get; set; } = default!;
+
+        public IActionResult OnGet()
+        {
+            // Inicializamos valores por defecto para que nazca "Activo"
+            Puerto = new Puerto { Activo = 1 };
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid) return Page();
+
+            _context.Puertos.Add(Puerto);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("./Index");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Puertos\Edit.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+
+namespace AtilsonCargoSpa.Pages.Puertos
+{
+    public class EditModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public EditModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        [BindProperty]
+        public Puerto Puerto { get; set; } = default!;
+
+        public async Task<IActionResult> OnGetAsync(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var puerto = await _context.Puertos.FirstOrDefaultAsync(m => m.Id == id);
+            if (puerto == null) return NotFound();
+
+            Puerto = puerto;
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid) return Page();
+
+            _context.Attach(Puerto).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Puertos.Any(e => e.Id == Puerto.Id)) return NotFound();
+                else throw;
+            }
+
+            return RedirectToPage("./Index");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Puertos\Index.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+using AtilsonCargoSpa.Helpers; // Asegúrate de tener la clase PaginatedList en esta carpeta
+
+namespace AtilsonCargoSpa.Pages.Puertos
+{
+    public class IndexModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public IndexModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        public PaginatedList<Puerto> Puertos { get; set; } = default!;
+
+        [BindProperty(SupportsGet = true)]
+        public string? SearchString { get; set; }
+
+        public async Task OnGetAsync(int? pageIndex)
+        {
+            // Consulta base: solo puertos activos
+            var query = _context.Puertos.Where(p => p.Activo == 1);
+
+            // Filtro de búsqueda en tiempo real (Puerto o Terminal)
+            if (!string.IsNullOrEmpty(SearchString))
+            {
+                query = query.Where(s => s.NombrePuerto.Contains(SearchString) ||
+                                        (s.TerminalPortuario != null && s.TerminalPortuario.Contains(SearchString)));
+            }
+
+            // Ordenar alfabéticamente
+            query = query.OrderBy(p => p.NombrePuerto);
+
+            // Configuración de paginación (15 por página)
+            int pageSize = 15;
+            Puertos = await PaginatedList<Puerto>.CreateAsync(query.AsNoTracking(), pageIndex ?? 1, pageSize);
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        {
+            var puerto = await _context.Puertos.FindAsync(id);
+
+            if (puerto != null)
+            {
+                // Borrado Lógico: Cambiamos estado en lugar de eliminar la fila
+                puerto.Activo = 0;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToPage("./Index");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Dashboard.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using AtilsonCargoSpa.Models;
+
+namespace AtilsonCargoSpa.Pages
+{
+    public class DashboardModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public DashboardModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        // Propiedades para la vista
+        public int TotalBookings { get; set; }
+        public int TotalClientes { get; set; }
+        public int CantidadCriticos { get; set; }
+        public List<Operacione> UltimasOperaciones { get; set; } = new();
+
+        public async Task OnGetAsync()
+        {
+            // 1. Contar operaciones activas
+            TotalBookings = await _context.Operaciones.CountAsync(o => o.Activo == 1 || o.Activo == null);
+
+            // 2. Contar total de clientes
+            TotalClientes = await _context.Clientes.CountAsync();
+
+            // 3. Calcular Bookings Críticos (Stacking en las próximas 48 horas)
+            DateTime limite = DateTime.Now.AddDays(2);
+            CantidadCriticos = await _context.Operaciones
+                .CountAsync(o => o.FechaStacking >= DateTime.Now && o.FechaStacking <= limite);
+
+            // 4. Traer las últimas 5 operaciones con sus nombres de cliente y puerto
+            UltimasOperaciones = await _context.Operaciones
+                .Include(o => o.IdClienteNavigation)
+                .Include(o => o.IdPuertoDestinoNavigation)
+                .OrderByDescending(o => o.Id)
+                .Take(5)
+                .ToListAsync();
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Error.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Diagnostics;
+
+namespace AtilsonCargoSpa.Pages
+{
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    [IgnoreAntiforgeryToken]
+    public class ErrorModel : PageModel
+    {
+        public string? RequestId { get; set; }
+
+        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+        private readonly ILogger<ErrorModel> _logger;
+
+        public ErrorModel(ILogger<ErrorModel> logger)
+        {
+            _logger = logger;
+        }
+
+        public void OnGet()
+        {
+            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+        }
+    }
+
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Index.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace AtilsonCargoSpa.Pages
+{
+    public class IndexModel : PageModel
+    {
+        public void OnGet()
+        {
+            // No necesita hacer nada, solo cargar la Landing Page
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Login.cshtml.cs ---
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using AtilsonCargoSpa.Models;
+
+namespace AtilsonCargoSpa.Pages
+{
+    public class LoginModel : PageModel
+    {
+        private readonly AtilsonContext _context;
+
+        public LoginModel(AtilsonContext context)
+        {
+            _context = context;
+        }
+
+        [BindProperty]
+        public string Correo { get; set; } = string.Empty;
+
+        [BindProperty]
+        public string Password { get; set; } = string.Empty;
+
+        public string ErrorMessage { get; set; } = string.Empty;
+
+        public IActionResult OnGet()
+        {
+            // Si ya está logueado, lo mandamos directo al Dashboard Principal
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToPage("/Dashboard");
+            }
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (string.IsNullOrWhiteSpace(Correo) || string.IsNullOrWhiteSpace(Password))
+            {
+                ErrorMessage = "Debe ingresar correo y contraseña.";
+                return Page();
+            }
+
+            // Buscamos el usuario en la BD
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Correo == Correo && u.Password == Password && u.Activo == 1);
+
+            if (usuario == null)
+            {
+                ErrorMessage = "Credenciales incorrectas o cuenta inactiva.";
+                return Page();
+            }
+
+            // Si existe, creamos su "Credencial" (Claims) con su ROL
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, usuario.NombreCompleto),
+                new Claim(ClaimTypes.Email, usuario.Correo),
+                new Claim(ClaimTypes.Role, usuario.Rol)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Iniciamos la sesión
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity));
+
+            // Redirección al Dashboard Principal de la empresa
+            return RedirectToPage("/Dashboard");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Logout.cshtml.cs ---
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Threading.Tasks;
+
+namespace AtilsonCargoSpa.Pages
+{
+    public class LogoutModel : PageModel
+    {
+        public async Task<IActionResult> OnPostAsync()
+        {
+            // 1. Destruimos la cookie de sesión del usuario
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // 2. Lo mandamos de vuelta a la página de Login
+            return RedirectToPage("/Login");
+        }
+
+        // Por seguridad, si alguien entra tipeando /Logout en la URL (GET), 
+        // también lo deslogueamos.
+        public async Task<IActionResult> OnGetAsync()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToPage("/Login");
+        }
+    }
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Pages\Privacy.cshtml.cs ---
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace AtilsonCargoSpa.Pages
+{
+    public class PrivacyModel : PageModel
+    {
+        private readonly ILogger<PrivacyModel> _logger;
+
+        public PrivacyModel(ILogger<PrivacyModel> logger)
+        {
+            _logger = logger;
+        }
+
+        public void OnGet()
+        {
+        }
+    }
+
+}
+
+--- FIN ARCHIVO ---
+
+--- INICIO ARCHIVO: D:\AtilsonPortal\AtilsonCargoSpa\Program.cs ---
+using AtilsonCargoSpa.Models;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+
+// 2. Registra el contexto de la base de datos
+builder.Services.AddDbContext<AtilsonContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AtilsonContext")));
+
+// Add services to the container.
+builder.Services.AddRazorPages();
+
+// --- CONFIGURACIÓN DE SEGURIDAD ATILSON ---
+builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Login"; // Si no están logueados, los manda aquí
+        options.AccessDeniedPath = "/AccesoDenegado"; // Si entran donde no deben
+        options.ExpireTimeSpan = TimeSpan.FromHours(8); // La sesión dura 8 horas
+    });
+
+var app = builder.Build();
+
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAuthentication(); // <-- Agregar esta (Identifica QUIÉN es)
+app.UseAuthorization();  // <-- Ya deberías tenerla (Verifica QUÉ puede hacer)
+
+app.UseAuthorization();
+
+app.MapRazorPages();
+
+app.Run();
+
+
+--- FIN ARCHIVO ---
+

@@ -1,0 +1,370 @@
+﻿@page "{id:int}"
+@model AtilsonCargoSpa.Pages.Finanzas.SetCobroModel
+@using AtilsonCargoSpa.Models
+@{
+    ViewData["Title"] = $"Set de Cobro — BKG {Model.Operacion.NumeroBooking}";
+    Layout = "_Layout";
+}
+
+<style>
+    :root {
+        --atilson-dark: #0f172a;
+        --color-accent: #0284c7;
+        --border-soft: #cbd5e1;
+        --bg-light: #f8fafc;
+    }
+
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color: #1e293b;
+    }
+
+    /* ESTILO HOJA A4 / CARTA CORPORATIVA ATILSON */
+    .sheet-container {
+        max-width: 850px;
+        margin: 30px auto;
+        background: #ffffff;
+        padding: 45px 55px;
+        border-radius: 4px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        border: 1px solid var(--border-soft);
+    }
+
+    .brand-title {
+        font-size: 22px;
+        font-weight: 900;
+        color: var(--atilson-dark);
+        letter-spacing: -0.5px;
+        line-height: 1;
+    }
+
+    .brand-subtitle {
+        font-size: 10px;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-top: 4px;
+    }
+
+    .doc-badge {
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--color-accent);
+        letter-spacing: 0.8px;
+        border-bottom: 2px solid var(--color-accent);
+        padding-bottom: 4px;
+        display: inline-block;
+    }
+
+    .grid-info {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        background: var(--bg-light);
+        border: 1px solid var(--border-soft);
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 25px;
+    }
+
+    .info-item .lbl {
+        font-size: 9px;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-item .val {
+        font-size: 12px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-top: 2px;
+    }
+
+    .section-title {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--atilson-dark);
+        border-bottom: 1px solid var(--border-soft);
+        padding-bottom: 6px;
+        margin-top: 25px;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+    }
+
+    .table-custom {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+        .table-custom th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 10px 12px;
+            border: 1px solid var(--border-soft);
+            text-align: left;
+        }
+
+        .table-custom td {
+            padding: 10px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid var(--border-soft);
+            vertical-align: middle;
+        }
+
+    .totals-card {
+        background: var(--atilson-dark);
+        color: #ffffff;
+        padding: 18px 22px;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 25px;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+    }
+
+    /* REGLA DE IMPRESIÓN LIMPIA PARA PDF */
+    @@media print {
+        body {
+            background: white !important;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sheet-container {
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0;
+            padding: 10px 0;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .table-custom th {
+            background-color: #f8fafc !important;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .totals-card {
+            background-color: #0f172a !important;
+            color: white !important;
+            -webkit-print-color-adjust: exact;
+        }
+    }
+</style>
+
+<div class="max-w-850 mx-auto mt-3 d-flex justify-content-between align-items-center no-print" style="max-width: 850px;">
+    <a href="/Finanzas/Facturacion" class="btn btn-outline-secondary btn-sm fw-bold px-3" style="font-size: 11px;">
+        <i class="bi bi-arrow-left me-1"></i> Volver al Tablero Kanban
+    </a>
+    <button onclick="window.print()" class="btn btn-dark btn-sm fw-bold px-4 shadow-sm" style="background-color: var(--color-accent); border: none; font-size: 12px;">
+        <i class="bi bi-printer-fill me-2"></i> Descargar PDF / Imprimir Set
+    </button>
+</div>
+
+<div class="sheet-container">
+
+    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-4">
+        <div>
+            <div class="brand-title">ATILSON</div>
+            <div class="brand-subtitle">Global Logistics Solutions</div>
+            <div class="text-muted" style="font-size: 10px; margin-top: 2px;">www.atilson.com | +569 89012691</div>
+        </div>
+        <div class="text-end">
+            <div class="doc-badge">SET DE COBRO / LIQUIDACIÓN</div>
+            <div class="fw-bold mt-1 font-monospace" style="font-size: 14px; color: var(--atilson-dark);">BKG: @Model.Operacion.NumeroBooking</div>
+            <div class="text-muted" style="font-size: 10px;">Fecha Emisión: @DateTime.Now.ToString("dd-MM-yyyy")</div>
+        </div>
+    </div>
+
+    <div class="grid-info">
+        <div class="info-item">
+            <div class="lbl">Cliente / Exportador</div>
+            <div class="val text-uppercase">@(Model.Operacion.IdClienteNavigation?.RazonSocial ?? "S/N")</div>
+        </div>
+        <div class="info-item">
+            <div class="lbl">Naviera Asignada</div>
+            <div class="val">@(Model.Operacion.IdNavieraNavigation?.NombreNaviera ?? "N/A")</div>
+        </div>
+        <div class="info-item">
+            <div class="lbl">Término de Flete</div>
+            <div class="val">@(Model.Operacion.CondicionPago == 1 || Model.Operacion.CondicionPago == 2 ? "PREPAID" : "COLLECT")</div>
+        </div>
+        <div class="info-item">
+            <div class="lbl">Contenedor / Equipo</div>
+            <div class="val font-monospace">@(Model.Operacion.NumeroContenedor ?? "Por asignar")</div>
+        </div>
+        <div class="info-item">
+            <div class="lbl">Sello de Seguridad</div>
+            <div class="val font-monospace">@(Model.Operacion.NumeroSello ?? "Por asignar")</div>
+        </div>
+        <div class="info-item">
+            <div class="lbl">Planta / Origen Carga</div>
+            <div class="val">@(Model.Operacion.OperacionesTerrestres?.FirstOrDefault()?.PlantaCarga ?? "Terminal Portuario")</div>
+        </div>
+    </div>
+
+    <div class="section-title">1. Detalle de Fletes y Servicios Base (Facturación Legal SII)</div>
+    <table class="table-custom">
+        <thead>
+            <tr>
+                <th style="width: 35%;">Concepto de Servicio</th>
+                <th style="width: 25%;" class="text-center">Documento Respaldo</th>
+                <th style="width: 15%;" class="text-center">Estado Pago</th>
+                <th style="width: 10%;" class="text-center">Moneda</th>
+                <th style="width: 15%;" class="text-end">Monto Neto</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.FacturasFlete.Any())
+            {
+                foreach (var tx in Model.FacturasFlete)
+                {
+                    bool estaPagado = tx.EstadoFila == "PAGADO" || tx.EstadoFila == "CONCILIADO";
+                    <tr>
+                        <td class="fw-bold">@tx.Concepto</td>
+                        <td class="text-center font-monospace text-muted">@(string.IsNullOrEmpty(tx.NumeroDocumento) ? "POR EMITIR" : $"FACT. N° {tx.NumeroDocumento}")</td>
+                        <td class="text-center" style="color: @(estaPagado ? "#059669" : "#dc2626"); font-size: 10px; font-weight: 800;">
+                            @(estaPagado ? "PAGADO" : "PENDIENTE")
+                        </td>
+                        <td class="text-center">@tx.Moneda</td>
+                        <td class="text-end font-monospace">@tx.Moneda $@tx.MontoNeto.ToString(tx.Moneda == "USD" ? "N2" : "N0")</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                if (Model.TotalFleteUSD > 0 || Model.TotalFleteCLP > 0)
+                {
+                    <tr>
+                        <td class="fw-bold">Fletes y Servicios Terrestres</td>
+                        <td class="text-center text-muted font-monospace">TARIFA BASE</td>
+                        <td class="text-center text-danger" style="font-size: 10px; font-weight: 800;">PROVISIÓN</td>
+                        <td class="text-center">MIXTO</td>
+                        <td class="text-end font-monospace text-muted">Ver Totales</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr><td colspan="5" class="text-center text-muted py-3">No hay flete base registrado en el sistema.</td></tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <div class="section-title">2. Desviaciones y Extracostos Operativos (Notas de Cobro)</div>
+    <table class="table-custom">
+        <thead>
+            <tr>
+                <th style="width: 35%;">Tipo de Extracosto / Motivo</th>
+                <th style="width: 25%;" class="text-center">Documento Respaldo</th>
+                <th style="width: 15%;" class="text-center">Estado Pago</th>
+                <th style="width: 10%;" class="text-center">Moneda</th>
+                <th style="width: 15%;" class="text-end">Monto Neto</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Extracostos.Any())
+            {
+                foreach (var ex in Model.Extracostos)
+                {
+                    // Relacionar el extracosto visual con su pago transaccional
+                    var txExtra = Model.NotasCobro.FirstOrDefault(t => t.Concepto != null && t.Concepto.Contains(ex.TipoCosto ?? ""));
+                    bool estaPagado = txExtra != null && (txExtra.EstadoFila == "PAGADO" || txExtra.EstadoFila == "CONCILIADO");
+                    string ncNro = txExtra != null && !string.IsNullOrEmpty(txExtra.NumeroDocumento) ? $"NC N° {txExtra.NumeroDocumento}" : "POR EMITIR";
+
+                    <tr>
+                        <td>
+                            <span class="d-block fw-bold">@ex.TipoCosto</span>
+                            <span class="text-muted" style="font-size: 10px;">@(string.IsNullOrWhiteSpace(ex.Motivo) ? "Sin observaciones" : ex.Motivo)</span>
+                        </td>
+                        <td class="text-center font-monospace text-muted">@ncNro</td>
+                        <td class="text-center" style="color: @(estaPagado ? "#059669" : "#dc2626"); font-size: 10px; font-weight: 800;">
+                            @(estaPagado ? "PAGADO" : "PENDIENTE")
+                        </td>
+                        <td class="text-center">@ex.Moneda</td>
+                        <td class="text-end font-monospace text-danger">@ex.Moneda $@ex.Monto.ToString(ex.Moneda == "USD" ? "N2" : "N0")</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="5" class="text-center text-muted py-3">No se registran extracostos ni demoras adicionales.</td></tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="row g-3 align-items-center mt-2">
+        <div class="col-6">
+            <div class="p-3 border rounded-2" style="background-color: var(--bg-light); font-size: 10px;">
+                <span class="fw-bold d-block mb-1 text-dark">INSTRUCCIONES DE PAGO / TRANSFERENCIA:</span>
+                <span>Titular: <strong>ATILSON CARGO SPA</strong></span><br />
+                <span>RUT: <strong>77.892.100-K</strong></span><br />
+                <span>Banco: <strong>Banco de Chile / Cuenta Corriente</strong></span><br />
+                <span class="text-muted mt-1 d-block">Indicar número de Booking en el comprobante.</span>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="totals-card">
+
+                <div class="w-100">
+                    <div class="d-flex justify-content-between mb-1" style="font-size: 10px; color: #cbd5e1;">
+                        <span>TOTAL FACTURADO USD:</span>
+                        <span class="font-monospace">USD $@Model.GranTotalUSD.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" style="font-size: 10px; color: #94a3b8;">
+                        <span>ABONOS / PAGADO:</span>
+                        <span class="font-monospace">USD $@Model.TotalPagadoUSD.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="border-color: rgba(255,255,255,0.15) !important;">
+                        <span class="fw-bold" style="font-size: 11px; letter-spacing: 1px; color: #f8fafc;">SALDO PENDIENTE USD:</span>
+                        <span class="font-monospace fw-bold fs-5" style="color: @(Model.SaldoPendienteUSD > 0 ? "#f87171" : "#34d399");">
+                            USD $@Model.SaldoPendienteUSD.ToString("N2")
+                        </span>
+                    </div>
+                </div>
+
+                @if (Model.GranTotalCLP > 0)
+                {
+                    <div class="w-100 pt-2 border-top" style="border-color: rgba(255,255,255,0.05) !important;">
+                        <div class="d-flex justify-content-between mb-1" style="font-size: 10px; color: #cbd5e1;">
+                            <span>TOTAL FACTURADO CLP:</span>
+                            <span class="font-monospace">CLP $@Model.GranTotalCLP.ToString("N0")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2" style="font-size: 10px; color: #94a3b8;">
+                            <span>ABONOS / PAGADO:</span>
+                            <span class="font-monospace">CLP $@Model.TotalPagadoCLP.ToString("N0")</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="border-color: rgba(255,255,255,0.15) !important;">
+                            <span class="fw-bold" style="font-size: 11px; letter-spacing: 1px; color: #f8fafc;">SALDO PENDIENTE CLP:</span>
+                            <span class="font-monospace fw-bold fs-6" style="color: @(Model.SaldoPendienteCLP > 0 ? "#f87171" : "#34d399");">
+                                CLP $@Model.SaldoPendienteCLP.ToString("N0")
+                            </span>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center text-muted mt-4 pt-3 border-top" style="font-size: 9px;">
+        Documento generado automáticamente por el Módulo Financiero de Atilson Cargo SpA.<br />
+        Autorizado por Finanzas y Cobranzas. Para consultas: cobranzas@atilson.com
+    </div>
+</div>

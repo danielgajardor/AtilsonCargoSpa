@@ -1,0 +1,187 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.PortalCliente.SolicitarReservaModel
+@{
+    ViewData["Title"] = "Solicitar Cotización";
+    // Layout = "_LayoutCliente"; // Descomentar si usas un layout para el portal
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* VARIABLES CORPORATIVAS ATILSON */
+    :root {
+    --atilson-dark: #1e293b;
+    --atilson-primary: #3b82f6;
+    --txt-main: #0f172a;
+    --txt-muted: #64748b;
+    --border-soft: #cbd5e1;
+    --bg-main: #ffffff;
+    --bg-soft: #f8fafc;
+    --bg-body: #f1f5f9;
+    }
+
+    body {
+    background-color: var(--bg-body);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    .erp-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--txt-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: block;
+    }
+
+    .erp-input {
+    font-size: 13px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    background-color: var(--bg-soft);
+    padding: 10px 14px;
+    transition: all 0.2s ease;
+    width: 100%;
+    color: var(--txt-main);
+    font-weight: 500;
+    }
+
+    .erp-input:focus {
+    background-color: var(--bg-main);
+    border-color: var(--atilson-dark);
+    box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+    outline: none;
+    }
+
+    .contenedor-item {
+    background: var(--bg-main);
+    padding: 30px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    .btn-submit {
+    background: var(--atilson-dark);
+    color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(30, 41, 59, 0.2);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 30px;
+    border-radius: 8px;
+    border: none;
+    transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+    background: #0f172a;
+    transform: translateY(-1px);
+    }
+</style>
+
+<div class="container-fluid py-4" style="max-width: 900px;">
+
+    <div class="mb-4 border-bottom pb-3">
+        <a asp-page="./Index" class="text-decoration-none text-muted fw-bold" style="font-size: 12px;">
+            <i class="bi bi-arrow-left"></i> Volver a Mis Operaciones
+        </a>
+        <h1 class="mt-3" style="font-size: 24px; font-weight: 900; color: var(--txt-main); letter-spacing: -0.5px;">NUEVA SOLICITUD DE COTIZACIÓN</h1>
+        <p class="text-muted small m-0 fw-medium">Complete los detalles de su carga para que nuestro equipo comercial lo contacte a la brevedad.</p>
+    </div>
+
+    @if (!ModelState.IsValid)
+    {
+        <div class="alert alert-danger shadow-sm">
+            <div asp-validation-summary="All" class="text-danger small fw-bold"></div>
+        </div>
+    }
+
+    <form method="post" id="frmCotizacion">
+        @Html.AntiForgeryToken()
+
+        <div class="contenedor-item">
+            <h5 class="mb-4" style="font-size: 14px; font-weight: 800; color: var(--atilson-dark); text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+                <i class="bi bi-box-seam me-2"></i> Detalles del Requerimiento
+            </h5>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="erp-label">Tipo de Servicio <span class="text-danger">*</span></label>
+                    <select asp-for="NuevaCotizacion.TipoServicio" class="form-select erp-input" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option value="Exportacion Maritima">Exportación Marítima</option>
+                        <option value="Importacion Maritima">Importación Marítima</option>
+                        <option value="Transporte Nacional">Transporte Terrestre Nacional</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="erp-label">Modalidad de Carga <span class="text-danger">*</span></label>
+                    <select asp-for="NuevaCotizacion.TipoCarga" class="form-select erp-input" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option value="FCL - Contenedor Dry">FCL (Contenedor Estándar)</option>
+                        <option value="FCL - Contenedor Reefer">FCL Reefer (Refrigerado)</option>
+                        <option value="LCL - Carga Suelta">LCL (Carga Suelta / Consolidada)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="erp-label">Origen (Puerto o Ciudad) <span class="text-danger">*</span></label>
+                    <input asp-for="NuevaCotizacion.Origen" type="text" class="form-control erp-input text-uppercase" placeholder="Ej: San Antonio, Chile..." required />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="erp-label">Destino (Puerto o Ciudad) <span class="text-danger">*</span></label>
+                    <input asp-for="NuevaCotizacion.Destino" type="text" class="form-control erp-input text-uppercase" placeholder="Ej: Miami, USA..." required />
+                </div>
+
+                <div class="col-md-12">
+                    <label class="erp-label">Commodity / Descripción de Mercancía</label>
+                    <input asp-for="NuevaCotizacion.Mercancia" type="text" class="form-control erp-input text-uppercase" placeholder="Ej: Vinos, Maquinaria, Repuestos..." />
+                </div>
+
+                <div class="col-md-12">
+                    <label class="erp-label">Comentarios / Requerimientos Adicionales</label>
+                    <textarea asp-for="NuevaCotizacion.Comentarios" class="form-control erp-input" rows="3" placeholder="Indique si requiere seguro, aduana, dimensiones de carga, temperatura (si es Reefer), etc."></textarea>
+                </div>
+            </div>
+
+            <div class="text-end mt-5 pt-3">
+                <button type="submit" class="btn-submit" id="btnEnviar">
+                    <i class="bi bi-send-fill me-2"></i> ENVIAR SOLICITUD A ATILSON
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @if (TempData["SolicitudExitosa"] != null)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+            Swal.fire({
+            title: '¡Cotización Solicitada!',
+            text: 'Hemos recibido tu requerimiento con éxito. Nuestro equipo comercial lo está evaluando y te contactará a la brevedad.',
+            icon: 'success',
+            confirmButtonColor: 'var(--atilson-dark)',
+            confirmButtonText: 'Entendido'
+            });
+            });
+        </script>
+    }
+
+    <script>
+        document.getElementById("frmCotizacion").addEventListener("submit", function() {
+        var btn = document.getElementById("btnEnviar");
+        // Cambia el estado del botón para evitar envíos dobles
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> ENVIANDO...';
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.8';
+        });
+    </script>
+}

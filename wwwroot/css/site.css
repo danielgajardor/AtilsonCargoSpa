@@ -1,0 +1,254 @@
+/* =========================================================================
+   ATILSON CARGO - SISTEMA LOGÍSTICO (ESTILOS GLOBALES)
+   ========================================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Colores Corporativos Atilson */
+    --atilson-primary: #2c1b4d; /* Morado Corporativo */
+    --atilson-secondary: #f8fafc; /* Gris ultra claro para el fondo */
+    --atilson-accent: #00b4d8; /* Celeste de acento */
+    --atilson-text-dark: #0f172a;
+    --atilson-text-muted: #64748b;
+    --atilson-border: #e2e8f0;
+    /* Variables de compatibilidad para Index.cshtml (si no estaban declaradas globalmente) */
+    --border-soft: #e2e8f0;
+}
+
+body {
+    /* zoom: 0.9;  <-- LO DEJAMOS COMENTADO O LO BORRAS */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--atilson-secondary);
+    color: var(--atilson-text-dark);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+a {
+    text-decoration: none; /* Evita que los links se subrayen en azul por defecto */
+}
+
+/* =========================================================================
+   2. ESTRUCTURA: BARRA LATERAL (SIDEBAR) Y CONTENIDO
+   ========================================================================= */
+.sidebar {
+    width: 260px;
+    position: fixed;
+    top: 0;
+    bottom: 0; /* <--- LA MAGIA ABSOLUTA ESTÁ AQUÍ */
+    left: 0;
+    background-color: var(--atilson-primary);
+    color: #ffffff;
+    z-index: 1040;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+    .sidebar .brand-logo {
+        padding: 1.5rem 1rem;
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: #ffffff;
+        font-size: 1.2rem;
+    }
+
+/* FIX: Reparación de los botones del menú */
+.sidebar-nav {
+    padding: 1rem 0;
+    flex-grow: 1;
+    list-style: none; /* Elimina los puntos de la lista */
+    margin: 0;
+    padding-left: 0;
+}
+
+    .sidebar-nav .nav-item {
+        margin-bottom: 0.2rem;
+    }
+
+    .sidebar-nav .nav-link {
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0.8rem 1.5rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        font-size: 0.95rem;
+    }
+
+        .sidebar-nav .nav-link i {
+            margin-right: 12px;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-nav .nav-link:hover,
+        .sidebar-nav .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-left-color: var(--atilson-accent);
+        }
+
+/* Área de trabajo */
+.main-content {
+    margin-left: 260px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.topbar {
+    background-color: #ffffff;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+    border-bottom: 1px solid var(--atilson-border);
+}
+
+/* =========================================================================
+   3. TARJETAS Y CONTENEDORES (Estética Ejecutiva Interior)
+   ========================================================================= */
+.exec-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.clean-card, .exec-card {
+    background: #ffffff;
+    border: 1px solid var(--atilson-border);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+/* =========================================================================
+   4. TÍTULOS Y TEXTOS
+   ========================================================================= */
+.page-title {
+    font-weight: 300;
+    letter-spacing: -0.5px;
+    color: var(--atilson-text-dark);
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+}
+
+.section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--atilson-primary);
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--atilson-border);
+    padding-bottom: 0.5rem;
+}
+
+/* =========================================================================
+   5. FORMULARIOS (Inputs "Ghost" ejecutivos)
+   ========================================================================= */
+.form-label, label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--atilson-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.3rem;
+    display: inline-block;
+}
+
+.form-control, .form-select {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background-color: #f8fafc;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    color: var(--atilson-text-dark);
+    box-shadow: none;
+    transition: all 0.2s ease;
+}
+
+    .form-control:focus, .form-select:focus {
+        background-color: #ffffff;
+        border-color: var(--atilson-primary);
+        box-shadow: 0 0 0 1px var(--atilson-primary);
+        outline: none;
+    }
+
+#panelReefer {
+    background-color: #f1f5f9;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border-left: 3px solid var(--atilson-text-muted);
+}
+
+/* =========================================================================
+   6. BOTONES
+   ========================================================================= */
+.btn-submit, .btn-atilson {
+    background-color: var(--atilson-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: background-color 0.2s;
+}
+
+    .btn-submit:hover, .btn-atilson:hover {
+        background-color: #1a102e;
+        color: #ffffff;
+    }
+
+/* =========================================================================
+   7. TABLAS DE DATOS
+   ========================================================================= */
+.table-exec th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--atilson-text-muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--atilson-border);
+    padding: 1rem 0.8rem;
+}
+
+.table-exec td {
+    font-size: 0.9rem;
+    padding: 1rem 0.8rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--atilson-border);
+}
+
+/* =========================================================================
+   8. TABS MODERNOS TIPO FOLDER (AÑADIDO)
+   ========================================================================= */
+.modern-tabs {
+    display: flex;
+    flex-wrap: nowrap; /* ESTA ES LA CLAVE: Evita que se caigan cuando la barra está abierta */
+    overflow-x: auto; /* Permite hacer scroll suave horizontal si es necesario */
+    white-space: nowrap;
+    gap: 4px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 0;
+    padding-bottom: 0;
+    padding-left: 10px;
+    scrollbar-width: none; /* Oculta scrollbar en Firefox */
+    -ms-overflow-style: none; /* Oculta scrollbar en IE/Edge */
+}
+
+    .modern-tabs::-webkit-scrollbar {
+        display: none; /* Oculta scrollbar en Chrome/Safari */
+    }

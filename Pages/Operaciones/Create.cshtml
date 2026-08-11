@@ -1,0 +1,2125 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Operaciones.CreateModel
+@{
+    ViewData["Title"] = "Nueva Operación";
+
+    // --- MAGIA ATILSON: LECTURA DE BD PARA AUTOCOMPLETADOS ---
+    var puertosDb = ViewData["PuertosList"] as IEnumerable<AtilsonCargoSpa.Models.Puerto>;
+    var depositosDb = ViewData["DepositosList"] as IEnumerable<AtilsonCargoSpa.Models.Deposito>;
+    var plantasDb = ViewData["PlantasList"] as IEnumerable<AtilsonCargoSpa.Models.Planta>;
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* VARIABLES CORPORATIVAS B2B ATILSON */
+    :root {
+    --atilson-dark: #0f172a;
+    --atilson-primary: #3b82f6;
+    --atilson-purple: #6d2d9e;
+    --txt-main: #1e293b;
+    --txt-muted: #64748b;
+    --border-soft: #e2e8f0;
+    --bg-main: #ffffff;
+    --bg-soft: #f8fafc;
+    --bg-body: #f1f5f9;
+    }
+
+    body {
+    background-color: var(--bg-body);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* TIPOGRAFÍA E INPUTS PREMIUM */
+    .erp-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--txt-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: block;
+    }
+
+    .erp-input {
+    font-size: 13.5px;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    background-color: var(--bg-soft);
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+    width: 100%;
+    color: var(--txt-main);
+    font-weight: 600;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
+    }
+
+    .erp-input:focus, .erp-input:not([disabled]):hover {
+    background-color: var(--bg-main);
+    border-color: var(--atilson-purple);
+    box-shadow: 0 0 0 4px rgba(109, 45, 158, 0.1);
+    outline: none;
+    }
+
+    .erp-input.is-invalid {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    /* WIZARD CONTAINER */
+    .wizard-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: var(--bg-main);
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+    }
+
+    /* WIZARD TABS */
+    .wizard-header {
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 10px;
+    }
+
+    .nav-wizard {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    }
+
+    .nav-wizard .nav-item {
+    flex: 1;
+    text-align: center;
+    }
+
+    .nav-wizard .nav-link {
+    position: relative;
+    display: block;
+    padding: 22px 10px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+    text-decoration: none;
+    border: none;
+    background: transparent;
+    transition: all 0.3s ease;
+    }
+
+    .nav-wizard .nav-link i {
+    font-size: 18px;
+    margin-right: 8px;
+    vertical-align: middle;
+    }
+
+    .nav-wizard .nav-link:hover {
+    color: var(--txt-muted);
+    }
+
+    .nav-wizard .nav-link.active {
+    color: var(--atilson-purple);
+    }
+
+    .nav-wizard .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--atilson-purple);
+    border-radius: 3px 3px 0 0;
+    }
+
+    /* PANELES Y ANIMACIÓN */
+    .tab-content {
+    padding: 45px 50px;
+    background-color: var(--bg-main);
+    min-height: 450px;
+    }
+
+    .tab-pane {
+    display: none;
+    }
+
+    .tab-pane.active {
+    display: block;
+    animation: fadeInStep 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @@keyframes fadeInStep {
+    0% {
+    opacity: 0;
+    transform: translateY(10px);
+    }
+
+    100% {
+    opacity: 1;
+    transform: translateY(0);
+    }
+    }
+
+    /* CARDS SECCIONALES */
+    .section-title {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--atilson-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+    }
+
+    .section-title i {
+    color: var(--atilson-purple);
+    font-size: 18px;
+    }
+
+    .contenedor-item {
+    background: #fafbfd;
+    padding: 25px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+    transition: all 0.3s ease;
+    }
+
+    .contenedor-item:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    }
+
+    .btn-add-dashed {
+    border: 2px dashed #cbd5e1;
+    background: transparent;
+    color: var(--txt-muted);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    width: 100%;
+    text-align: center;
+    transition: all 0.2s;
+    }
+
+    .btn-add-dashed:hover {
+    border-color: var(--atilson-purple);
+    color: var(--atilson-purple);
+    background: #f8fafc;
+    }
+
+    .panel-reefer {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    /* WIZARD FOOTER */
+    .wizard-footer {
+    padding: 24px 50px;
+    background-color: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    }
+
+    .btn-step {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 30px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+    }
+
+    .btn-prev {
+    background: #e2e8f0;
+    color: var(--txt-muted);
+    }
+
+    .btn-prev:hover {
+    background: #cbd5e1;
+    color: var(--txt-main);
+    }
+
+    .btn-next {
+    background: var(--atilson-dark);
+    color: #ffffff;
+    box-shadow: 0 4px 6px rgba(15, 23, 42, 0.2);
+    }
+
+    .btn-next:hover {
+    background: var(--atilson-purple);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(109, 45, 158, 0.3);
+    }
+
+    .btn-finish {
+    background: #10b981;
+    color: white;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-finish:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    /* SUPER MODAL DE RESUMEN FINAL EDITABLE COMPRENSIVO */
+    .modal-resumen .modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+    overflow: hidden;
+    }
+
+    .modal-resumen .modal-header {
+    background-color: var(--bg-main);
+    border-bottom: 1px solid #e2e8f0;
+    padding: 25px 35px;
+    }
+
+    .modal-resumen .modal-body {
+    padding: 30px 35px;
+    background-color: #f8fafc;
+    }
+
+    .resumen-bloque {
+    background: var(--bg-main);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .res-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--txt-muted);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+    }
+
+    .res-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--txt-main);
+    margin: 0;
+    text-transform: uppercase;
+    }
+
+    .btn-edit-section {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: var(--atilson-purple);
+    cursor: pointer;
+    transition: 0.2s;
+    }
+
+    .btn-edit-section:hover {
+    background: #f3e8ff;
+    border-color: #d8b4fe;
+    }
+</style>
+
+<div class="container-fluid py-4" style="max-width: 1300px;">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2">
+        <div>
+            <h1 class="fw-black" style="font-size: 26px; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">INGRESO DE OPERACIÓN</h1>
+            <p class="text-muted m-0 fw-semibold mt-1" style="font-size: 14px;">Sistematización paso a paso de nueva reserva logística.</p>
+        </div>
+        <a asp-page="./Index" class="btn btn-step btn-prev shadow-sm"><i class="bi bi-x-lg"></i> Cancelar</a>
+    </div>
+
+    <div class="alert mb-4 shadow-sm" style="background-color: #f8fafc; border: 1.5px dashed var(--atilson-purple); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; padding: 18px 25px;">
+        <div class="d-flex align-items-center">
+            <div class="me-3" style="background: white; padding: 12px; border-radius: 10px; box-shadow: 0 2px 5px rgba(109, 45, 158, 0.15);">
+                <i class="bi bi-magic fs-3" style="color: var(--atilson-purple);"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-1" style="color: var(--atilson-dark); font-size: 15px;">Autocompletar con Documento Base</h5>
+                <p class="text-muted m-0" style="font-size: 12px;">Sube el PDF de la Naviera (Booking) y el sistema leerá los datos automáticamente.</p>
+            </div>
+        </div>
+        <div>
+            <input type="file" id="pdfUploader" accept=".pdf" style="display: none;" />
+            <button type="button" class="btn fw-bold px-4 py-2 shadow-sm transition" style="background: var(--atilson-purple); color: white; border-radius: 8px;" onclick="document.getElementById('pdfUploader').click();">
+                <i class="bi bi-cloud-arrow-up-fill me-2"></i> Subir Booking (PDF)
+            </button>
+        </div>
+    </div>
+
+    <form method="post" id="frmOperacion" novalidate enctype="multipart/form-data">
+        <div class="wizard-container">
+            <div class="wizard-header">
+                <ul class="nav-wizard" id="wizardTabs" role="tablist">
+                    <li class="nav-item">
+                        <button type="button" class="nav-link active" id="tab-general" data-target="step-general">
+                            <i class="bi bi-ui-checks-grid"></i> Base y Carga
+                        </button>
+                    </li>
+                    <li class="nav-item" id="nav-item-maritimo" style="display:none;">
+                        <button type="button" class="nav-link" id="tab-maritimo" data-target="step-maritimo">
+                            <i class="bi bi-water"></i> Servicio Marítimo
+                        </button>
+                    </li>
+                    <li class="nav-item" id="nav-item-terrestre" style="display:none;">
+                        <button type="button" class="nav-link" id="tab-terrestre" data-target="step-terrestre">
+                            <i class="bi bi-truck"></i> Servicio Terrestre
+                        </button>
+                    </li>
+                    <li class="nav-item" id="nav-item-documental" style="display:none;">
+                        <button type="button" class="nav-link" id="tab-documental" data-target="step-documental">
+                            <i class="bi bi-file-earmark-check"></i> Servicio Documental
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tab-content">
+                <div class="col-md-4 mb-4 d-none" id="bookingFieldWrapper">
+                    <label class="erp-label text-primary">Booking / Ref N° <span class="text-danger">*</span></label>
+                    <input asp-for="Operacione.NumeroBooking" class="form-control erp-input text-uppercase fw-bold border-primary req-general" id="inpBooking" placeholder="Ej: SCL123456" style="background-color: #f0f9ff;" />
+                </div>
+
+                <div class="tab-pane active" id="step-general">
+                    <div class="section-title">
+                        <div><i class="bi bi-info-circle-fill"></i> Datos Estructurales</div>
+                    </div>
+
+                    <div class="row g-4 mb-4" id="baseInfoRow">
+                        <div class="col-md-3">
+                            <label class="erp-label">Servicio Logístico <span class="text-danger">*</span></label>
+                            <select asp-for="Operacione.IdTipoServicio" class="form-select erp-input fw-bold req-general" id="ddlServicio" style="border-left: 4px solid var(--atilson-purple);">
+                                <option value="">-- SELECCIONAR --</option>
+                                <optgroup label="Exportación">
+                                    <option value="1">EXP INTEGRAL (MAR + TER + DOC)</option>
+                                    <option value="2">EXP MAR + TER</option>
+                                    <option value="3">EXP MAR + DOC</option>
+                                    <option value="4">EXP TER + DOC</option>
+                                    <option value="5">EXP MAR</option>
+                                    <option value="6">EXP TER</option>
+                                    <option value="7">EXP DOC</option>
+                                </optgroup>
+                                <optgroup label="Importación">
+                                    <option value="8">IMP INTEGRAL (MAR + TER + DOC)</option>
+                                    <option value="9">IMP MAR + TER</option>
+                                    <option value="10">IMP MAR + DOC</option>
+                                    <option value="11">IMP TER + DOC</option>
+                                    <option value="12">IMP MAR</option>
+                                    <option value="13">IMP TER</option>
+                                    <option value="14">IMP DOC</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="col-md-3" id="divPaisOrigenContainer">
+                            <label class="erp-label">País de Origen <span class="text-danger">*</span></label>
+                            <select asp-for="Operacione.PaisOrigen" class="form-select erp-input text-uppercase req-general" id="inpPaisOrigen" onchange="poblarPuertosOrigen(); poblarDepositos();">
+                                <option value="">-- PAÍS --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3" id="colCliente">
+                            <label class="erp-label">Cliente Asociado <span class="text-danger">*</span></label>
+                            <select asp-for="Operacione.IdCliente" class="form-select erp-input req-general" id="inpCliente" asp-items="ViewBag.IdCliente">
+                                <option value="">-- Buscar Empresa --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3" id="colMovimiento">
+                            <label class="erp-label">Tipo Movimiento</label>
+                            <select asp-for="Operacione.IdTipoMovimiento" class="form-select erp-input" id="inpMovimiento" asp-items="ViewBag.IdTipoMovimiento">
+                                <option value="">-- Opcional --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="restOfGeneralFields" style="display: none; animation: fadeInStep 0.4s ease forwards;">
+                        <div class="section-title mt-5">
+                            <div><i class="bi bi-boxes"></i> Declaración de Carga</div>
+                        </div>
+                        <div id="contenedores-container">
+                            <div class="contenedor-item position-relative">
+                                <h6 class="erp-label mb-3" style="color: var(--atilson-dark); font-size: 12px;"><i class="bi bi-1-circle-fill me-1"></i> Unidad de Carga Principal</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label class="erp-label">Tipo Carga <span class="text-danger req-maritimo-asterisk" style="display:none;">*</span></label>
+                                        <select asp-for="Operacione.IdTipoCarga" class="form-select erp-input fw-bold req-carga select-tipo-carga" id="inpCarga">
+                                            <option value="">-- Seleccionar --</option>
+                                            <option value="1">DRY (SECO)</option>
+                                            <option value="2">REEFER (REFRIGERADO)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 div-condicion-reefer" style="display: none;">
+                                        <label class="erp-label">Régimen Térmico</label>
+                                        <select name="CondicionReefer" class="form-select erp-input select-condicion-reefer">
+                                            <option value="FRESH">Fresh (Fresco)</option>
+                                            <option value="FROZEN">Frozen (Congelado)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="erp-label">Tipo Contenedor <span class="text-danger">*</span></label>
+                                        <select asp-for="Operacione.TipoContenedor" class="form-select erp-input select-unidad req-general" id="inpTipoConte">
+                                            <option value="">Seleccione Carga Primero</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="erp-label">Mercancía <span class="text-danger">*</span></label>
+                                        <input asp-for="Operacione.Commodity" class="form-control erp-input text-uppercase req-general" id="inpCommodity" placeholder="Ej: Vino, Fruta..." />
+                                    </div>
+                                </div>
+
+                                <div class="panel-reefer" id="panelReeferCompleto" style="display: none;">
+                                    <h6 class="erp-label mb-3" style="color: var(--atilson-purple);"><i class="bi bi-snow"></i> Parámetros Tecnológicos de Humedad y Atmósfera</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-2" id="divTempInput">
+                                            <label class="erp-label">Temp Setpoint (°C)</label>
+                                            <input type="number" step="0.1" class="form-control erp-input fw-bold text-primary" name="TempSeteada" placeholder="0.0" />
+                                        </div>
+                                        <div class="col-md-10 row g-3 m-0 div-opciones-fresh" id="divFreshOptions">
+                                            <div class="col-md-3">
+                                                <label class="erp-label">Tipo de Atmósfera</label>
+                                                <select class="form-select erp-input select-atmosfera" name="TipoAtmosfera">
+                                                    <option value="CONV">Convencional</option>
+                                                    <option value="AC">Atmósfera Controlada (AC)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-9 row g-3 m-0 div-convencional">
+                                                <div class="col-md-6">
+                                                    <label class="erp-label">Ventilación Abierta (CBM)</label>
+                                                    <input type="text" class="form-control erp-input" placeholder="Ej: 15 CBM" name="Ventilacion" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="erp-label">Humedad Seteada (%)</label>
+                                                    <input type="number" class="form-control erp-input" placeholder="Ej: 80%" name="Humedad" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-9 row g-3 m-0 div-ac" style="display: none;">
+                                                <div class="col-md-4">
+                                                    <label class="erp-label">Controlador AC</label>
+                                                    <select class="form-select erp-input" name="MarcaAc">
+                                                        <option value="Extrafresh">Extrafresh</option>
+                                                        <option value="Extrafresh+">Extrafresh +</option>
+                                                        <option value="Liventus">Liventus</option>
+                                                        <option value="Daikin">Daikin</option>
+                                                        <option value="Starcool">Starcool</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4"><label class="erp-label text-danger">Parámetro O2 (%)</label><input type="text" class="form-control erp-input fw-bold" placeholder="5.0%" name="NivelO2" /></div>
+                                                <div class="col-md-4"><label class="erp-label text-danger">Parámetro CO2 (%)</label><input type="text" class="form-control erp-input fw-bold" placeholder="10.0%" name="NivelCO2" /></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="button" id="btnAgregarContenedor" class="btn-add-dashed">
+                                <i class="bi bi-plus-circle-fill me-2 fs-6"></i> Agregar Unidad Adicional a esta Reserva
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="step-maritimo">
+                    <div class="section-title">
+                        <div><i class="bi bi-compass-fill"></i> Routing y Asignación Naviera</div>
+                    </div>
+                    <div class="row g-4 mb-5" id="maritimoRow">
+                        <div class="col-md-4">
+                            <label class="erp-label">Naviera Asignada <span class="text-danger req-maritimo-asterisk" style="display:none;">*</span></label>
+                            <select asp-for="Operacione.IdNaviera" class="form-select erp-input req-naviera" id="inpNaviera" asp-items="ViewBag.IdNaviera">
+                                <option value="">-- Seleccionar --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Nave / Viaje</label>
+                            <input asp-for="Operacione.Nave" class="form-control erp-input text-uppercase" id="inpNave" placeholder="Nombre de la Nave" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Modalidad de Tránsito</label>
+                            <div class="d-flex gap-2">
+                                <select class="form-select erp-input" id="selectTransbordo" style="width: 50%;">
+                                    <option value="DIRECTO">Directo</option>
+                                    <option value="TRANSBORDO">Transbordo</option>
+                                </select>
+                                <input asp-for="Operacione.Transbordo" class="form-control erp-input text-uppercase" id="divPuertoTransbordo" placeholder="Puerto..." style="display: none; width: 50%;" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title mt-4">
+                        <div><i class="bi bi-geo-alt-fill"></i> Puertos de Operación</div>
+                    </div>
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6 border-end">
+                            <div class="row g-2">
+                                <div class="col-md-7" id="divPolSelectContainer">
+                                    <label class="erp-label">Puerto de Origen (POL)</label>
+                                    <select asp-for="Operacione.IdPuertoOrigen" class="form-select erp-input text-uppercase req-maritimo" id="inpPol" onchange="actualizarTerminalMaritimo(); syncPuertoTerrestre(this);">
+                                        <option value="" data-pais="">-- Seleccione País Primero --</option>
+                                        @if (puertosDb != null)
+                                        {
+                                            foreach (var pto in puertosDb.GroupBy(p => p.NombrePuerto).Select(g => g.First()))
+                                            {
+                                                <option value="@pto.Id" data-pais="@(pto.Pais?.ToUpper() ?? "OTROS")">@pto.NombrePuerto</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-5" id="divTerminalExpo">
+                                    <label class="erp-label">Terminal</label>
+                                    <select name="TerminalMaritimoDDL" class="form-select erp-input text-uppercase d-none" id="selTerminalMaritimo" disabled>
+                                        <option value="">-- Terminal --</option>
+                                        <option value="STI">STI</option>
+                                        <option value="DPW">DPW</option>
+                                    </select>
+                                    <input type="text" name="TerminalMaritimoStr" class="form-control erp-input text-uppercase" id="inpTerminalMaritimo" placeholder="Terminal" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-md-12 mb-2 d-none" id="divPaisDestinoContainer">
+                                    <label class="erp-label">País de Destino (Importación)</label>
+                                    <select name="PaisDestinoImpo" class="form-select erp-input text-uppercase" id="inpPaisDestino" onchange="poblarPuertosDestino(); poblarDepositos();">
+                                        <option value="">-- SELECCIONAR PAÍS --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12" id="divPodSelectContainer">
+                                    <label class="erp-label">Puerto de Destino (POD)</label>
+                                    <select asp-for="Operacione.IdPuertoDestino" class="form-select erp-input text-uppercase req-maritimo" id="inpPod" onchange="actualizarTerminalMaritimoImpo(); syncPuertoTerrestre(this);">
+                                        <option value="" data-pais="">-- Seleccionar Puerto --</option>
+                                        @if (puertosDb != null)
+                                        {
+                                            foreach (var pto in puertosDb.GroupBy(p => p.NombrePuerto).Select(g => g.First()))
+                                            {
+                                                <option value="@pto.Id" data-pais="@(pto.Pais?.ToUpper() ?? "OTROS")">@pto.NombrePuerto</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-12 mt-2 d-none" id="divTerminalImpo">
+                                    <label class="erp-label">Terminal Llegada</label>
+                                    <div class="d-flex gap-2">
+                                        <select name="" class="form-select erp-input text-uppercase d-none" id="selTerminalMaritimoImpo" disabled style="width: 50%;">
+                                            <option value="">-- Terminal --</option>
+                                            <option value="STI">STI</option>
+                                            <option value="DPW">DPW</option>
+                                        </select>
+                                        <input type="text" name="" class="form-control erp-input text-uppercase" id="inpTerminalMaritimoImpo" placeholder="Terminal" style="width: 50%;" disabled />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">
+                        <div><i class="bi bi-calendar3"></i> Fechas Estimadas e Hitos de Corte Marítimo</div>
+                    </div>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-3">
+                            <label class="erp-label">ETD (Zarpe)</label>
+                            <input asp-for="Operacione.EtdPol" type="date" class="form-control erp-input" id="inpEtd" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="erp-label">ETA (Arribo)</label>
+                            <input asp-for="Operacione.EtaPod" type="date" class="form-control erp-input" id="inpEta" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="erp-label text-success">Stacking IN (Apertura)</label>
+                            <input asp-for="Operacione.FechaStacking" type="datetime-local" class="form-control erp-input" id="inpStackingIn" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="erp-label text-danger">Stacking OUT (Cierre)</label>
+                            <input asp-for="Operacione.LateArrival" id="inpStackingOut" type="datetime-local" class="form-control erp-input border-danger" />
+                        </div>
+                        <div class="col-md-4 mt-4">
+                            <label class="erp-label text-primary">Corte Documental (Matriz BL)</label>
+                            <input asp-for="Operacione.CutOffMatriz" type="datetime-local" id="inpCorteDoc" class="form-control erp-input border-primary" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="step-terrestre">
+                    <div class="section-title">
+                        <div><i class="bi bi-truck"></i> Planificación Servicio Terrestre</div>
+                    </div>
+
+                    <div class="alert bg-light border border-secondary border-opacity-25 d-flex align-items-center mb-4" role="alert" style="border-radius: 8px;">
+                        <i class="bi bi-info-circle-fill text-primary fs-4 me-3"></i>
+                        <div style="font-size: 13px; color: var(--txt-muted);">
+                            <strong>Modo Solicitud:</strong> Ingresa la ruta base aquí. Podrás asignar al proveedor y conductor definitivo desde el Board Operativo más adelante.
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4" id="terrestreBookingContainer"></div>
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6 border-end">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+    <label class="erp-label">Depósito de Retiro Vacío</label>
+    <select class="form-select erp-input text-uppercase" id="inpDepositoRetiro" name="DepositoRetiro">
+        <option value="">Seleccionar...</option>
+        @if (depositosDb != null)
+        {
+            foreach (var dep in depositosDb)
+            {
+                <option value="@dep.NombreDeposito" data-pais="@(dep.Pais?.ToUpper() ?? "CHILE")">@dep.NombreDeposito</option>
+            }
+        }
+    </select>
+</div>
+                                <div class="col-md-7">
+                                    <label class="erp-label">Puerto de Origen (POL)</label>
+                                    <select class="form-select erp-input text-uppercase" id="inpPuertoTerrestre" name="PuertoEntrega" onchange="actualizarTerminalTerrestre()">
+                                        <option value="">Seleccionar...</option>
+                                        @if (puertosDb != null)
+                                        {
+                                            foreach (var pto in puertosDb.GroupBy(p => p.NombrePuerto).Select(g => g.First()))
+                                            {
+                                                <option value="@pto.NombrePuerto" data-pais="@(pto.Pais?.ToUpper() ?? "OTROS")">@pto.NombrePuerto</option>
+                                            }
+                                        }
+                                    </select>
+                                    <input type="text" class="form-control erp-input text-uppercase mt-2" id="inpPuertoTerrestreOtro" name="PuertoEntregaStr" placeholder="Especifique puerto..." style="display: none;" disabled />
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="erp-label">Terminal</label>
+                                    <select class="form-select erp-input text-uppercase d-none" id="selTerminalTerrestre" name="TerminalTerrestreDDL" disabled>
+                                        <option value="">-- Terminal --</option>
+                                        <option value="STI">STI</option>
+                                        <option value="DPW">DPW</option>
+                                    </select>
+                                    <input type="text" class="form-control erp-input text-uppercase" id="inpTerminalTerrestre" name="TerminalTerrestreStr" placeholder="Ej: TPS, SVTI..." />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 ps-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="erp-label">Planta de cliente</label>
+                                    <select class="form-select erp-input text-uppercase" id="inpPlanta" name="PlantaCarga" onchange="autoCompletarPlanta()">
+                                        <option value="">-- Buscar Planta --</option>
+                                        @if (plantasDb != null)
+                                        {
+                                            foreach (var planta in plantasDb)
+                                            {
+                                                <option value="@planta.Nombre" data-zona="@(planta.Ciudad?.Nombre ?? "")">@planta.Nombre</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="erp-label">Ciudad</label>
+                                    <input type="text" class="form-control erp-input text-uppercase bg-white" id="inpZonaCarga" name="ZonaCarga" placeholder="Autocompletado..." readonly style="pointer-events:none; border-color:transparent;" />
+                                </div>
+                                <div class="col-md-12 mt-4">
+                                    <label class="erp-label">Fecha Presentación En Planta</label>
+                                    <input type="datetime-local" class="form-control erp-input" id="inpFechaCarga" name="FechaCarga" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 mt-4 border-top pt-4">
+                        <label class="erp-label"><i class="bi bi-paperclip"></i> Adjuntar Booking Cliente o Instructivo Terrestre</label>
+                        <input type="file" name="EvidenciaInstructivo" class="form-control erp-input bg-white" accept=".pdf,.doc,.docx,.jpg,.png" />
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="step-documental">
+                    <div class="section-title">
+                        <div><i class="bi bi-building"></i> Aduana y Despachos Documentales</div>
+                    </div>
+                    <div class="row g-4 mb-4" id="documentalBookingContainer"></div>
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <label class="erp-label">Agencia de Aduana Designada</label>
+                            <input type="text" class="form-control erp-input text-uppercase" name="DocAgencia" id="inpAgenciaDoc" placeholder="Nombre de la Agencia" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="erp-label">N° Correlativo DUS / DIN</label>
+                            <input type="text" class="form-control erp-input text-uppercase" name="DocDus" id="inpDus" placeholder="Ej: 12345678" />
+                        </div>
+
+                        <div class="col-12 mt-4 pt-4 border-top">
+                            <label class="erp-label fw-bold text-primary mb-3"><i class="bi bi-folder-fill"></i> Adjuntar Documentación Inicial</label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="erp-label text-muted">Booking Cliente</label>
+                                    <input type="file" name="DocBookingCliente" class="form-control erp-input bg-white" accept=".pdf,.jpg,.png" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="wizard-footer" id="wizardFooterControls" style="display: none;">
+                <button type="button" class="btn btn-step btn-prev" id="btnPrev" style="visibility: hidden;">
+                    <i class="bi bi-arrow-left"></i> Volver Atrás
+                </button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-step btn-next" id="btnNext">
+                        Siguiente Paso <i class="bi bi-arrow-right"></i>
+                    </button>
+                    <button type="button" class="btn btn-step btn-finish" id="btnResumen" style="display: none;">
+                        <i class="bi bi-check2-all"></i> Resumen y Guardar
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<div class="modal fade modal-resumen" id="modalConfirmacion" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header d-flex justify-content-between align-items-center">
+                <h4 class="modal-title fw-black m-0 text-dark" style="font-size: 20px;"><i class="bi bi-shield-check text-success me-2"></i> Verificación Final de la Operación</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <p class="text-muted mb-4" style="font-size: 14px;">Revisa que la estructura completa de la reserva sea correcta antes de inyectarla al ERP.</p>
+
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="resumen-bloque">
+                            <span class="res-label d-flex justify-content-between text-dark border-bottom pb-2 mb-3">1. Estructura Base <i class="bi bi-pencil btn-edit-section" onclick="goToTab('tab-general')"></i></span>
+                            <div class="row g-3">
+                                <div class="col-6"><span class="res-label text-muted">N° Booking</span><p class="res-val text-primary" id="resBooking"></p></div>
+                                <div class="col-6"><span class="res-label text-muted">Cliente</span><p class="res-val" id="resCliente"></p></div>
+                                <div class="col-12"><span class="res-label text-muted">Servicio Contratado</span><p class="res-val text-muted" id="resServicio"></p></div>
+                                <div class="col-12"><span class="res-label text-muted">Movimiento</span><p class="res-val text-muted" id="resMov"></p></div>
+                            </div>
+                        </div>
+
+                        <div class="resumen-bloque" id="resBloqueMaritimo" style="display:none;">
+                            <span class="res-label d-flex justify-content-between text-primary border-bottom border-primary pb-2 mb-3">2. Servicio Marítimo <i class="bi bi-pencil btn-edit-section" onclick="goToTab('tab-maritimo')"></i></span>
+                            <div class="row g-3">
+                                <div class="col-6"><span class="res-label text-muted">Naviera</span><p class="res-val" id="resNaviera"></p></div>
+                                <div class="col-6"><span class="res-label text-muted">Nave / Vessel</span><p class="res-val" id="resNave"></p></div>
+                                <div class="col-6"><span class="res-label text-muted">Puerto Origen (POL)</span><p class="res-val" id="resPol"></p></div>
+                                <div class="col-6"><span class="res-label text-muted">Puerto Destino (POD)</span><p class="res-val" id="resPod"></p></div>
+                                <div class="col-6"><span class="res-label text-muted">ETD Zarpe</span><p class="res-val" id="resEtd"></p></div>
+                                <div class="col-6"><span class="res-label text-muted">ETA Arribo</span><p class="res-val" id="resEta"></p></div>
+                                <div class="col-6"><span class="res-label text-success">Stacking IN</span><p class="res-val text-success" id="resStackIn"></p></div>
+                                <div class="col-6"><span class="res-label text-danger">Stacking OUT</span><p class="res-val text-danger" id="resStackOut"></p></div>
+                                <div class="col-12"><span class="res-label text-danger">Corte Documental Matriz</span><p class="res-val text-danger" id="resCorteDoc"></p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="resumen-bloque" id="resBloqueCarga">
+                            <span class="res-label d-flex justify-content-between text-dark border-bottom pb-2 mb-3">Detalle y Tipos de Carga <i class="bi bi-pencil btn-edit-section" onclick="goToTab('tab-general')"></i></span>
+                            <p class="res-val" id="resUnidades" style="font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.8; color: var(--txt-muted);"></p>
+                        </div>
+
+                        <div class="resumen-bloque" id="resBloqueTerrestre" style="display:none;">
+                            <span class="res-label d-flex justify-content-between text-success border-bottom border-success pb-2 mb-3">3. Servicio Terrestre <i class="bi bi-pencil btn-edit-section" onclick="goToTab('tab-terrestre')"></i></span>
+                            <div class="row g-3">
+                                <div class="col-6"><span class="res-label text-muted">Puerto Conexión</span><p class="res-val" id="resPuertoTer"></p></div>
+                                <div class="col-6"><span class="res-label text-muted">Terminal / Depósito</span><p class="res-val" id="resTermTer"></p></div>
+                                <div class="col-12"><span class="res-label text-muted">Planta de Carga</span><p class="res-val" id="resPlanta"></p></div>
+                                <div class="col-12"><span class="res-label text-muted">Fecha Presentación Camión</span><p class="res-val" id="resFechaCarga"></p></div>
+                            </div>
+                        </div>
+
+                        <div class="resumen-bloque" id="resBloqueDocumental" style="display:none;">
+                            <span class="res-label d-flex justify-content-between text-warning border-bottom border-warning pb-2 mb-3">4. Aduana y Documentos <i class="bi bi-pencil btn-edit-section" onclick="goToTab('tab-documental')"></i></span>
+                            <div class="row g-3">
+                                <div class="col-6"><span class="res-label text-muted">Agencia Aduanas</span><p class="res-val" id="resAgencia"></p></div>
+                                <div class="col-6"><span class="res-label text-muted">N° DUS/DIN</span><p class="res-val" id="resDus"></p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-end" style="background-color: var(--bg-soft); border-top: 1px solid #e2e8f0;">
+                <button type="button" class="btn btn-light border fw-bold text-muted px-4 rounded-3 me-2" data-bs-dismiss="modal">
+                    Modificar Datos
+                </button>
+                <button type="button" class="btn btn-success fw-bold px-4 shadow-sm rounded-3" id="btnGuardarOperacion">
+                    <i class="bi bi-floppy me-2"></i> Guardar Operación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalPdfPreview" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 1100px;">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); overflow: hidden;">
+            <div class="modal-header" style="background: var(--bg-main); border-bottom: 1px solid #e2e8f0; padding: 20px 30px;">
+                <div>
+                    <h5 class="modal-title fw-black m-0" style="font-size: 18px; color: var(--txt-main);">
+                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Previsualización del Booking
+                    </h5>
+                    <p class="text-muted m-0 mt-1" style="font-size: 12px;">Revisa el PDF antes de enviarlo al cliente.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="indicadorEnvio" class="badge" style="font-size: 12px; padding: 8px 14px; border-radius: 20px; display:none;"></span>
+                </div>
+            </div>
+            <div class="modal-body p-0" style="background: #f1f5f9;">
+                <iframe id="iframePdf" src="" style="width: 100%; height: 70vh; border: none; display: none;"></iframe>
+                <div id="pdfLoadingSpinner" style="height: 70vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px;">
+                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+                    <p class="text-muted fw-semibold" style="font-size: 14px;">Generando documento...</p>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between" style="background-color: var(--bg-soft); border-top: 1px solid #e2e8f0; padding: 18px 30px;">
+                <button type="button" class="btn btn-light border fw-bold text-muted px-4 rounded-3" id="btnCerrarSinEnviar">
+                    <i class="bi bi-x-lg me-2"></i> Cerrar sin enviar
+                </button>
+                <button type="button" class="btn fw-bold px-4 shadow-sm rounded-3" id="btnEnviarAlCliente"
+                        style="background: var(--atilson-dark); color: white;">
+                    <i class="bi bi-send-check me-2"></i> Enviar al Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // =========================================================================
+        // MAGIA ATILSON: AUTO-LLENADO PROFUNDO POR PDF (AJAX)
+        // =========================================================================
+        const pdfUploader = document.getElementById('pdfUploader');
+        if (pdfUploader) {
+        pdfUploader.addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        Swal.fire({
+        title: 'Leyendo Documento...',
+        text: 'Extrayendo Cliente, Booking, Puertos y Fechas...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+        });
+
+        const formData = new FormData();
+        formData.append('archivoPdf', file);
+
+        try {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        const response = await fetch('/Operaciones/Create?handler=ProcesarPdf', {
+        method: 'POST',
+        body: formData,
+        headers: {
+        'RequestVerificationToken': token
+        }
+        });
+
+        if (!response.ok) throw new Error("Error en la respuesta del servidor");
+
+        const result = await response.json();
+
+        if (result.success) {
+        // 1. Activar el Servicio Integral por defecto
+        const ddlServicio = document.getElementById('ddlServicio');
+        if (ddlServicio && !ddlServicio.value) {
+        ddlServicio.value = "1"; // EXP INTEGRAL
+        ddlServicio.dispatchEvent(new Event('change'));
+        }
+
+        // 2. Inyectar Inputs de Texto (Booking, Nave, Commodity, Fechas)
+        if (result.data.booking) {
+        const inp = document.getElementById('inpBooking');
+        if (inp) { inp.value = result.data.booking; inp.dispatchEvent(new Event('change')); }
+        }
+
+        if (result.data.nave) {
+        const inp = document.getElementById('inpNave');
+        if (inp) { inp.value = result.data.nave.replace('PORT','').trim(); inp.dispatchEvent(new Event('change')); }
+        }
+
+        if (result.data.commodity) {
+        const inp = document.getElementById('inpCommodity');
+        if (inp) { inp.value = result.data.commodity; inp.dispatchEvent(new Event('change')); }
+        }
+
+        if (result.data.etd) {
+        const inp = document.getElementById('inpEtd');
+        if (inp) { inp.value = result.data.etd; inp.dispatchEvent(new Event('change')); }
+        }
+
+        if (result.data.eta) {
+        const inp = document.getElementById('inpEta');
+        if (inp) { inp.value = result.data.eta; inp.dispatchEvent(new Event('change')); }
+        }
+
+        // 3. Inyectar DropDowns (Naviera y Cliente)
+        if (result.data.naviera) {
+        const selNaviera = document.getElementById('inpNaviera');
+        if (selNaviera) {
+        Array.from(selNaviera.options).forEach(opt => {
+        if (opt.text.toUpperCase().includes(result.data.naviera.toUpperCase())) {
+        selNaviera.value = opt.value;
+        selNaviera.dispatchEvent(new Event('change'));
+        }
+        });
+        }
+        }
+
+        if (result.data.cliente) {
+        const selCliente = document.getElementById('inpCliente');
+        if (selCliente) {
+        let clienteEncontrado = false;
+        Array.from(selCliente.options).forEach(opt => {
+        if (opt.text.toUpperCase().includes(result.data.cliente.toUpperCase())) {
+        selCliente.value = opt.value;
+        selCliente.dispatchEvent(new Event('change'));
+        clienteEncontrado = true;
+        }
+        });
+        // Si no hay match exacto, busca la primera palabra (ej. PROMAR)
+        if(!clienteEncontrado) {
+        let primeraPalabra = result.data.cliente.split(' ')[0];
+        Array.from(selCliente.options).forEach(opt => {
+        if (opt.text.toUpperCase().includes(primeraPalabra.toUpperCase()) && primeraPalabra.length > 3) {
+        selCliente.value = opt.value;
+        selCliente.dispatchEvent(new Event('change'));
+        }
+        });
+        }
+        }
+        }
+
+        // 4. Inyectar Puertos (POL y POD)
+        if (result.data.pol) {
+        const selPol = document.getElementById('inpPol');
+        if (selPol) {
+        Array.from(selPol.options).forEach(opt => {
+        if (opt.text.toUpperCase().includes(result.data.pol.toUpperCase())) {
+        selPol.value = opt.value;
+        selPol.dispatchEvent(new Event('change'));
+        }
+        });
+        }
+        }
+
+        if (result.data.pod) {
+        const selPod = document.getElementById('inpPod');
+        if (selPod) {
+        Array.from(selPod.options).forEach(opt => {
+        if (opt.text.toUpperCase().includes(result.data.pod.toUpperCase())) {
+        selPod.value = opt.value;
+        selPod.dispatchEvent(new Event('change'));
+        }
+        });
+        }
+        }
+
+        // 5. Inyectar Tipo de Carga y Contenedor
+        if (result.data.tipoCarga) {
+        const selCarga = document.getElementById('inpCarga');
+        if (selCarga) {
+        selCarga.value = result.data.tipoCarga;
+        selCarga.dispatchEvent(new Event('change', { bubbles: true }));
+
+        setTimeout(() => {
+        const selContenedor = document.getElementById('inpTipoConte');
+        if (selContenedor && result.data.tipoContenedor) {
+        Array.from(selContenedor.options).forEach(opt => {
+        if (opt.value === result.data.tipoContenedor) {
+        selContenedor.value = opt.value;
+        selContenedor.dispatchEvent(new Event('change'));
+        }
+        });
+        }
+        }, 250);
+        }
+        }
+
+        Swal.fire({
+        title: '¡Datos Extraídos!',
+        html: `<div style="text-align:left; font-size:14px; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0;">
+        <b>Cliente:</b> <span style="color:var(--atilson-purple)">${result.data.cliente || '-'}</span><br>
+        <b>Naviera:</b> <span style="color:var(--atilson-purple)">${result.data.naviera || '-'}</span><br>
+        <b>Booking:</b> <span style="color:var(--atilson-purple)">${result.data.booking || '-'}</span><br>
+        <b>Mercancía:</b> <span style="color:var(--atilson-purple)">${result.data.commodity || '-'}</span><br>
+        <b>Nave:</b> <span style="color:var(--atilson-purple)">${result.data.nave || '-'}</span><br>
+        <b>Ruta:</b> <span style="color:var(--atilson-purple)">${result.data.pol || 'Origen'} ➔ ${result.data.pod || 'Destino'}</span><br>
+        <b>ETD / ETA:</b> <span style="color:var(--atilson-purple)">${result.data.etd || '-'} / ${result.data.eta || '-'}</span><br>
+        <hr style="margin:8px 0;">
+        <b>Unidades:</b> <span style="color:var(--atilson-purple)">${result.data.cantidadContenedores} x ${result.data.tipoContenedor || '-'}</span>
+        </div>
+        <p style="font-size:11px; margin-top:10px; color:gray;">Recuerda verificar y completar los datos faltantes.</p>`,
+        icon: 'success',
+        confirmButtonColor: 'var(--atilson-dark)'
+        });
+
+        } else {
+        Swal.fire('Error', result.message, 'error');
+        }
+        } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'Fallo al comunicarse con el servidor.', 'error');
+        }
+
+        e.target.value = '';
+        });
+        }
+
+        let originalPolOptions = [];
+        let originalPodOptions = [];
+        let originalDepositoOptions = []; // <--- AÑADIDO
+        let modoActual = 'EXP';
+
+        function removeAccents(str) {
+        if (!str) return "";
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+        }
+
+        window.poblarPuertosOrigen = function() {
+        const paisSelect = document.getElementById('inpPaisOrigen');
+        const selPuerto = document.getElementById('inpPol');
+        if (!paisSelect || !selPuerto) return;
+
+        const paisFiltrar = removeAccents(paisSelect.value);
+        let optionsHTML = '<option value="">-- Seleccionar Puerto --</option>';
+
+        originalPolOptions.forEach(opt => {
+        if(!opt.value) return;
+        let paisOption = removeAccents(opt.pais);
+
+        if (modoActual === 'EXP') {
+        if (paisFiltrar === 'OTROS' && paisOption !== 'CHILE' && paisOption !== 'PERU') {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text}</option>`;
+        } else if (paisOption === paisFiltrar || paisOption.includes(paisFiltrar)) {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text}</option>`;
+        }
+        } else {
+        if (paisFiltrar === 'OTROS' || paisOption === paisFiltrar) {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text}</option>`;
+        }
+        }
+        });
+        selPuerto.innerHTML = optionsHTML;
+        selPuerto.value = "";
+        if (modoActual === 'EXP') window.actualizarTerminalMaritimo();
+
+        if (typeof window.poblarPuertosTerrestre === 'function') {
+        window.poblarPuertosTerrestre();
+        }
+        };
+
+        window.poblarPuertosDestino = function() {
+        const paisSelect = document.getElementById('inpPaisDestino');
+        const selPuerto = document.getElementById('inpPod');
+        if (!paisSelect || !selPuerto) return;
+
+        const paisFiltrar = removeAccents(paisSelect.value);
+        let optionsHTML = '<option value="">-- Seleccionar Puerto --</option>';
+
+        originalPodOptions.forEach(opt => {
+        if(!opt.value) return;
+        let paisOption = removeAccents(opt.pais);
+
+        if (modoActual === 'IMP') {
+        if (paisFiltrar === 'OTROS' && paisOption !== 'CHILE' && paisOption !== 'PERU') {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text}</option>`;
+        } else if (paisOption === paisFiltrar || paisOption.includes(paisFiltrar)) {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text}</option>`;
+        }
+        } else {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text}</option>`;
+        }
+        });
+        selPuerto.innerHTML = optionsHTML;
+        selPuerto.value = "";
+        if (modoActual === 'IMP') window.actualizarTerminalMaritimoImpo();
+        };
+
+        window.poblarDepositos = function() {
+        const paisSelectExp = document.getElementById('inpPaisOrigen');
+        const paisSelectImp = document.getElementById('inpPaisDestino');
+        const selDeposito = document.getElementById('inpDepositoRetiro');
+        if (!selDeposito) return;
+
+        let paisFiltrar = "CHILE"; // Por defecto
+
+        // Detectar de dónde leer el país según si es Expo o Impo
+        if (modoActual === 'EXP' && paisSelectExp) {
+        paisFiltrar = removeAccents(paisSelectExp.value);
+        } else if (modoActual === 'IMP' && paisSelectImp) {
+        paisFiltrar = removeAccents(paisSelectImp.value);
+        }
+
+        let optionsHTML = '<option value="">Seleccionar...</option>';
+
+        originalDepositoOptions.forEach(opt => {
+        if(!opt.value) return;
+        let paisOption = removeAccents(opt.pais);
+
+        // Filtramos: Si coincide el país lo mostramos. Si es "OTROS", mostramos todo para no dejar vacío.
+        if (paisOption === paisFiltrar || paisOption.includes(paisFiltrar)) {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text}</option>`;
+        } else if (paisFiltrar === 'OTROS' || !paisFiltrar) {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text}</option>`;
+        }
+        });
+
+        selDeposito.innerHTML = optionsHTML;
+        selDeposito.value = "";
+        };
+
+        window.syncPuertoTerrestre = function(selectElement) {
+        const selTerrestre = document.getElementById('inpPuertoTerrestre');
+        if(!selTerrestre || !selectElement.value) return;
+
+        let nombrePuertoMaritimo = selectElement.options[selectElement.selectedIndex].text;
+
+        Array.from(selTerrestre.options).forEach(opt => {
+        if (removeAccents(opt.value).includes(removeAccents(nombrePuertoMaritimo))) {
+        selTerrestre.value = opt.value;
+        }
+        });
+        window.actualizarTerminalTerrestre();
+        };
+
+        window.autoCompletarPlanta = function() {
+        var selPlanta = document.getElementById('inpPlanta');
+        var inpZona = document.getElementById('inpZonaCarga');
+        if(selPlanta && inpZona) {
+        var opt = selPlanta.options[selPlanta.selectedIndex];
+        inpZona.value = opt ? (opt.getAttribute('data-zona') || "").toUpperCase() : "";
+        }
+        };
+
+        window.configurarPuertosPorMovimiento = function(esExpo, esImpo) {
+        const inpPaisOrigen = document.getElementById('inpPaisOrigen');
+        const inpPaisDestino = document.getElementById('inpPaisDestino');
+        if (!inpPaisOrigen || !inpPaisDestino) return;
+
+        modoActual = esExpo ? 'EXP' : (esImpo ? 'IMP' : 'EXP');
+
+        inpPaisOrigen.innerHTML = '<option value="">-- SELECCIONAR --</option>';
+        inpPaisDestino.innerHTML = '<option value="">-- SELECCIONAR --</option>';
+
+        const paisesInternacionales = ['CHINA', 'ESTADOS UNIDOS', 'ALEMANIA', 'ESPAÑA', 'BRASIL', 'ARGENTINA', 'MEXICO', 'COLOMBIA', 'JAPON', 'COREA DEL SUR', 'INDIA', 'OTROS'];
+
+        if (modoActual === 'EXP') {
+        inpPaisOrigen.innerHTML += '<option value="Chile">CHILE</option><option value="Perú">PERÚ</option><option value="Otros">OTROS</option>';
+        inpPaisOrigen.value = 'Chile';
+
+        document.getElementById('divPaisDestinoContainer').classList.add('d-none');
+        document.getElementById('divTerminalImpo').classList.add('d-none');
+
+        document.getElementById('divTerminalExpo').classList.remove('d-none');
+        document.getElementById('divPolSelectContainer').className = 'col-md-7';
+        document.getElementById('divPodSelectContainer').className = 'col-md-12';
+
+        let optionsHTML = '<option value="">-- Seleccionar Puerto --</option>';
+        let addedDest = new Set();
+        originalPodOptions.forEach(opt => {
+        let txtClean = removeAccents(opt.text);
+        if(opt.value && !addedDest.has(txtClean)) {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text.toUpperCase()}</option>`;
+        addedDest.add(txtClean);
+        }
+        });
+        document.getElementById('inpPod').innerHTML = optionsHTML;
+        document.getElementById('inpPod').onchange = null;
+        document.getElementById('inpPol').onchange = function() { window.actualizarTerminalMaritimo(); window.syncPuertoTerrestre(this); };
+
+        } else {
+        paisesInternacionales.forEach(p => { inpPaisOrigen.innerHTML += `<option value="${p}">${p}</option>`; });
+        inpPaisDestino.innerHTML += '<option value="Chile">CHILE</option><option value="Perú">PERÚ</option><option value="Otros">OTROS</option>';
+
+        inpPaisOrigen.value = 'CHINA';
+        inpPaisDestino.value = 'Chile';
+
+        document.getElementById('divPaisDestinoContainer').classList.remove('d-none');
+        document.getElementById('divTerminalImpo').classList.remove('d-none');
+
+        document.getElementById('divTerminalExpo').classList.add('d-none');
+        document.getElementById('divPolSelectContainer').className = 'col-md-12';
+        document.getElementById('divPodSelectContainer').className = 'col-md-12';
+
+        document.getElementById('inpPol').onchange = null;
+        document.getElementById('inpPod').onchange = function() { window.actualizarTerminalMaritimoImpo(); window.syncPuertoTerrestre(this); };
+
+        window.poblarPuertosDestino();
+        }
+
+        // ... final de configurarPuertosPorMovimiento
+        window.poblarPuertosOrigen();
+        window.actualizarTerminalMaritimo();
+        window.actualizarTerminalMaritimoImpo();
+        window.poblarDepositos(); // <--- AÑADIDO
+        };
+
+        window.actualizarTerminalMaritimo = function() {
+        const selT = document.getElementById('selTerminalMaritimo');
+        const inpT = document.getElementById('inpTerminalMaritimo');
+        const selTerrestre = document.getElementById('selTerminalTerrestre');
+        const inpTerrestre = document.getElementById('inpTerminalTerrestre');
+
+        if (modoActual !== 'EXP') {
+        if(selT) { selT.name = ""; selT.disabled = true; }
+        if(inpT) { inpT.name = ""; inpT.disabled = true; }
+        return;
+        }
+
+        const polSelect = document.getElementById('inpPol');
+        if(!polSelect || !selT || !inpT) return;
+
+        const text = polSelect.selectedIndex > 0 ? removeAccents(polSelect.options[polSelect.selectedIndex].text) : "";
+
+        if (text.includes('VALPARAISO')) {
+        selT.classList.add('d-none'); selT.disabled = true; selT.name = "";
+        inpT.classList.remove('d-none'); inpT.disabled = false; inpT.name = "TerminalMaritimoStr";
+        inpT.value = 'TPS'; inpT.readOnly = true;
+        if(selTerrestre) { selTerrestre.classList.add('d-none'); selTerrestre.disabled = true; selTerrestre.name = ""; }
+        if(inpTerrestre) { inpTerrestre.classList.remove('d-none'); inpTerrestre.disabled = false; inpTerrestre.name = "TerminalTerrestreStr"; inpTerrestre.value = 'TPS'; inpTerrestre.readOnly = true; }
+        } else if (text.includes('SAN ANTONIO')) {
+        selT.innerHTML = '<option value="">-- Terminal --</option><option value="STI">STI</option><option value="DPW">DPW</option>';
+        selT.classList.remove('d-none'); selT.disabled = false; selT.name = "TerminalMaritimoDDL";
+        inpT.classList.add('d-none'); inpT.disabled = true; inpT.name = ""; inpT.value = '';
+        if(selTerrestre) {
+        selTerrestre.innerHTML = '<option value="">-- Terminal --</option><option value="STI">STI</option><option value="DPW">DPW</option>';
+        selTerrestre.classList.remove('d-none'); selTerrestre.disabled = false; selTerrestre.name = "TerminalTerrestreDDL";
+        }
+        if(inpTerrestre) { inpTerrestre.classList.add('d-none'); inpTerrestre.disabled = true; inpTerrestre.name = ""; inpTerrestre.value = ''; }
+        selT.onchange = function() { if(selTerrestre) selTerrestre.value = this.value; };
+        } else if (text.includes('SAN VICENTE')) {
+        selT.classList.add('d-none'); selT.disabled = true; selT.name = "";
+        inpT.classList.remove('d-none'); inpT.disabled = false; inpT.name = "TerminalMaritimoStr";
+        inpT.value = 'SVTI'; inpT.readOnly = true;
+        if(selTerrestre) { selTerrestre.classList.add('d-none'); selTerrestre.disabled = true; selTerrestre.name = ""; }
+        if(inpTerrestre) { inpTerrestre.classList.remove('d-none'); inpTerrestre.disabled = false; inpTerrestre.name = "TerminalTerrestreStr"; inpTerrestre.value = 'SVTI'; inpTerrestre.readOnly = true; }
+        } else {
+        selT.classList.add('d-none'); selT.disabled = true; selT.name = "";
+        inpT.classList.remove('d-none'); inpT.disabled = false; inpT.name = "TerminalMaritimoStr";
+        inpT.value = ''; inpT.readOnly = false;
+        if(selTerrestre) { selTerrestre.classList.add('d-none'); selTerrestre.disabled = true; selTerrestre.name = ""; }
+        if(inpTerrestre) { inpTerrestre.classList.remove('d-none'); inpTerrestre.disabled = false; inpTerrestre.name = "TerminalTerrestreStr"; inpTerrestre.value = ''; inpTerrestre.readOnly = false; }
+        inpT.onkeyup = function() { if(inpTerrestre) inpTerrestre.value = this.value; };
+        }
+        };
+
+        window.actualizarTerminalMaritimoImpo = function() {
+        const selT = document.getElementById('selTerminalMaritimoImpo');
+        const inpT = document.getElementById('inpTerminalMaritimoImpo');
+
+        if (modoActual !== 'IMP') {
+        if(selT) { selT.name = ""; selT.disabled = true; }
+        if(inpT) { inpT.name = ""; inpT.disabled = true; }
+        return;
+        }
+
+        const podSelect = document.getElementById('inpPod');
+        if(!podSelect || !selT || !inpT) return;
+
+        const text = podSelect.selectedIndex > 0 ? removeAccents(podSelect.options[podSelect.selectedIndex].text) : "";
+
+        if (text.includes('VALPARAISO')) {
+        selT.classList.add('d-none'); selT.disabled = true; selT.name = "";
+        inpT.classList.remove('d-none'); inpT.disabled = false; inpT.name = "TerminalMaritimoStr";
+        inpT.value = 'TPS'; inpT.readOnly = true;
+        } else if (text.includes('SAN ANTONIO')) {
+        selT.innerHTML = '<option value="">-- Terminal --</option><option value="STI">STI</option><option value="DPW">DPW</option>';
+        selT.classList.remove('d-none'); selT.disabled = false; selT.name = "TerminalMaritimoDDL";
+        inpT.classList.add('d-none'); inpT.disabled = true; inpT.name = ""; inpT.value = '';
+        } else if (text.includes('SAN VICENTE')) {
+        selT.classList.add('d-none'); selT.disabled = true; selT.name = "";
+        inpT.classList.remove('d-none'); inpT.disabled = false; inpT.name = "TerminalMaritimoStr";
+        inpT.value = 'SVTI'; inpT.readOnly = true;
+        } else {
+        selT.classList.add('d-none'); selT.disabled = true; selT.name = "";
+        inpT.classList.remove('d-none'); inpT.disabled = false; inpT.name = "TerminalMaritimoStr";
+        inpT.value = ''; inpT.readOnly = false;
+        }
+        };
+
+        window.actualizarTerminalTerrestre = function() {
+        const pTer = document.getElementById('inpPuertoTerrestre');
+        const selT = document.getElementById('selTerminalTerrestre');
+        const inpT = document.getElementById('inpTerminalTerrestre');
+
+        if(!pTer || !selT || !inpT) return;
+
+        const text = removeAccents(pTer.value);
+
+        if (text.includes('VALPARAISO')) {
+        selT.classList.add('d-none'); selT.disabled = true; selT.name = "";
+        inpT.classList.remove('d-none'); inpT.disabled = false; inpT.name = "TerminalTerrestreStr";
+        inpT.value = 'TPS'; inpT.readOnly = true;
+        } else if (text.includes('SAN ANTONIO')) {
+        selT.innerHTML = '<option value="">-- Terminal --</option><option value="STI">STI</option><option value="DPW">DPW</option>';
+        selT.classList.remove('d-none'); selT.disabled = false; selT.name = "TerminalTerrestreDDL";
+        inpT.classList.add('d-none'); inpT.disabled = true; inpT.name = ""; inpT.value = '';
+        } else if (text.includes('SAN VICENTE')) {
+        selT.classList.add('d-none'); selT.disabled = true; selT.name = "";
+        inpT.classList.remove('d-none'); inpT.disabled = false; inpT.name = "TerminalTerrestreStr";
+        inpT.value = 'SVTI'; inpT.readOnly = true;
+        } else {
+        selT.classList.add('d-none'); selT.disabled = true; selT.name = "";
+        inpT.classList.remove('d-none'); inpT.disabled = false; inpT.name = "TerminalTerrestreStr";
+        inpT.value = ''; inpT.readOnly = false;
+        }
+        };
+
+        window.goToTab = function(tabId) {
+        var myModalEl = document.getElementById('modalConfirmacion');
+        var modal = bootstrap.Modal.getInstance(myModalEl);
+        if(modal) modal.hide();
+        document.getElementById(tabId).click();
+        };
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+        // --- 1. CARGA INICIAL DE DATOS ---
+        const polSelect = document.getElementById('inpPol');
+        const podSelect = document.getElementById('inpPod');
+        const depSelect = document.getElementById('inpDepositoRetiro');
+
+        if(polSelect) {
+        Array.from(polSelect.options).forEach(opt => {
+        if(opt.value) originalPolOptions.push({value: opt.value, text: opt.text, pais: opt.getAttribute('data-pais')});
+        });
+        polSelect.innerHTML = '<option value="">-- País Primero --</option>';
+        }
+
+        if(podSelect) {
+        let addedDest = new Set();
+        let optionsHTML = '<option value="">-- Seleccionar Puerto --</option>';
+
+        if(depSelect) {
+        Array.from(depSelect.options).forEach(opt => {
+        if(opt.value) originalDepositoOptions.push({value: opt.value, text: opt.text, pais: opt.getAttribute('data-pais')});
+        });
+        }
+
+        Array.from(podSelect.options).forEach(opt => {
+        let txtClean = removeAccents(opt.text);
+        if(opt.value && !addedDest.has(txtClean)) {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.getAttribute('data-pais')}">${opt.text.toUpperCase()}</option>`;
+        originalPodOptions.push({value: opt.value, text: opt.text, pais: opt.getAttribute('data-pais')});
+        addedDest.add(txtClean);
+        }
+        });
+        podSelect.innerHTML = optionsHTML;
+        }
+
+        // --- 2. LÓGICA DEL WIZARD (Pestañas y Módulos) ---
+        const ddlServicio = document.getElementById('ddlServicio');
+        const tabs = document.querySelectorAll('.nav-link');
+        const panes = document.querySelectorAll('.tab-pane');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const btnResumen = document.getElementById('btnResumen');
+
+        let activeTabs = [];
+        let currentIndex = 0;
+
+        function updateWizardNav() {
+        tabs.forEach(t => t.classList.remove('active'));
+        panes.forEach(p => p.classList.remove('active'));
+
+        if (activeTabs.length > 0) {
+        const currentTabId = activeTabs[currentIndex];
+        const currentTab = document.getElementById(currentTabId);
+        const currentPaneId = currentTab.getAttribute('data-target');
+        const currentPane = document.getElementById(currentPaneId);
+
+        if(currentTab) currentTab.classList.add('active');
+        if(currentPane) currentPane.classList.add('active');
+        }
+
+        if(btnPrev) btnPrev.style.visibility = currentIndex > 0 ? 'visible' : 'hidden';
+
+        if (currentIndex === activeTabs.length - 1) {
+        if(btnNext) btnNext.style.display = 'none';
+        if(btnResumen) btnResumen.style.display = 'inline-flex';
+        } else {
+        if(btnNext) btnNext.style.display = 'inline-flex';
+        if(btnResumen) btnResumen.style.display = 'none';
+        }
+        }
+
+        function actualizarModulos() {
+        if (!ddlServicio) return;
+
+        const valTexto = removeAccents(ddlServicio.options[ddlServicio.selectedIndex]?.text || '');
+        const valNum = ddlServicio.value;
+
+        const liMar = document.getElementById('nav-item-maritimo');
+        const liTer = document.getElementById('nav-item-terrestre');
+        const liDoc = document.getElementById('nav-item-documental');
+
+        activeTabs = ['tab-general'];
+
+        const bookingField = document.getElementById('bookingFieldWrapper');
+        const maritimoRow = document.getElementById('maritimoRow');
+        const terrestreContainer = document.getElementById('terrestreBookingContainer');
+        const documentalContainer = document.getElementById('documentalBookingContainer');
+        const baseInfoRow = document.getElementById('baseInfoRow');
+        const colCliente = document.getElementById('colCliente');
+
+        const restOfGeneralFields = document.getElementById('restOfGeneralFields');
+        const wizardFooterControls = document.getElementById('wizardFooterControls');
+
+        if (!valNum) {
+        liTer.style.display = 'none'; liMar.style.display = 'none'; liDoc.style.display = 'none';
+        if(restOfGeneralFields) restOfGeneralFields.style.display = 'none';
+        if(wizardFooterControls) wizardFooterControls.style.display = 'none';
+        bookingField.classList.add('d-none');
+        } else {
+        if(restOfGeneralFields) restOfGeneralFields.style.display = 'block';
+        if(wizardFooterControls) wizardFooterControls.style.display = 'flex';
+
+        let esMaritimo = valTexto.includes('MAR') || valTexto.includes('INTEGRAL');
+        let esTerrestre = valTexto.includes('TER') || valTexto.includes('INTEGRAL');
+        let esDocumental = valTexto.includes('DOC') || valTexto.includes('INTEGRAL');
+        let esExpo = valTexto.includes('EXP');
+        let esImpo = valTexto.includes('IMP');
+
+        window.configurarPuertosPorMovimiento(esExpo, esImpo);
+
+        liMar.style.display = esMaritimo ? 'block' : 'none';
+        liTer.style.display = esTerrestre ? 'block' : 'none';
+        liDoc.style.display = esDocumental ? 'block' : 'none';
+
+        if (esMaritimo) activeTabs.push('tab-maritimo');
+        if (esTerrestre) activeTabs.push('tab-terrestre');
+        if (esDocumental) activeTabs.push('tab-documental');
+
+        bookingField.classList.remove('d-none');
+        if (esMaritimo && maritimoRow) {
+        maritimoRow.prepend(bookingField);
+        } else if (esTerrestre && terrestreContainer) {
+        terrestreContainer.appendChild(bookingField);
+        } else if (esDocumental && documentalContainer) {
+        documentalContainer.appendChild(bookingField);
+        } else if (baseInfoRow) {
+        baseInfoRow.insertBefore(bookingField, colCliente);
+        }
+
+        const astMaritimo = document.querySelector('.req-maritimo-asterisk');
+        document.querySelectorAll('.req-naviera, .req-carga').forEach(el => {
+        if(esMaritimo) {
+        el.classList.add('req-activa');
+        if(astMaritimo) astMaritimo.style.display = 'inline';
+        } else {
+        el.classList.remove('req-activa');
+        if(astMaritimo) astMaritimo.style.display = 'none';
+        }
+        });
+
+        document.querySelectorAll('.select-tipo-carga').forEach(sel => {
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        }
+        currentIndex = 0; updateWizardNav();
+        }
+
+        if(ddlServicio) {
+        ddlServicio.addEventListener('change', actualizarModulos);
+        actualizarModulos();
+        }
+
+        if(btnNext) { btnNext.addEventListener('click', () => { if (currentIndex < activeTabs.length - 1) { currentIndex++; updateWizardNav(); } }); }
+        if(btnPrev) { btnPrev.addEventListener('click', () => { if (currentIndex > 0) { currentIndex--; updateWizardNav(); } }); }
+
+        tabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        const id = this.id;
+        const index = activeTabs.indexOf(id);
+        if (index !== -1) {
+        currentIndex = index;
+        updateWizardNav();
+        }
+        });
+        });
+
+        // --- 3. EVENTOS DE FORMULARIO DE CARGA ---
+        const selectTransbordo = document.getElementById('selectTransbordo');
+        if (selectTransbordo) {
+        selectTransbordo.addEventListener('change', function() {
+        const divPuertoTransbordo = document.getElementById('divPuertoTransbordo');
+        if (this.value === 'TRANSBORDO') {
+        if(divPuertoTransbordo) divPuertoTransbordo.style.display = 'block';
+        } else {
+        if(divPuertoTransbordo) { divPuertoTransbordo.style.display = 'none'; divPuertoTransbordo.value = ''; }
+        }
+        });
+        }
+
+        function actualizarCarga(container) {
+        if (!container) return;
+        const ddlTipoCarga = container.querySelector('.select-tipo-carga');
+        const divCondicionReefer = container.querySelector('.div-condicion-reefer');
+        const ddlUnidad = container.querySelector('.select-unidad');
+        const panelReefer = container.querySelector('.panel-reefer');
+        const selectAtmosfera = container.querySelector('.select-atmosfera');
+        const divConvencional = container.querySelector('.div-convencional');
+        const divAC = container.querySelector('.div-ac');
+
+        const val = removeAccents(ddlTipoCarga?.options[ddlTipoCarga.selectedIndex]?.text || '');
+
+        const textServicio = removeAccents(document.getElementById('ddlServicio').options[document.getElementById('ddlServicio').selectedIndex]?.text || '');
+        const hasMaritimo = textServicio.includes('MAR') || textServicio.includes('INTEGRAL');
+
+        if (val.includes('DRY')) {
+        if (divCondicionReefer) divCondicionReefer.style.display = 'none';
+        if (panelReefer) panelReefer.style.display = 'none';
+        if (ddlUnidad) ddlUnidad.innerHTML = `<option value="20' DRY STD">20' DRY STD</option><option value="40' DRY STD">40' DRY STD</option><option value="40' DRY HC">40' DRY HC</option><option value="PALLETS">CARGA SUELTA / PALLETS</option>`;
+        }
+        else if (val.includes('REEFER')) {
+        if (divCondicionReefer) divCondicionReefer.style.display = 'block';
+
+        if (!hasMaritimo) {
+        if (panelReefer) panelReefer.style.display = 'none';
+        } else {
+        if (panelReefer) panelReefer.style.display = 'block';
+        const ddlCondicionReefer = container.querySelector('.select-condicion-reefer');
+        const divOpcionesFresh = container.querySelector('.div-opciones-fresh');
+
+        if (ddlCondicionReefer && ddlCondicionReefer.value === 'FROZEN') {
+        if(divOpcionesFresh) divOpcionesFresh.style.display = 'none';
+        } else {
+        if(divOpcionesFresh) divOpcionesFresh.style.display = 'flex';
+        if (selectAtmosfera && selectAtmosfera.value === 'AC') {
+        if(divConvencional) divConvencional.style.display = 'none';
+        if(divAC) divAC.style.display = 'flex';
+        } else {
+        if(divConvencional) divConvencional.style.display = 'flex';
+        if(divAC) divAC.style.display = 'none';
+        }
+        }
+        }
+        if(ddlUnidad) ddlUnidad.innerHTML = `<option value="20' REEFER">20' REEFER</option><option value="40' REEFER">40' REEFER</option>`;
+        } else {
+        if(divCondicionReefer) divCondicionReefer.style.display = 'none';
+        if(panelReefer) panelReefer.style.display = 'none';
+        if(ddlUnidad) ddlUnidad.innerHTML = '<option value="">Seleccione Carga Primero</option>';
+        }
+        }
+
+        const contenedorContainer = document.getElementById('contenedores-container');
+        if (contenedorContainer) {
+        contenedorContainer.addEventListener('change', function(e) {
+        if (e.target.classList.contains('select-tipo-carga') || e.target.classList.contains('select-condicion-reefer') || e.target.classList.contains('select-atmosfera')) {
+        actualizarCarga(e.target.closest('.contenedor-item'));
+        }
+        });
+
+        contenedorContainer.addEventListener('click', function(e) {
+        if(e.target.classList.contains('btn-eliminar-contenedor')) {
+        e.target.closest('.contenedor-item').remove();
+        }
+        });
+        }
+
+        let contadorContenedores = 1;
+        const btnAgregar = document.getElementById('btnAgregarContenedor');
+        if (btnAgregar) {
+        btnAgregar.addEventListener('click', function() {
+        contadorContenedores++;
+        const container = document.getElementById('contenedores-container');
+        const html = `
+        <div class="contenedor-item position-relative">
+        <button type="button" class="btn-close position-absolute top-0 end-0 m-3 btn-eliminar-contenedor" title="Eliminar"></button>
+        <h6 class="erp-label mb-3" style="color: var(--atilson-dark); font-size: 12px;"><i class="bi bi-plus-circle-fill me-1"></i> Unidad Adicional</h6>
+        <div class="row g-3">
+        <div class="col-md-3">
+        <label class="erp-label">Tipo Carga <span class="text-danger req-maritimo-asterisk" style="display:none;">*</span></label>
+        <select name="ContenedoresExtra[${contadorContenedores}].IdTipoCarga" class="form-select erp-input fw-bold req-carga select-tipo-carga">
+        <option value="">-- Seleccionar --</option>
+        <option value="1">DRY</option>
+        <option value="2">REEFER</option>
+        </select>
+        </div>
+        <div class="col-md-3 div-condicion-reefer" style="display: none;">
+        <label class="erp-label">Condición Reefer</label>
+        <select name="ContenedoresExtra[${contadorContenedores}].CondicionReefer" class="form-select erp-input select-condicion-reefer">
+        <option value="FRESH">Fresh</option>
+        <option value="FROZEN">Frozen</option>
+        </select>
+        </div>
+        <div class="col-md-3">
+        <label class="erp-label">Tipo Unidad <span class="text-danger">*</span></label>
+        <select name="ContenedoresExtra[${contadorContenedores}].TipoContenedor" class="form-select erp-input select-unidad req-general">
+        <option value="">Carga Primero</option>
+        </select>
+        </div>
+        <div class="col-md-3">
+        <label class="erp-label">Commodity <span class="text-danger">*</span></label>
+        <input name="ContenedoresExtra[${contadorContenedores}].Commodity" class="form-control erp-input text-uppercase req-general" placeholder="Ej: Vino..." />
+        </div>
+        </div>
+        <div class="panel-reefer" style="display: none;">
+        <h6 class="erp-label mb-3" style="color: var(--atilson-purple);"><i class="bi bi-snow"></i> Parámetros Reefer Requeridos</h6>
+        <div class="row g-3">
+        <div class="col-md-2"><label class="erp-label">Temp (°C)</label><input type="number" step="0.1" class="form-control erp-input fw-bold text-primary" name="ContenedoresExtra[${contadorContenedores}].TempSeteada" placeholder="0.0" /></div>
+        <div class="col-md-10 row g-3 m-0 div-opciones-fresh">
+        <div class="col-md-3"><label class="erp-label">Atmósfera</label><select class="form-select erp-input select-atmosfera" name="ContenedoresExtra[${contadorContenedores}].TipoAtmosfera"><option value="CONV">Convencional</option><option value="AC">A. Controlada</option></select></div>
+        <div class="col-md-9 row g-3 m-0 div-convencional"><div class="col-md-4"><label class="erp-label">Ventilación</label><input type="text" class="form-control erp-input" name="ContenedoresExtra[${contadorContenedores}].Ventilacion" placeholder="15" /></div><div class="col-md-4"><label class="erp-label">Humedad (%)</label><input type="number" class="form-control erp-input" name="ContenedoresExtra[${contadorContenedores}].Humedad" placeholder="80" /></div></div>
+        <div class="col-md-9 row g-3 m-0 div-ac" style="display: none;"><div class="col-md-4"><label class="erp-label">Tecnología AC</label><select class="form-select erp-input" name="ContenedoresExtra[${contadorContenedores}].MarcaAc"><option value="Extrafresh">Extrafresh</option><option value="Liventus">Liventus</option><option value="Starcool">Starcool</option></select></div><div class="col-md-4"><label class="erp-label text-danger">O2 (%)</label><input type="text" class="form-control erp-input fw-bold" name="ContenedoresExtra[${contadorContenedores}].NivelO2" placeholder="5" /></div><div class="col-md-4"><label class="erp-label text-danger">CO2 (%)</label><input type="text" class="form-control erp-input fw-bold" name="ContenedoresExtra[${contadorContenedores}].NivelCO2" placeholder="10" /></div></div>
+        </div>
+        </div>
+        </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+        const newCont = container.lastElementChild;
+
+        const textServicio = removeAccents(document.getElementById('ddlServicio').options[document.getElementById('ddlServicio').selectedIndex]?.text || '');
+        const isMar = textServicio.includes('MAR') || textServicio.includes('INTEGRAL');
+
+        if (isMar) {
+        newCont.querySelectorAll('.req-carga').forEach(el => el.classList.add('req-activa'));
+        const ast = newCont.querySelector('.req-maritimo-asterisk');
+        if (ast) ast.style.display = 'inline';
+        }
+        });
+        }
+
+        // --- 4. RESUMEN Y VALIDACIONES ---
+        if(btnResumen) {
+        btnResumen.addEventListener('click', function() {
+        let errores = [];
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+        document.querySelectorAll('.req-general, .req-activa').forEach(el => {
+        if(!el.value) {
+        el.classList.add('is-invalid');
+        let label = el.previousElementSibling?.innerText.replace('*','').trim();
+        errores.push(label || "Campo Obligatorio");
+        }
+        });
+
+        const tabMaritimo = document.getElementById('tab-maritimo');
+        if(tabMaritimo && tabMaritimo.parentElement.style.display !== 'none') {
+        const inpStacking = document.getElementById('inpStackingOut').value;
+        const inpCorteDoc = document.getElementById('inpCorteDoc').value;
+
+        if(!inpStacking || !inpCorteDoc) {
+        Swal.fire({
+        title: 'Atención: Fechas Faltantes',
+        text: 'No has ingresado Stacking OUT o Corte Documental. ¿Deseas continuar? (Esto levantará una alerta visual en el Mainboard)',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#0f172a',
+        confirmButtonText: 'Sí, continuar',
+        cancelButtonText: 'Revisar Fechas'
+        }).then((result) => {
+        if (result.isConfirmed) {
+        if (errores.length > 0) {
+        Swal.fire({ title: 'Faltan Datos Obligatorios', icon: 'warning', confirmButtonColor: 'var(--atilson-dark)' });
+        } else {
+        mostrarResumen();
+        }
+        }
+        });
+        return;
+        }
+        }
+
+        if (errores.length > 0) {
+        Swal.fire({ title: 'Faltan Datos Obligatorios', icon: 'warning', confirmButtonColor: 'var(--atilson-dark)' });
+        } else {
+        mostrarResumen();
+        }
+        });
+        }
+
+        function mostrarResumen() {
+        document.getElementById('resBooking').innerText = document.getElementById('inpBooking')?.value.toUpperCase() || "S/N";
+
+        let cbCli = document.getElementById('inpCliente');
+        document.getElementById('resCliente').innerText = cbCli.value ? cbCli.options[cbCli.selectedIndex].text : "S/N";
+
+        let cbServ = document.getElementById('ddlServicio');
+        document.getElementById('resServicio').innerText = cbServ.value ? cbServ.options[cbServ.selectedIndex].text : "S/N";
+
+        let cbMov = document.getElementById('inpMovimiento');
+        let cbPais = document.getElementById('inpPaisOrigen');
+        document.getElementById('resMov').innerText = (cbMov.value ? cbMov.options[cbMov.selectedIndex].text : "N/A") + " | País Origen: " + (cbPais.value ? cbPais.options[cbPais.selectedIndex].text : "N/A");
+
+        let unidadesHTML = "";
+        document.querySelectorAll('.contenedor-item').forEach((item, index) => {
+        let tCarga = item.querySelector('.select-tipo-carga');
+        let tUni = item.querySelector('.select-unidad');
+        let comm = item.querySelector('#inpCommodity') || item.querySelector('input[name*="Commodity"]');
+        if (tCarga && tUni && comm) {
+        unidadesHTML += `> UNIDAD ${index+1}: [${tCarga.options[tCarga.selectedIndex]?.text}] ${tUni.value} | ${comm.value.toUpperCase()}<br/>`;
+        }
+        });
+        document.getElementById('resUnidades').innerHTML = unidadesHTML;
+
+        if(document.getElementById('nav-item-maritimo').style.display !== 'none') {
+        document.getElementById('resBloqueMaritimo').style.display = 'block';
+        let nNav = document.getElementById('inpNaviera');
+        document.getElementById('resNaviera').innerText = nNav && nNav.value ? nNav.options[nNav.selectedIndex].text : "-";
+        document.getElementById('resNave').innerText = document.getElementById('inpNave')?.value.toUpperCase() || "-";
+        let nPol = document.getElementById('inpPol');
+
+        let selTermMar = document.getElementById('selTerminalMaritimo');
+        let inpTermMar = document.getElementById('inpTerminalMaritimo');
+        let termMar = (selTermMar && selTermMar.style.display !== 'none') ? selTermMar.options[selTermMar.selectedIndex]?.text : (inpTermMar ? inpTermMar.value : "");
+
+        document.getElementById('resPol').innerText = (nPol && nPol.value ? nPol.options[nPol.selectedIndex].text : "-") + (termMar ? ` (${termMar.toUpperCase()})` : "");
+
+        let nPod = document.getElementById('inpPod'); document.getElementById('resPod').innerText = nPod && nPod.value ? nPod.options[nPod.selectedIndex].text : "-";
+        document.getElementById('resEtd').innerText = document.getElementById('inpEtd')?.value || "-";
+        document.getElementById('resEta').innerText = document.getElementById('inpEta')?.value || "-";
+        document.getElementById('resStackIn').innerText = document.getElementById('inpStackingIn')?.value.replace("T", " ") || "-";
+        document.getElementById('resStackOut').innerText = document.getElementById('inpStackingOut')?.value.replace("T", " ") || "-";
+        document.getElementById('resCorteDoc').innerText = document.getElementById('inpCorteDoc')?.value.replace("T", " ") || "-";
+        } else { document.getElementById('resBloqueMaritimo').style.display = 'none'; }
+
+        if(document.getElementById('nav-item-terrestre').style.display !== 'none') {
+        document.getElementById('resBloqueTerrestre').style.display = 'block';
+        let pTer = document.getElementById('inpPuertoTerrestre');
+
+        let selTermTer = document.getElementById('selTerminalTerrestre');
+        let inpTermTer = document.getElementById('inpTerminalTerrestre');
+        let termTer = (selTermTer && selTermTer.style.display !== 'none') ? selTermTer.options[selTermTer.selectedIndex]?.text : (inpTermTer ? inpTermTer.value : "");
+
+        document.getElementById('resPuertoTer').innerText = (pTer && pTer.value ? pTer.options[pTer.selectedIndex].text : "-") + (termTer ? ` (${termTer.toUpperCase()})` : "");
+
+        let depTer = document.getElementById('inpDepositoRetiro');
+        document.getElementById('resTermTer').innerText = depTer && depTer.value ? depTer.options[depTer.selectedIndex].text : "-";
+
+        let pPlanta = document.getElementById('inpPlanta');
+        document.getElementById('resPlanta').innerText = (pPlanta && pPlanta.value ? pPlanta.options[pPlanta.selectedIndex]?.text : "-").toUpperCase();
+        document.getElementById('resFechaCarga').innerText = document.getElementById('inpFechaCarga')?.value.replace("T", " ") || "-";
+        } else { document.getElementById('resBloqueTerrestre').style.display = 'none'; }
+
+        if(document.getElementById('nav-item-documental').style.display !== 'none') {
+        document.getElementById('resBloqueDocumental').style.display = 'block';
+        document.getElementById('resAgencia').innerText = document.getElementById('inpAgenciaDoc')?.value.toUpperCase() || "-";
+        document.getElementById('resDus').innerText = document.getElementById('inpDus')?.value.toUpperCase() || "-";
+        } else { document.getElementById('resBloqueDocumental').style.display = 'none'; }
+
+        new bootstrap.Modal(document.getElementById('modalConfirmacion')).show();
+        }
+
+        // --- 5. AUTO GUARDADO (LOCAL STORAGE) ---
+        const formInputs = document.querySelectorAll(
+        '#frmOperacion input:not([type="hidden"]):not([type="file"]), #frmOperacion select, #frmOperacion textarea'
+        );
+
+        const savedData = localStorage.getItem('AtilsonDraftOperacion');
+        if (savedData) {
+        Swal.fire({
+        title: 'Borrador Encontrado',
+        text: 'Tienes una operación a medio completar. ¿Deseas restaurar los datos?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, restaurar',
+        cancelButtonText: 'No, empezar de cero',
+        confirmButtonColor: 'var(--atilson-primary)'
+        }).then((result) => {
+        if (result.isConfirmed) {
+        let parsed = JSON.parse(savedData);
+
+        const ddlServ = document.getElementById('ddlServicio');
+        if (parsed[ddlServ?.name] && ddlServ) {
+        ddlServ.value = parsed[ddlServ.name];
+        ddlServ.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        setTimeout(() => {
+        formInputs.forEach(input => {
+        if (parsed[input.name] && input.id !== 'ddlServicio') {
+        input.value = parsed[input.name];
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        });
+        Swal.fire('Restaurado', 'Tus datos han sido cargados.', 'success');
+        }, 300);
+
+        } else {
+        localStorage.removeItem('AtilsonDraftOperacion');
+        }
+        });
+        }
+
+        formInputs.forEach(input => {
+        input.addEventListener('change', () => {
+        let draft = {};
+        formInputs.forEach(inp => { if(inp.name && inp.value) draft[inp.name] = inp.value; });
+        localStorage.setItem('AtilsonDraftOperacion', JSON.stringify(draft));
+        });
+        });
+
+        // --- 6. NUEVO FLUJO: GUARDAR → PDF → ENVIAR ---
+        const btnGuardar = document.getElementById('btnGuardarOperacion');
+
+        if (btnGuardar) {
+        btnGuardar.addEventListener('click', async function () {
+        btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Guardando...';
+        btnGuardar.disabled = true;
+
+        const formData = new FormData(document.getElementById('frmOperacion'));
+        formData.set('GenerarPdfDirecto', 'true');
+
+        localStorage.removeItem('AtilsonDraftOperacion');
+
+        try {
+        const response = await fetch(window.location.pathname, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+        Swal.fire({
+        title: 'Error al guardar',
+        text: data.message || 'Ocurrió un problema al crear la operación.',
+        icon: 'error',
+        confirmButtonColor: 'var(--atilson-dark)'
+        });
+        btnGuardar.innerHTML = '<i class="bi bi-floppy me-2"></i> Guardar Operación';
+        btnGuardar.disabled = false;
+        return;
+        }
+
+        const modalConfirm = bootstrap.Modal.getInstance(document.getElementById('modalConfirmacion'));
+        if (modalConfirm) modalConfirm.hide();
+
+        const modalPdf = new bootstrap.Modal(document.getElementById('modalPdfPreview'));
+        modalPdf.show();
+
+        const iframe = document.getElementById('iframePdf');
+        const spinner = document.getElementById('pdfLoadingSpinner');
+
+        iframe.style.display = 'none';
+        spinner.style.display = 'flex';
+
+        iframe.onload = function () {
+        spinner.style.display = 'none';
+        iframe.style.display = 'block';
+        };
+        iframe.src = data.pdfUrl;
+
+        window._operacionGuardadaId = data.id;
+
+        const indicador = document.getElementById('indicadorEnvio');
+        indicador.style.display = 'inline-flex';
+        indicador.className = 'badge bg-danger';
+        indicador.innerHTML = '<i class="bi bi-circle-fill me-1" style="font-size:8px;"></i> No enviado';
+
+        } catch (err) {
+        Swal.fire({ title: 'Error inesperado', text: err.message, icon: 'error' });
+        btnGuardar.innerHTML = '<i class="bi bi-floppy me-2"></i> Guardar Operación';
+        btnGuardar.disabled = false;
+        }
+        });
+        }
+
+        document.getElementById('btnCerrarSinEnviar')?.addEventListener('click', function () {
+        window.location.href = '/Operaciones';
+        });
+
+        document.getElementById('btnEnviarAlCliente')?.addEventListener('click', async function () {
+        const btn = this;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Enviando...';
+        btn.disabled = true;
+
+        try {
+        const response = await fetch(`/Operaciones/EnviarBookingCliente?id=${window._operacionGuardadaId}`, {
+        method: 'POST',
+        headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+        const indicador = document.getElementById('indicadorEnvio');
+        indicador.className = 'badge bg-success';
+        indicador.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Enviado';
+
+        btn.innerHTML = '<i class="bi bi-check2 me-2"></i> Enviado';
+        btn.className = 'btn btn-success fw-bold px-4 rounded-3';
+
+        setTimeout(() => { window.location.href = '/Operaciones'; }, 1500);
+        } else {
+        Swal.fire({ title: 'Error al enviar', text: data.message, icon: 'error' });
+        btn.innerHTML = '<i class="bi bi-send-check me-2"></i> Enviar al Cliente';
+        btn.disabled = false;
+        }
+        } catch (err) {
+        Swal.fire({ title: 'Error', text: err.message, icon: 'error' });
+        btn.innerHTML = '<i class="bi bi-send-check me-2"></i> Enviar al Cliente';
+        btn.disabled = false;
+        }
+        });
+        });
+
+        // =========================================================================
+        // NUEVA INTELIGENCIA: TERRESTRE VS MARÍTIMO (Países y Puertos)
+        // =========================================================================
+        window.originalTerrestreOptions = [];
+
+        window.poblarPuertosTerrestre = function() {
+        const paisSelect = document.getElementById('inpPaisOrigen');
+        const selPuerto = document.getElementById('inpPuertoTerrestre');
+        const txtPuerto = document.getElementById('inpPuertoTerrestreOtro');
+        if (!paisSelect || !selPuerto) return;
+
+        const paisFiltrar = removeAccents(paisSelect.value);
+        let optionsHTML = '<option value="">-- Seleccionar Puerto --</option>';
+
+        if (paisFiltrar === 'OTROS') {
+        selPuerto.style.display = 'none';
+        selPuerto.setAttribute('disabled', 'disabled');
+        if (txtPuerto) {
+        txtPuerto.style.display = 'block';
+        txtPuerto.removeAttribute('disabled');
+        }
+        } else {
+        selPuerto.style.display = 'block';
+        selPuerto.removeAttribute('disabled');
+        if (txtPuerto) {
+        txtPuerto.style.display = 'none';
+        txtPuerto.setAttribute('disabled', 'disabled');
+        }
+
+        window.originalTerrestreOptions.forEach(opt => {
+        if(!opt.value) return;
+        let paisOption = removeAccents(opt.pais);
+        if (paisOption === paisFiltrar || paisOption.includes(paisFiltrar)) {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text}</option>`;
+        }
+        });
+        selPuerto.innerHTML = optionsHTML;
+        selPuerto.value = "";
+        window.actualizarTerminalTerrestre();
+        }
+        };
+
+        window.syncTransporteIntelligence = function() {
+        const ddlServicio = document.getElementById('ddlServicio');
+        if (!ddlServicio) return;
+
+        const valTexto = removeAccents(ddlServicio.options[ddlServicio.selectedIndex]?.text || '');
+        let esMaritimo = valTexto.includes('MAR') || valTexto.includes('INTEGRAL');
+        let esTerrestre = valTexto.includes('TER') || valTexto.includes('INTEGRAL');
+
+        const selPuertoTerrestre = document.getElementById('inpPuertoTerrestre');
+        const txtPuertoTerrestre = document.getElementById('inpPuertoTerrestreOtro');
+
+        if (esTerrestre) {
+        if (!esMaritimo) {
+        if (selPuertoTerrestre) {
+        selPuertoTerrestre.removeAttribute('readonly');
+        selPuertoTerrestre.style.pointerEvents = 'auto';
+        selPuertoTerrestre.style.backgroundColor = '#f8fafc';
+        }
+        window.poblarPuertosTerrestre();
+        } else {
+        if (selPuertoTerrestre) {
+        selPuertoTerrestre.style.display = 'block';
+        selPuertoTerrestre.setAttribute('readonly', 'readonly');
+        selPuertoTerrestre.style.pointerEvents = 'none';
+        selPuertoTerrestre.style.backgroundColor = '#e2e8f0';
+
+        let optionsHTML = '<option value="">-- Traído desde Marítimo --</option>';
+        if (window.originalTerrestreOptions) {
+        window.originalTerrestreOptions.forEach(opt => {
+        optionsHTML += `<option value="${opt.value}" data-pais="${opt.pais}">${opt.text}</option>`;
+        });
+        }
+        selPuertoTerrestre.innerHTML = optionsHTML;
+        }
+        if (txtPuertoTerrestre) {
+        txtPuertoTerrestre.style.display = 'none';
+        txtPuertoTerrestre.setAttribute('disabled', 'disabled');
+        }
+
+        const polSelect = document.getElementById('inpPol');
+        const podSelect = document.getElementById('inpPod');
+        if (modoActual === 'EXP' && polSelect) {
+        window.syncPuertoTerrestre(polSelect);
+        } else if (modoActual === 'IMP' && podSelect) {
+        window.syncPuertoTerrestre(podSelect);
+        }
+        }
+        }
+        };
+
+        window.syncPuertoTerrestre = function(selectElement) {
+        const selTerrestre = document.getElementById('inpPuertoTerrestre');
+        if(!selTerrestre) return;
+
+        if (!selectElement || !selectElement.value) {
+        selTerrestre.value = "";
+        window.actualizarTerminalTerrestre();
+        return;
+        }
+
+        let nombrePuertoMaritimo = selectElement.options[selectElement.selectedIndex].text;
+        selTerrestre.value = "";
+
+        Array.from(selTerrestre.options).forEach(opt => {
+        let val = removeAccents(opt.value);
+        let target = removeAccents(nombrePuertoMaritimo);
+        if (val.includes(target) || target.includes(val)) {
+        selTerrestre.value = opt.value;
+        }
+        });
+        window.actualizarTerminalTerrestre();
+        };
+
+        document.addEventListener("DOMContentLoaded", function () {
+        const ptTerSelect = document.getElementById('inpPuertoTerrestre');
+        if (ptTerSelect) {
+        Array.from(ptTerSelect.options).forEach(opt => {
+        if(opt.value) window.originalTerrestreOptions.push({value: opt.value, text: opt.text, pais: opt.getAttribute('data-pais')});
+        });
+        }
+
+        const ddlServicio = document.getElementById('ddlServicio');
+        if(ddlServicio) ddlServicio.addEventListener('change', window.syncTransporteIntelligence);
+
+        setTimeout(() => window.syncTransporteIntelligence(), 300);
+        });
+    </script>
+}

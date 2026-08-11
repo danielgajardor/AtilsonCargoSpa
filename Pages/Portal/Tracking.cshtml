@@ -1,0 +1,638 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Portal.TrackingModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Rastreo de Carga - Atilson Cargo";
+    string nombreUsuario = User.Identity?.Name ?? "Cliente";
+    string inicialUsuario = nombreUsuario.Substring(0, 1).ToUpper();
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+            :root {
+                --atilson-dark: #0f172a;
+                --atilson-darker: #020617;
+                --atilson-accent: #0ea5e9;
+                --atilson-purple: #6d2d9e;
+                --atilson-purple-soft: #f3e8ff;
+                --dark-text: #1e293b;
+                --text-muted: #64748b;
+                --text-light: #94a3b8;
+                --bg-body: #f8fafc;
+                --bg-surface: #ffffff;
+                --border-color: #e2e8f0;
+                --sidebar-width: 260px;
+            }
+
+            body {
+                font-family: 'Inter', sans-serif;
+                background-color: var(--bg-body);
+                color: var(--dark-text);
+                overflow-x: hidden;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            /* SIDEBAR BASICA COPIA EXACTA */
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                width: var(--sidebar-width);
+                background-color: var(--atilson-dark);
+                color: white;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                box-shadow: 4px 0 25px rgba(0,0,0,0.15);
+                z-index: 1000;
+                border-right: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .sidebar-header {
+                height: 85px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .logo-blanco {
+                max-height: 35px;
+                filter: brightness(0) invert(1);
+            }
+
+            .sidebar-nav {
+                list-style: none;
+                padding: 25px 15px;
+                margin: 0;
+                flex-grow: 1;
+            }
+
+            .nav-link {
+                color: rgba(255,255,255,0.6);
+                padding: 12px 18px;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                text-decoration: none;
+                margin-bottom: 4px;
+            }
+
+                .nav-link i {
+                    font-size: 18px;
+                    margin-right: 14px;
+                }
+
+                .nav-link:hover {
+                    background-color: rgba(255,255,255,0.05);
+                    color: white;
+                }
+
+                .nav-link.active {
+                    background-color: rgba(109, 45, 158, 0.15);
+                    color: #d8b4fe;
+                    border-left: 3px solid #d8b4fe;
+                }
+
+            .sidebar-title {
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                color: rgba(255,255,255,0.3);
+                padding-left: 18px;
+                margin-top: 25px !important;
+                margin-bottom: 10px !important;
+            }
+
+            .sidebar-user-footer {
+                padding: 24px 20px;
+                border-top: 1px solid rgba(255,255,255,0.05);
+                background-color: var(--atilson-darker);
+            }
+
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(135deg, var(--atilson-purple) 0%, #3b1459 100%);
+                border-radius: 10px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-weight: 900;
+                margin-right: 14px;
+                color: #fff;
+                flex-shrink: 0;
+            }
+
+            .btn-logout {
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.1);
+                color: rgba(255,255,255,0.6);
+                padding: 10px;
+                width: 100%;
+                border-radius: 8px;
+                font-size: 11px;
+                font-weight: 800;
+                text-transform: uppercase;
+                margin-top: 15px;
+            }
+
+                .btn-logout:hover {
+                    background: rgba(239, 68, 68, 0.1);
+                    color: #fca5a5;
+                }
+
+            /* MAIN CONTENT */
+            .main-content {
+                margin-left: var(--sidebar-width);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .topbar {
+                height: 85px;
+                display: flex;
+                align-items: center;
+                padding: 0 40px;
+                border-bottom: 1px solid var(--border-soft);
+                background: rgba(255,255,255,0.9);
+                backdrop-filter: blur(8px);
+                position: sticky;
+                top: 0;
+                z-index: 990;
+            }
+
+            .page-title {
+                font-size: 22px;
+                font-weight: 900;
+                color: var(--dark-text);
+                margin: 0;
+                letter-spacing: -0.5px;
+            }
+
+            .content-area {
+                padding: 30px 40px;
+                flex-grow: 1;
+                animation: fadeUp 0.4s ease forwards;
+            }
+            @@keyframes fadeUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* RASTREO PREMIUM (HORIZONTAL) */
+            .tracking-hero {
+                background: var(--atilson-dark);
+                border-radius: 16px;
+                padding: 40px;
+                color: white;
+                position: relative;
+                overflow: hidden;
+                margin-bottom: 30px;
+                box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+            }
+
+                .tracking-hero::after {
+                    content: '\F64F';
+                    font-family: 'bootstrap-icons';
+                    position: absolute;
+                    right: -20px;
+                    top: -30px;
+                    font-size: 200px;
+                    opacity: 0.05;
+                    pointer-events: none;
+                }
+
+            .route-visualizer {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-top: 40px;
+                position: relative;
+                padding: 0 40px;
+            }
+
+            .route-line {
+                position: absolute;
+                top: 30%;
+                left: 120px;
+                right: 120px;
+                height: 2px;
+                background: rgba(255,255,255,0.2);
+                border-top: 2px dashed rgba(255,255,255,0.3);
+                z-index: 1;
+                transform: translateY(-50%);
+            }
+
+            .route-ship {
+                position: absolute;
+                top: 30%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 28px;
+                color: var(--atilson-accent);
+                z-index: 2;
+                text-shadow: 0 0 15px rgba(14, 165, 233, 0.5);
+                transition: left 1s ease-in-out;
+            }
+
+            .port-point {
+                text-align: center;
+                z-index: 3;
+                position: relative;
+            }
+
+                .port-point i {
+                    font-size: 24px;
+                    color: white;
+                    background: var(--atilson-dark);
+                    padding: 10px;
+                    border-radius: 50%;
+                }
+
+                .port-point h5 {
+                    font-size: 18px;
+                    font-weight: 900;
+                    margin: 10px 0 5px;
+                    letter-spacing: -0.5px;
+                }
+
+                .port-point span {
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: #cbd5e1;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+
+            /* TIMELINE HORIZONTAL */
+            .timeline-steps {
+                display: flex;
+                justify-content: space-between;
+                position: relative;
+                margin-top: 50px;
+                padding: 0 20px;
+            }
+
+            .t-step {
+                width: 20%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                position: relative;
+            }
+
+                .t-step::before {
+                    content: '';
+                    position: absolute;
+                    top: 12px;
+                    left: -50%;
+                    right: 50%;
+                    height: 2px;
+                    background: rgba(255,255,255,0.1);
+                    z-index: 1;
+                }
+
+                .t-step:first-child::before {
+                    display: none;
+                }
+
+            .t-dot {
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                background: var(--atilson-dark);
+                border: 2px solid rgba(255,255,255,0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2;
+                transition: all 0.4s;
+                color: transparent;
+                font-size: 12px;
+            }
+
+            .t-step.active .t-dot {
+                border-color: var(--atilson-accent);
+                background: var(--atilson-accent);
+                color: white;
+                box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2);
+            }
+
+            .t-step.active ~ .t-step::before {
+                background: rgba(255,255,255,0.1);
+            }
+
+            .t-step.active::before {
+                background: var(--atilson-accent);
+            }
+
+            .t-label {
+                font-size: 11px;
+                font-weight: 800;
+                color: rgba(255,255,255,0.5);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-top: 12px;
+                line-height: 1.3;
+            }
+
+            .t-date {
+                font-size: 10px;
+                color: rgba(255,255,255,0.4);
+                font-weight: 600;
+                margin-top: 4px;
+            }
+
+            .t-step.active .t-label {
+                color: white;
+            }
+
+            .t-step.active .t-date {
+                color: var(--atilson-accent);
+            }
+
+            .saas-card {
+                background: #ffffff;
+                border: 1px solid var(--border-soft);
+                border-radius: 12px;
+                padding: 25px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            }
+
+            .data-label {
+                font-size: 10px;
+                font-weight: 800;
+                color: #94a3b8;
+                text-transform: uppercase;
+                display: block;
+                margin-bottom: 4px;
+                letter-spacing: 0.5px;
+            }
+
+            .data-val {
+                font-size: 14px;
+                font-weight: 700;
+                color: var(--dark-text);
+                margin: 0;
+            }
+
+            .search-input-group {
+                position: relative;
+                flex-grow: 1;
+                max-width: 600px;
+                display: flex;
+            }
+
+                .search-input-group i {
+                    position: absolute;
+                    left: 15px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: var(--text-muted);
+                    z-index: 10;
+                }
+
+            .tracking-input {
+                font-size: 14px;
+                font-weight: 700;
+                text-transform: uppercase;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px 0 0 8px;
+                padding: 12px 15px 12px 40px;
+                width: 100%;
+                outline: none;
+            }
+
+            .btn-track {
+                background: var(--atilson-dark);
+                color: white;
+                border: none;
+                border-radius: 0 8px 8px 0;
+                padding: 0 25px;
+                font-weight: 700;
+                font-size: 12px;
+                text-transform: uppercase;
+            }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/Portal" class="brand-logo-link"><img src="~/img/Atilson.png" alt="Atilson" class="logo-blanco" /></a>
+        </div>
+        <ul class="sidebar-nav">
+            <li class="nav-item sidebar-title">Mi Espacio</li>
+            <li><a class="nav-link" href="/Portal"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+            <li><a class="nav-link active" href="/Portal/Tracking"><i class="bi bi-crosshair"></i> Rastrear Carga</a></li>
+        </ul>
+        <div class="sidebar-user-footer">
+            <div class="d-flex align-items-center">
+                <div class="user-avatar" title="@nombreUsuario">@inicialUsuario</div>
+                <div class="user-info" style="line-height: 1.2;">
+                    <span class="d-block fw-bold" style="font-size: 13px; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@nombreUsuario</span>
+                    <span style="font-size: 10px; font-weight: 600; color: var(--atilson-accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@Model.EmpresaCliente</span>
+                </div>
+            </div>
+            <form method="post" asp-page="/Logout" title="Cerrar Sesión">
+                <button type="submit" class="btn-logout"><span>Cerrar Sesión</span></button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2 class="page-title">Detalle de Embarque</h2>
+        </header>
+
+        <div class="content-area">
+            @if (string.IsNullOrWhiteSpace(Model.BookingNumber))
+            {
+                <div class="saas-card text-center py-5 border-0 shadow-sm">
+                    <i class="bi bi-crosshair text-muted opacity-25 mb-3" style="font-size: 50px;"></i>
+                    <h4 class="fw-bold text-dark mb-1">Rastreador Interactivo</h4>
+                    <p class="text-muted mb-4" style="font-size: 14px;">Ingresa el código de reserva para visualizar la ruta y estado logístico.</p>
+                    <form method="get" class="d-flex justify-content-center">
+                        <div class="search-input-group mx-auto">
+                            <i class="bi bi-search"></i>
+                            <input type="text" name="BookingNumber" class="tracking-input" placeholder="Ej: SCL123456..." required autocomplete="off">
+                            <button class="btn-track" type="submit">Localizar Carga</button>
+                        </div>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <a href="/Portal" class="btn btn-sm btn-light border fw-bold text-muted shadow-sm text-decoration-none">
+                        <i class="bi bi-arrow-left me-1"></i> Volver al panel principal
+                    </a>
+                </div>
+
+                if (Model.OperacionTracking != null)
+                {
+                    var op = Model.OperacionTracking;
+                    var estado = (op.EstadoWorkflow ?? "").ToUpper();
+                    int stepActivo = 1;
+
+                    if (estado.Contains("CANCELADO")) { stepActivo = 0; }
+                    else if (estado.Contains("SOLICITADO") || estado.Contains("CONFIRMADO") || estado.Contains("ENVIO")) { stepActivo = 1; }
+                    else if (estado.Contains("RUTA") || estado.Contains("PLANTA") || estado.Contains("PUERTO") || estado.Contains("STACKING")) { stepActivo = 2; }
+                    else if (estado.Contains("EMBARCADO") || estado.Contains("ZARPE")) { stepActivo = 3; }
+                    else if (estado.Contains("ARRIBO") || estado.Contains("ARRIBADO") || estado.Contains("PROXIMO")) { stepActivo = 4; }
+                    else if (estado.Contains("FINALIZADO") || estado.Contains("RETIRADO")) { stepActivo = 5; }
+
+                    <div class="tracking-hero">
+                        <div class="d-flex justify-content-between align-items-start position-relative z-3">
+                            <div>
+                                <span class="badge bg-white bg-opacity-25 text-white border border-white border-opacity-25 px-2 py-1 mb-2">Tracking Activo</span>
+                                <h2 class="fw-black m-0" style="font-size: 38px; letter-spacing: -1px;">@op.NumeroBooking</h2>
+                                <p class="text-white text-opacity-75 m-0 mt-1" style="font-size: 13px;">Última actualización: @(op.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? "Reciente")</p>
+                            </div>
+                            <div class="text-end">
+                                <h4 class="fw-bold m-0" style="color: var(--atilson-accent);">@estado</h4>
+                            </div>
+                        </div>
+
+                        <div class="route-visualizer">
+                            <div class="route-line"></div>
+
+                            <div class="route-ship" style="left: @(stepActivo == 1 ? "15%" : stepActivo == 2 ? "35%" : stepActivo == 3 ? "50%" : stepActivo == 4 ? "75%" : "85%");">
+                                <i class="bi bi-ship"></i>
+                            </div>
+
+                            <div class="port-point">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <h5>@(op.IdPuertoOrigenNavigation?.NombrePuerto ?? "POL")</h5>
+                                <span>Origen</span>
+                            </div>
+                            <div class="port-point">
+                                <i class="bi bi-geo-fill"></i>
+                                <h5>@(op.IdPuertoDestinoNavigation?.NombrePuerto ?? "POD")</h5>
+                                <span>Destino</span>
+                            </div>
+                        </div>
+
+                        <div class="timeline-steps">
+                            <div class="t-step @(stepActivo >= 1 ? "active" : "")">
+                                <div class="t-dot"><i class="bi bi-check-lg"></i></div>
+                                <div class="t-label">Reserva<br>Aprobada</div>
+                                <div class="t-date">@(op.FechaCreacion?.ToString("dd/MM/yyyy") ?? "-")</div>
+                            </div>
+                            <div class="t-step @(stepActivo >= 2 ? "active" : "")">
+                                <div class="t-dot"><i class="bi bi-truck"></i></div>
+                                <div class="t-label">Logística<br>Origen</div>
+                                <div class="t-date">@(op.FechaStacking?.ToString("dd/MM/yyyy") ?? "-")</div>
+                            </div>
+                            <div class="t-step @(stepActivo >= 3 ? "active" : "")">
+                                <div class="t-dot"><i class="bi bi-water"></i></div>
+                                <div class="t-label">Zarpe<br>(ETD)</div>
+                                <div class="t-date">@(op.EtdPol?.ToString("dd/MM/yyyy") ?? "-")</div>
+                            </div>
+                            <div class="t-step @(stepActivo >= 4 ? "active" : "")">
+                                <div class="t-dot"><i class="bi bi-geo-alt"></i></div>
+                                <div class="t-label">Arribo<br>(ETA)</div>
+                                <div class="t-date">@(op.EtaPod?.ToString("dd/MM/yyyy") ?? "-")</div>
+                            </div>
+                            <div class="t-step @(stepActivo >= 5 ? "active" : "")">
+                                <div class="t-dot"><i class="bi bi-box-seam"></i></div>
+                                <div class="t-label">Carga<br>Finalizada</div>
+                                <div class="t-date">@(stepActivo >= 5 ? op.FechaModificacion?.ToString("dd/MM/yyyy") : "-")</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="saas-card h-100 m-0">
+                                <h6 class="fw-bold border-bottom border-soft pb-3 mb-4" style="color: var(--atilson-dark); font-size: 14px;"><i class="bi bi-compass text-muted me-2"></i>Detalle Operativo</h6>
+
+                                <div class="row g-4">
+                                    <div class="col-6">
+                                        <span class="data-label">Línea Naviera</span>
+                                        <p class="data-val">@(op.IdNavieraNavigation?.NombreNaviera ?? "TBA")</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="data-label">Motonave / Viaje</span>
+                                        <p class="data-val">@(string.IsNullOrWhiteSpace(op.Nave) ? "TBA" : op.Nave)</p>
+                                    </div>
+                                    <div class="col-6 mt-3">
+                                        <span class="data-label">Apertura Stacking</span>
+                                        <p class="data-val">@(op.FechaStacking?.ToString("dd/MM/yyyy HH:mm") ?? "-")</p>
+                                    </div>
+                                    <div class="col-6 mt-3">
+                                        <span class="data-label">Terminal Portuario</span>
+                                        <p class="data-val">@(string.IsNullOrWhiteSpace(op.TerminalPortuario) ? "TBA" : op.TerminalPortuario)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="saas-card h-100 m-0">
+                                <h6 class="fw-bold border-bottom border-soft pb-3 mb-4" style="color: var(--atilson-dark); font-size: 14px;"><i class="bi bi-boxes text-muted me-2"></i>Unidades y Equipamiento</h6>
+
+                                <div class="d-flex align-items-center gap-3 mb-3 p-3 border border-soft rounded bg-light">
+                                    <div class="bg-white border rounded p-2 text-center" style="width: 45px; height: 45px;"><i class="bi bi-box-seam fs-4" style="color: var(--atilson-purple);"></i></div>
+                                    <div>
+                                        <p class="data-val text-dark">@(string.IsNullOrWhiteSpace(op.NumeroContenedor) ? "Contenedor por asignar" : op.NumeroContenedor)</p>
+                                        <span class="data-label mt-1 text-muted" style="text-transform: none;">@(op.TipoContenedor ?? "Equipamiento General") • @(op.Commodity ?? "Mercancía")</span>
+                                    </div>
+                                </div>
+
+                                @if (op.Unidadestecnicas != null && op.Unidadestecnicas.Any())
+                                {
+                                    foreach (var u in op.Unidadestecnicas)
+                                    {
+                                        <div class="d-flex align-items-center gap-3 mb-3 p-3 border border-soft rounded bg-light">
+                                            <div class="bg-white border rounded p-2 text-center" style="width: 45px; height: 45px;"><i class="bi bi-box-seam fs-4 text-muted"></i></div>
+                                            <div>
+                                                <p class="data-val text-dark">@(string.IsNullOrWhiteSpace(u.NroContenedor) ? "Contenedor por asignar" : u.NroContenedor)</p>
+                                                <span class="data-label mt-1 text-muted" style="text-transform: none;">@(u.TipoContenedor ?? "Equipamiento General") • @(op.Commodity ?? "Mercancía")</span>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="saas-card text-center py-5 border-0 shadow-sm">
+                        <i class="bi bi-exclamation-circle text-muted opacity-25 mb-3" style="font-size: 50px;"></i>
+                        <h4 class="fw-bold text-dark">Embarque No Encontrado</h4>
+                        <p class="text-muted">La referencia <strong>"@Model.BookingNumber"</strong> no pertenece a tu cuenta o no es válida.</p>
+                        <a href="/Portal/Tracking" class="btn btn-outline-dark btn-sm mt-3 fw-bold px-4">Intentar nuevamente</a>
+                    </div>
+                }
+            }
+        </div>
+    </main>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

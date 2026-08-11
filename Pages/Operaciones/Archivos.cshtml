@@ -1,0 +1,82 @@
+﻿@page "{id:int}"
+@model AtilsonCargoSpa.Pages.Operaciones.ArchivosModel
+@{
+    ViewData["Title"] = "Archivos de Operación";
+}
+
+<div class="container-fluid py-4" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">DOCUMENTOS ADJUNTOS</h4>
+            <span class="text-muted small">Booking: <strong>@Model.OperacionActual.NumeroBooking</strong></span>
+        </div>
+        <a asp-page="./Index" class="btn btn-sm btn-light border fw-bold px-3">VOLVER</a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="small fw-bold text-muted text-uppercase mb-1 d-block">Tipo Documento</label>
+                        <select asp-for="TipoDocumento" class="form-select shadow-sm" required>
+                            <option value="BL / HBL">BL / HBL</option>
+                            <option value="Factura">Factura Comercial</option>
+                            <option value="DUS">DUS / DIN</option>
+                            <option value="Certificado">Certificado</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="small fw-bold text-muted text-uppercase mb-1 d-block">Seleccionar Archivo</label>
+                        <input type="file" asp-for="ArchivoSubido" class="form-control shadow-sm" required />
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-dark w-100 fw-bold shadow-sm" style="background-color: var(--atilson-dark);">
+                            <i class="bi bi-cloud-upload me-2"></i> SUBIR
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size: 13px;">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">ARCHIVO</th>
+                        <th>TIPO</th>
+                        <th>FECHA</th>
+                        <th class="text-end pe-4">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var file in Model.ListaArchivos)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-dark">
+                                <i class="bi bi-file-earmark-text me-2 text-primary"></i> @file.NombreArchivo
+                            </td>
+                            <td><span class="badge bg-info text-dark border-0 opacity-75">@file.TipoDocumento</span></td>
+                            <td class="text-muted">@file.FechaSubida?.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="text-end pe-4">
+                                <a href="@file.RutaArchivo" target="_blank" class="btn btn-sm btn-outline-primary border-0 me-2"><i class="bi bi-eye-fill"></i></a>
+                                <form method="post" asp-page-handler="Eliminar" asp-route-idArchivo="@file.Id" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('¿Eliminar archivo?');">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.ListaArchivos.Any())
+                    {
+                        <tr><td colspan="4" class="text-center py-5 text-muted small">No hay archivos cargados para este embarque.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

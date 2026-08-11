@@ -1,0 +1,555 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Atilson Cargo ERP</title>
+
+    <!-- Bootstrap & Icons -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+            :root {
+                /* Paleta Interna (Operadores) */
+                --atilson-dark: #0f172a; /* Slate 900 */
+                --atilson-darker: #020617; /* Slate 950 para submenús */
+                --atilson-accent: #0ea5e9; /* Cyan brillante interno Atilson */
+                --atilson-accent-light: #38bdf8;
+                --dark-text: #1e293b;
+                --text-muted: #94a3b8;
+                --bg-light: #f8fafc;
+                --sidebar-width: 260px;
+                --sidebar-collapsed-width: 84px;
+            }
+
+            body {
+                font-family: 'Inter', sans-serif;
+                background-color: var(--bg-light);
+                color: var(--dark-text);
+                overflow-x: hidden;
+            }
+
+            /* ==========================================================
+                       SIDEBAR CORPORATIVO SAAS
+                    ========================================================== */
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                width: var(--sidebar-width);
+                background-color: var(--atilson-dark);
+                color: white;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                box-shadow: 4px 0 25px rgba(0,0,0,0.15);
+                z-index: 1000;
+                transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                border-right: 1px solid rgba(255,255,255,0.05);
+            }
+
+            /* Cabecera Sidebar (Logo y Toggle) */
+            .sidebar-header {
+                height: 85px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                transition: all 0.3s ease;
+            }
+
+            .brand-logo-link {
+                display: flex;
+                align-items: center;
+                text-decoration: none;
+            }
+
+            .logo-atilson {
+                max-height: 35px;
+                filter: brightness(0) invert(1);
+            }
+
+            /* Botón hamburguesa minimalista */
+            .minimal-toggle {
+                background: transparent;
+                border: none;
+                color: rgba(255,255,255,0.4);
+                font-size: 26px;
+                cursor: pointer;
+                padding: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: color 0.2s;
+            }
+
+                .minimal-toggle:hover {
+                    color: white;
+                }
+
+            /* Navegación */
+            .sidebar-nav {
+                list-style: none;
+                padding: 20px 10px;
+                margin: 0;
+                flex-grow: 1;
+                overflow-y: auto;
+                overflow-x: hidden;
+                scrollbar-width: none;
+            }
+
+                .sidebar-nav::-webkit-scrollbar {
+                    display: none;
+                }
+
+            /* Estilo Principal de los Links */
+            .nav-link {
+                color: rgba(255,255,255,0.6);
+                padding: 12px 16px;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                text-decoration: none;
+                transition: all 0.2s;
+                white-space: nowrap;
+                margin-bottom: 4px;
+                border-left: 3px solid transparent;
+            }
+
+                /* Alineación perfecta de íconos y texto */
+                .nav-link i.icon-main {
+                    font-size: 18px;
+                    margin-right: 14px;
+                    min-width: 20px;
+                    text-align: center;
+                    transition: color 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .nav-link .nav-text {
+                    flex-grow: 1;
+                }
+
+                /* Leve movimiento a la derecha SOLO para los links principales */
+                .nav-link:hover {
+                    background-color: rgba(255,255,255,0.05);
+                    color: white;
+                    transform: translateX(4px);
+                }
+
+                .nav-link.active {
+                    background-color: rgba(14, 165, 233, 0.1); /* Fondo cyan suave */
+                    color: var(--atilson-accent);
+                    border-left-color: var(--atilson-accent);
+                }
+
+                    .nav-link:hover i.icon-main, .nav-link.active i.icon-main {
+                        color: var(--atilson-accent);
+                    }
+
+                /* Flecha Desplegable - Minimalista y espaciada */
+                .nav-link .bi-chevron-down {
+                    transition: transform 0.3s ease;
+                    font-size: 10px;
+                    margin-left: 10px;
+                    opacity: 0.5;
+                }
+
+                .nav-link[aria-expanded="true"] .bi-chevron-down {
+                    transform: rotate(180deg);
+                    opacity: 1;
+                }
+
+            /* SUBMENÚS - Sin brincos de letra */
+            #sidebarMenu .collapse .nav-link,
+            #sidebarMenu .collapsing .nav-link {
+                padding: 10px 15px 10px 48px;
+                font-size: 12px;
+                background-color: var(--atilson-darker);
+                border-left: none;
+                margin-bottom: 2px;
+                transform: none !important; /* Desactiva el movimiento lateral */
+            }
+
+                /* Hover de las Subopciones */
+                #sidebarMenu .collapse .nav-link:hover,
+                #sidebarMenu .collapsing .nav-link:hover {
+                    color: var(--atilson-accent);
+                    background-color: var(--atilson-dark);
+                }
+
+            /* Títulos de sección */
+            .sidebar-title {
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                color: rgba(255,255,255,0.3);
+                padding-left: 18px;
+                margin-top: 20px !important;
+                margin-bottom: 8px !important;
+            }
+
+            /* Usuario y Footer (Integrado en el Sidebar) */
+            .sidebar-user-footer {
+                padding: 24px 20px;
+                border-top: 1px solid rgba(255,255,255,0.05);
+                background-color: var(--atilson-darker);
+                transition: all 0.3s ease;
+                overflow: hidden;
+            }
+
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                background: linear-gradient(135deg, var(--atilson-accent) 0%, #3b82f6 100%);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-weight: 900;
+                color: #fff;
+                margin-right: 14px;
+                flex-shrink: 0;
+                box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+            }
+
+            .btn-logout {
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.1);
+                color: rgba(255,255,255,0.6);
+                padding: 10px;
+                width: 100%;
+                border-radius: 8px;
+                font-size: 11px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-top: 15px;
+                transition: all 0.2s;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+                .btn-logout:hover {
+                    background: rgba(239, 68, 68, 0.1);
+                    border-color: rgba(239, 68, 68, 0.5);
+                    color: #fca5a5;
+                }
+
+            /* ==========================================================
+                       ÁREA PRINCIPAL
+                    ========================================================== */
+            .main-content {
+                margin-left: var(--sidebar-width);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            /* ==========================================================
+                       MODO CONTRAÍDO (COLLAPSED)
+                    ========================================================== */
+            body.sidebar-collapsed .sidebar {
+                width: var(--sidebar-collapsed-width);
+            }
+
+            body.sidebar-collapsed .main-content {
+                margin-left: var(--sidebar-collapsed-width);
+            }
+
+            body.sidebar-collapsed .sidebar-header {
+                justify-content: center;
+                padding: 0;
+            }
+
+            body.sidebar-collapsed .brand-logo-link {
+                display: none;
+            }
+
+            body.sidebar-collapsed .nav-text,
+            body.sidebar-collapsed .sidebar-title,
+            body.sidebar-collapsed .user-info,
+            body.sidebar-collapsed .btn-logout span,
+            body.sidebar-collapsed .bi-chevron-down {
+                display: none !important;
+                opacity: 0;
+            }
+
+            /* 👇 AGREGA ESTE BLOQUE NUEVO AQUÍ 👇 */
+            body.sidebar-collapsed #sidebarMenu .collapse,
+            body.sidebar-collapsed #sidebarMenu .collapsing {
+                display: none !important;
+            }
+
+            body.sidebar-collapsed #sidebarMenu [data-bs-toggle="collapse"] {
+                pointer-events: none;
+            }
+
+            body.sidebar-collapsed .nav-link {
+                justify-content: center;
+                padding: 14px 0;
+                border-left: none;
+                margin-bottom: 8px;
+            }
+
+                body.sidebar-collapsed .nav-link i.icon-main {
+                    margin-right: 0;
+                    font-size: 22px;
+                }
+
+                body.sidebar-collapsed .nav-link.active {
+                    border-radius: 12px;
+                }
+
+            body.sidebar-collapsed .collapse .nav-link {
+                padding: 10px 0;
+            }
+
+            body.sidebar-collapsed .sidebar-user-footer {
+                padding: 20px 0;
+                background: transparent;
+                border-top: none;
+            }
+
+                body.sidebar-collapsed .sidebar-user-footer .d-flex {
+                    justify-content: center !important;
+                }
+
+            body.sidebar-collapsed .user-avatar {
+                margin-right: 0;
+                width: 36px;
+                height: 36px;
+            }
+
+            body.sidebar-collapsed .btn-logout {
+                border: none;
+                padding: 10px 0;
+                margin-top: 5px;
+            }
+
+                body.sidebar-collapsed .btn-logout i.icon-logout {
+                    display: inline-block !important;
+                    font-size: 22px;
+                    margin: 0;
+                    color: rgba(255,255,255,0.4);
+                }
+
+                body.sidebar-collapsed .btn-logout:hover i.icon-logout {
+                    color: #ef4444;
+                }
+    </style>
+</head>
+<body>
+
+    <!-- FOUC FIX: Evita parpadeo al cargar -->
+    <script>
+            if (localStorage.getItem('sidebar-collapsed-erp') === 'true') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+    </script>
+
+    @{
+        var currentUrl = ViewContext.RouteData.Values["page"]?.ToString() ?? "/Dashboard";
+
+        string nombreUsuario = User.Identity?.Name ?? "Sistema";
+        string[] listaJefaturas = { "Daniel Gajardo", "Cristian Prada", "Jane Diaz", "Ignacio Reyes", "Sistema", "Admin" };
+        bool esJefatura = Array.Exists(listaJefaturas, j => j == nombreUsuario);
+    }
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a asp-page="/Dashboard" class="brand-logo-link">
+                <!-- LOGO ATILSON -->
+                <img src="~/img/Atilson.png" alt="Atilson" class="logo-atilson me-2" onerror="this.style.display='none'" />
+            </a>
+            <button id="sidebarToggle" class="minimal-toggle" title="Contraer Menú">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+
+        <ul class="sidebar-nav" id="sidebarMenu">
+
+            <li class="nav-item">
+                <a class="nav-link @(currentUrl == "/Dashboard" || currentUrl == "/Index" ? "active" : "")" asp-page="/Dashboard">
+                    <i class="bi bi-grid-1x2-fill icon-main"></i> <span class="nav-text">Dashboard Central</span>
+                </a>
+            </li>
+
+            <li class="nav-item sidebar-title">Operativa</li>
+
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#menuOperaciones" role="button" aria-expanded="false" aria-controls="menuOperaciones">
+                    <i class="bi bi-briefcase-fill icon-main"></i>
+                    <span class="nav-text">Operaciones</span>
+                    <i class="bi bi-chevron-down"></i>
+                </a>
+                <div class="collapse" id="menuOperaciones" data-bs-parent="#sidebarMenu">
+                    <ul class="nav flex-column">
+                        <li><a class="nav-link" asp-page="/Operaciones/Index">Panel Principal</a></li>
+                        <li><a class="nav-link" asp-page="/Operaciones/Maritimo">Servicio Marítimo</a></li>
+                        <li><a class="nav-link" asp-page="/Operaciones/Transporte">Servicio Terrestre</a></li>
+                        <li><a class="nav-link" asp-page="/Operaciones/Documental">Gestión Documental</a></li>
+                        <li><a class="nav-link" asp-page="/Operaciones/Almacenamiento">Almacenamiento</a></li>
+                    </ul>
+                </div>
+            </li>
+
+            @if (esJefatura)
+            {
+                <li class="nav-item sidebar-title">Negocios</li>
+
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#menuFinanzas" role="button" aria-expanded="false" aria-controls="menuFinanzas">
+                        <i class="bi bi-currency-dollar icon-main"></i>
+                        <span class="nav-text">Finanzas</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+                    <div class="collapse" id="menuFinanzas" data-bs-parent="#sidebarMenu">
+                        <ul class="nav flex-column">
+                            <li><a class="nav-link" asp-page="/Finanzas/Index">Control de finanzas</a></li>
+                            <li><a class="nav-link" asp-page="/Finanzas/OrdenesCompra">Órdenes de Compra</a></li>
+                            <li><a class="nav-link" asp-page="/Finanzas/Facturacion">Facturación Clientes</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link @(currentUrl.StartsWith("/Comercial") ? "active" : "")" asp-page="/Comercial/Index">
+                        <i class="bi bi-tags-fill icon-main"></i> <span class="nav-text">Centro Comercial</span>
+                    </a>
+                </li>
+            }
+
+            <li class="nav-item sidebar-title">Configuración Base</li>
+
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#menuMaestros" role="button" aria-expanded="false" aria-controls="menuMaestros">
+                    <i class="bi bi-buildings-fill icon-main"></i>
+                    <span class="nav-text">Maestros</span>
+                    <i class="bi bi-chevron-down"></i>
+                </a>
+                <div class="collapse" id="menuMaestros" data-bs-parent="#sidebarMenu">
+                    <ul class="nav flex-column">
+                        <li><a class="nav-link" asp-page="/Clientes/Index">Mis Clientes</a></li>
+                        <li><a class="nav-link" asp-page="/Plantas/Index">Plantas</a></li>
+                        <li><a class="nav-link" asp-page="/Depositos/Index">Depósitos</a></li>
+                        <li><a class="nav-link" asp-page="/Navieras/Index">Navieras</a></li>
+                        <li><a class="nav-link" asp-page="/Puertos/Index">Puertos</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+
+        <!-- Perfil Usuario / Funcionario Integrado -->
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="sidebar-user-footer">
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar" title="@nombreUsuario">@(nombreUsuario.Substring(0, 1).ToUpper())</div>
+                    <div class="user-info">
+                        <span class="d-block fw-bold text-white text-truncate" style="font-size: 13px; max-width: 140px;">@nombreUsuario</span>
+                        <span style="font-size: 10px; font-weight: 600; color: var(--atilson-accent);">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</span>
+                    </div>
+                </div>
+                <form method="post" asp-page="/Logout" title="Cerrar Sesión">
+                    <button type="submit" class="btn-logout">
+                        <span>Cerrar Sesión</span>
+                        <i class="bi bi-box-arrow-right d-none icon-logout"></i>
+                    </button>
+                </form>
+            </div>
+        }
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="main-content">
+        <!-- El padding top/bottom de 25px asegura que el contenido no quede pegado a los bordes de la pantalla -->
+        <div style="flex-grow: 1; padding: 25px;">
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const body = document.body;
+
+        // 1. Lógica Sidebar Toggle (Cierre y Apertura Inteligente)
+        toggleBtn.addEventListener('click', function () {
+        body.classList.toggle('sidebar-collapsed');
+        let isCollapsed = body.classList.contains('sidebar-collapsed');
+        localStorage.setItem('sidebar-collapsed-erp', isCollapsed);
+
+        if (isCollapsed) {
+        // CIERRE FORZADO: Limpiamos todos los menús abiertos usando getOrCreateInstance
+        document.querySelectorAll('.sidebar-nav .collapse.show').forEach(el => {
+        let bsCollapse = bootstrap.Collapse.getOrCreateInstance(el);
+        bsCollapse.hide();
+        });
+        } else {
+        // APERTURA INTELIGENTE: Si la barra se expande, buscamos dónde está el usuario y lo abrimos
+        let activeLink = document.querySelector('.sidebar-nav .collapse .nav-link.active');
+        if (activeLink) {
+        let parentCollapse = activeLink.closest('.collapse');
+        if (parentCollapse) {
+        let bsCollapse = bootstrap.Collapse.getOrCreateInstance(parentCollapse);
+        bsCollapse.show();
+
+        let parentTrigger = document.querySelector(`[href="#${parentCollapse.id}"]`);
+        if (parentTrigger) parentTrigger.setAttribute('aria-expanded', 'true');
+        }
+        }
+        }
+        });
+
+        // 2. Autoselección de menú activo al cargar la página
+        let currentPath = window.location.pathname;
+        document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
+        let href = link.getAttribute('href');
+
+        if (href && href !== '#' && href.trim() !== '' && !link.hasAttribute('data-bs-toggle')) {
+        if (currentPath === href || currentPath.startsWith(href + '/')) {
+        link.classList.add('active');
+
+        let parentCollapse = link.closest('.collapse');
+        if (parentCollapse) {
+        let parentTrigger = document.querySelector(`[href="#${parentCollapse.id}"]`);
+        if (parentTrigger) {
+        parentTrigger.classList.add('active');
+        }
+
+        // SOLO desplegamos el menú al cargar si la barra NO está contraída
+        if (!body.classList.contains('sidebar-collapsed')) {
+        parentCollapse.classList.add('show');
+        if (parentTrigger) {
+        parentTrigger.setAttribute('aria-expanded', 'true');
+        }
+        }
+        }
+        }
+        }
+        });
+
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

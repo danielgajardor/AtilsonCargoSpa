@@ -1,0 +1,105 @@
+﻿@model AtilsonCargoSpa.Models.Operacione
+@{
+    var t = Model.OperacionesTerrestres?.FirstOrDefault();
+    var d = Model.OperacionesDocumentales?.FirstOrDefault();
+}
+
+<div class="tab-pane fade show active" id="tab-maritimo">
+    <div class="detail-section-card">
+        <h6 class="modal-detail-label text-primary mb-3">Información de Zarpe y Arribo</h6>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <label class="modal-detail-label">Naviera</label>
+                <p class="modal-detail-val">@(Model.IdNavieraNavigation?.NombreNaviera ?? "N/A")</p>
+            </div>
+            <div class="col-md-3">
+                <label class="modal-detail-label">Nave / Vessel</label>
+                <p class="modal-detail-val">@(Model.Nave ?? "TBA")</p>
+            </div>
+            <div class="col-md-3">
+                <label class="modal-detail-label">POL (Origen)</label>
+                <p class="modal-detail-val">@(Model.IdPuertoOrigenNavigation?.NombrePuerto ?? "-")</p>
+            </div>
+            <div class="col-md-3">
+                <label class="modal-detail-label">POD (Destino)</label>
+                <p class="modal-detail-val">@(Model.IdPuertoDestinoNavigation?.NombrePuerto ?? "-")</p>
+            </div>
+            <div class="col-md-3">
+                <label class="modal-detail-label">ETD Zarpe</label>
+                <p class="modal-detail-val text-success">@(Model.EtdPol?.ToString("dd/MM/yyyy") ?? "-")</p>
+            </div>
+            <div class="col-md-3">
+                <label class="modal-detail-label">ETA Arribo</label>
+                <p class="modal-detail-val text-danger">@(Model.EtaPod?.ToString("dd/MM/yyyy") ?? "-")</p>
+            </div>
+            <div class="col-md-3">
+                <label class="modal-detail-label">Stacking (Apertura)</label>
+                <p class="modal-detail-val">@(Model.FechaStacking?.ToString("dd/MM HH:mm") ?? "-")</p>
+            </div>
+            <div class="col-md-3">
+                <label class="modal-detail-label">Cut-Off Matriz</label>
+                <p class="modal-detail-val">@(Model.CutOffMatriz?.ToString("dd/MM HH:mm") ?? "-")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tab-pane fade" id="tab-transporte">
+    <div class="detail-section-card">
+        <h6 class="modal-detail-label text-warning mb-3">Coordinación de Transporte Terrestre</h6>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <label class="modal-detail-label">Empresa Transporte</label>
+                <p class="modal-detail-val">@(t?.EmpresaTransporte ?? "Sin Asignar")</p>
+            </div>
+            <div class="col-md-4">
+                <label class="modal-detail-label">Conductor</label>
+                <p class="modal-detail-val">@(t?.NombreConductor ?? "Pendiente")</p>
+            </div>
+            <div class="col-md-4">
+                <label class="modal-detail-label">Patente Camión/Carro</label>
+                <p class="modal-detail-val">@(t?.Patente ?? "-")</p>
+            </div>
+            <div class="col-md-4">
+                <label class="modal-detail-label">Depósito de Retiro</label>
+                <p class="modal-detail-val">@(t?.DepositoRetiro ?? "-")</p>
+            </div>
+            <div class="col-md-4">
+                <label class="modal-detail-label">Planta de Carga</label>
+                <p class="modal-detail-val">@(t?.PlantaCarga ?? "-")</p>
+            </div>
+            <div class="col-md-4">
+                <label class="modal-detail-label">Fecha Presentación</label>
+                <p class="modal-detail-val text-primary">@(t?.FechaCarga?.ToString("dd/MM/yyyy HH:mm") ?? "-")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tab-pane fade" id="tab-documental">
+    <div class="detail-section-card">
+        <h6 class="modal-detail-label text-success mb-3">Gestión de Aduana y Documentos</h6>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <label class="modal-detail-label">Agencia Aduana</label>
+                <p class="modal-detail-val">@(d?.AgenciaAduana ?? "N/A")</p>
+            </div>
+            <div class="col-md-4">
+                <label class="modal-detail-label">DUS / DIN</label>
+                <p class="modal-detail-val">@(d?.DusDin ?? "Pendiente")</p>
+            </div>
+            <div class="col-md-4">
+                <label class="modal-detail-label">Estado Aduana</label>
+                <p class="modal-detail-val">@(d?.EstadoDocumental ?? "-")</p>
+            </div>
+            <div class="col-md-4">
+                <label class="modal-detail-label">Matriz BL</label>
+                <p class="modal-detail-val">@(d?.MatrizPresentada == true ? "PRESENTADA" : "PENDIENTE")</p>
+            </div>
+            <div class="col-md-4">
+                <label class="modal-detail-label">Guía Visado</label>
+                <p class="modal-detail-val">@(d?.GuiaVisado == true ? "LISTA" : "PENDIENTE")</p>
+            </div>
+        </div>
+    </div>
+</div>

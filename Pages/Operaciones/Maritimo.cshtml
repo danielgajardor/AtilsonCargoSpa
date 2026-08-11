@@ -1,0 +1,785 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Operaciones.MaritimoModel
+@{
+    ViewData["Title"] = "Panel Marítimo";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* PALETA MINIMALISTA Y CORPORATIVA ATILSON (IDÉNTICA A INDEX) */
+    :root {
+    --atilson-dark: #0f172a;
+    --atilson-purple: #6d2d9e;
+    --txt-main: #1e293b;
+    --txt-muted: #64748b;
+    --border-soft: #e2e8f0;
+    --bg-main: #ffffff;
+    --bg-soft: #f8fafc;
+    }
+
+    body {
+    background-color: #f1f5f9;
+    font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    /* NAVEGACIÓN Y FILTROS */
+    .workspace-nav {
+    background: var(--bg-main);
+    padding: 5px;
+    border-radius: 8px;
+    border: 1px solid var(--border-soft);
+    display: inline-flex;
+    gap: 2px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .ws-btn {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    border-radius: 6px;
+    color: var(--txt-muted);
+    text-decoration: none;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    letter-spacing: 0.5px;
+    }
+
+    .ws-btn:hover {
+    background: var(--bg-soft);
+    color: var(--txt-main);
+    }
+
+    .ws-btn.active {
+    background: var(--atilson-dark);
+    color: #ffffff;
+    box-shadow: 0 2px 5px rgba(15, 23, 42, 0.15);
+    }
+
+    .ws-btn i {
+    font-size: 14px;
+    margin-right: 6px;
+    }
+
+    .filter-panel {
+    background: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    }
+
+    .search-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-grow: 1;
+    max-width: 500px;
+    position: relative;
+    }
+
+    .search-wrapper i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--txt-muted);
+    font-size: 16px;
+    }
+
+    .search-input {
+    border: 1px solid var(--border-soft);
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    outline: none;
+    color: var(--txt-main);
+    background: var(--bg-soft);
+    border-radius: 20px;
+    padding: 10px 15px 10px 40px;
+    transition: all 0.2s;
+    }
+
+    .search-input:focus {
+    border-color: var(--atilson-dark);
+    background: var(--bg-main);
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+    }
+
+    /* TABLA PRINCIPAL */
+    .table-container {
+    background: #fff;
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    overflow-x: auto;
+    }
+
+    .table-exec {
+    min-width: 1300px;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 0;
+    }
+
+    .table-exec th {
+    background: #f8fafc;
+    color: var(--txt-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    font-weight: 800;
+    white-space: nowrap;
+    }
+
+    .table-exec td {
+    padding: 14px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    }
+
+    .table-exec th:first-child, .table-exec td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    border-right: 1px solid var(--border-soft);
+    }
+
+    .table-exec th:first-child {
+    background-color: #f8fafc;
+    z-index: 3;
+    }
+
+    .row-clickable td:first-child {
+    background-color: #ffffff;
+    }
+
+    .row-clickable:hover td:first-child {
+    background-color: #f8fafc;
+    }
+
+    .row-sub td:first-child {
+    background-color: #fafcfd;
+    }
+
+    .row-sub:hover td:first-child {
+    background-color: #f1f5f9;
+    }
+
+    .row-clickable:hover td {
+    background-color: #f8fafc;
+    }
+
+    .row-sub td {
+    background-color: #fafcfd;
+    border-bottom: 1px solid #f1f5f9;
+    position: relative;
+    }
+
+    /* TEXTOS Y BADGES TABLA */
+    .booking-txt {
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: -0.3px;
+    color: var(--atilson-dark);
+    }
+
+    .badge-mov {
+    font-size: 9px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    }
+
+    .mov-expo {
+    color: #0284c7;
+    background-color: #e0f2fe;
+    border-color: #bae6fd;
+    }
+
+    .mov-impo {
+    color: #16a34a;
+    background-color: #dcfce7;
+    border-color: #bbf7d0;
+    }
+
+    .data-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    mt-1;
+    }
+
+    .data-label {
+    font-size: 9px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    display: inline-block;
+    width: 35px;
+    }
+
+    .data-val {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--txt-main);
+    }
+
+    .data-secondary {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--txt-muted);
+    }
+
+    .badge-in {
+    background-color: #10b981;
+    color: white;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    letter-spacing: 0.5px;
+    border: 1px solid #059669;
+    }
+
+    .btn-action-dot {
+    color: #94a3b8;
+    font-size: 18px;
+    padding: 5px;
+    text-decoration: none;
+    border-radius: 50%;
+    transition: all 0.2s;
+    }
+
+    .btn-action-dot:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    }
+
+    /* =========================================================
+    NUEVO MODAL (Estilo MEGA MODAL DEL INDEX)
+    ========================================================= */
+    .modal-mega-wide {
+    max-width: 1000px;
+    width: 95%;
+    margin: 1.5rem auto;
+    }
+
+    .modal-minimal .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+    overflow: hidden;
+    background-color: var(--bg-soft);
+    }
+
+    .modal-minimal .modal-body {
+    padding: 20px 25px;
+    }
+
+    .atilson-banner {
+    background: linear-gradient(135deg, #0f172a 0%, #6d2d9e 100%);
+    color: #fff;
+    border-radius: 10px;
+    padding: 15px 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px -2px rgba(109, 45, 158, 0.25);
+    position: relative;
+    }
+
+    .form-section {
+    background: #ffffff;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 20px 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .section-title-sm {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--atilson-dark);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    }
+
+    .erp-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--txt-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: block;
+    }
+
+    .erp-input {
+    font-size: 13px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    background-color: var(--bg-soft);
+    padding: 8px 12px;
+    width: 100%;
+    color: var(--txt-main);
+    font-weight: 600;
+    transition: all 0.2s;
+    }
+
+    .erp-input:focus {
+    border-color: var(--atilson-purple);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(109, 45, 158, 0.1);
+    outline: none;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 900; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">WORKSPACE: MARÍTIMO</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Control de Itinerarios, Zarpes, Arribos y Equipos</p>
+        </div>
+    </div>
+
+    <div class="workspace-nav">
+        <a asp-page="./Index" class="ws-btn"><i class="bi bi-grid-fill"></i> Main Board</a>
+        <a asp-page="./Maritimo" class="ws-btn active"><i class="bi bi-water"></i> Marítimo</a>
+        <a asp-page="./Transporte" class="ws-btn"><i class="bi bi-truck"></i> Transporte</a>
+        <a asp-page="./Documental" class="ws-btn"><i class="bi bi-file-earmark-check"></i> Documental</a>
+        <a asp-page="./Almacenamiento" class="ws-btn"><i class="bi bi-boxes"></i> Almacenamiento</a>
+    </div>
+
+    <div class="filter-panel">
+        <form method="get" class="d-flex w-100 align-items-center gap-3 m-0 p-0">
+            <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" asp-for="SearchString" class="search-input" placeholder="Buscar por Booking, Nave o Cliente..." autocomplete="off">
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-dark btn-sm fw-bold px-4 rounded-pill" style="background-color: var(--atilson-dark);">Buscar</button>
+                @if (!string.IsNullOrEmpty(Model.SearchString))
+                {
+                    <a asp-page="./Maritimo" class="btn btn-light btn-sm border fw-bold px-3 rounded-pill text-muted">Limpiar</a>
+                }
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <table class="table table-exec" id="opsTable">
+            <thead>
+                <tr>
+                    <th style="min-width: 200px;">Booking / Contenedores</th>
+                    <th>Cliente</th>
+                    <th>Nave / Naviera</th>
+                    <th>Ruta (POL - POD)</th>
+                    <th>Itinerario (ETD - ETA)</th>
+                    <th>Control Stacking / IN</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Operaciones != null && Model.Operaciones.Any())
+                {
+                    @foreach (var item in Model.Operaciones)
+                    {
+                        var nombreCortoCliente = !string.IsNullOrWhiteSpace(item.IdClienteNavigation?.NombreCliente) ? item.IdClienteNavigation.NombreCliente : item.IdClienteNavigation?.RazonSocial;
+
+                        int valServicio = item.IdTipoServicio.GetValueOrDefault(0);
+                        bool esExpo = valServicio <= 7;
+
+                        var pagoStr = item.CondicionPago switch
+                        {
+                            1 => "Prepaid",
+                            2 => "Full Prepaid",
+                            3 => "Collect",
+                            4 => "Full Collect",
+                            5 => "Elsewhere",
+                            _ => "N/A"
+                        };
+
+                        string FormatearTipoPuro(string tipoConte, int? tipoCarga)
+                        {
+                            int tcNum = tipoCarga.GetValueOrDefault(1);
+                            string tc = (tipoConte ?? "40' HC").Replace("'", "").Replace("REEFER", "RF");
+                            if (!tc.Contains("DRY") && !tc.Contains("RF")) tc += (tcNum == 2 ? " RF" : " DRY");
+                            return tc;
+                        }
+
+                        <tr class="row-clickable op-row"
+                            onclick="abrirModalEdicion(this, event)"
+                            data-id="@item.Id"
+                            data-booking="@item.NumeroBooking"
+                            data-naviera="@item.IdNaviera"
+                            data-pol="@item.IdPuertoOrigen"
+                            data-pod="@item.IdPuertoDestino"
+                            data-terminal="@item.TerminalPortuario"
+                            data-nave="@item.Nave"
+                            data-etd="@(item.EtdPol?.ToString("yyyy-MM-dd"))"
+                            data-eta="@(item.EtaPod?.ToString("yyyy-MM-dd"))"
+                            data-stacking="@(item.FechaStacking?.ToString("yyyy-MM-ddTHH:mm"))"
+                            data-cutoff="@(item.CutOffMatriz?.ToString("yyyy-MM-ddTHH:mm"))"
+                            data-transbordo="@(string.IsNullOrWhiteSpace(item.Transbordo) ? "DIRECTO" : "TRANSBORDO")"
+                            data-puertotransbordo="@item.Transbordo"
+                            data-lar="@item.EstadoLar"
+                            data-lardate="@(item.LateArrival?.ToString("yyyy-MM-ddTHH:mm"))"
+                            data-ingresado="@(item.ContenedorIngresado ? "1" : "0")"
+                            data-pago="@pagoStr">
+
+                            <td>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="booking-txt text-uppercase">@item.NumeroBooking</span>
+                                    <span class="badge-mov @(esExpo ? "mov-expo" : "mov-impo")">@(esExpo ? "EXPO" : "IMPO")</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 bg-light border border-light rounded px-2 py-1 mt-1" style="width: fit-content;">
+                                    <span class="text-nowrap" style="font-size: 10px; font-weight: 700; color: #64748b;"><i class="bi bi-box me-1"></i> @FormatearTipoPuro(item.TipoContenedor, item.IdTipoCarga)</span>
+                                    @if (!string.IsNullOrWhiteSpace(item.NumeroContenedor))
+                                    {
+                                        <span style="font-size: 11px; font-weight: 800; color: var(--atilson-dark);">@item.NumeroContenedor</span>
+                                    }
+                                </div>
+                            </td>
+
+                            <td class="align-middle"><span class="data-val text-wrap d-block">@nombreCortoCliente</span></td>
+
+                            <td class="align-middle">
+                                <div class="data-group">
+                                    <span class="data-val">@(string.IsNullOrWhiteSpace(item.Nave) ? "TBA" : item.Nave)</span>
+                                    <span class="data-secondary text-uppercase">@item.IdNavieraNavigation?.NombreNaviera</span>
+                                </div>
+                            </td>
+                            <td class="align-middle">
+                                <div class="data-group">
+                                    <div><span class="data-label">POL:</span> <span class="data-secondary">@(item.IdPuertoOrigenNavigation?.NombrePuerto ?? "-")</span></div>
+                                    <div><span class="data-label">POD:</span> <span class="data-secondary">@(item.IdPuertoDestinoNavigation?.NombrePuerto ?? "-")</span></div>
+                                </div>
+                            </td>
+                            <td class="align-middle">
+                                <div class="data-group">
+                                    <div><span class="data-label">ETD:</span> <span class="data-secondary">@(item.EtdPol?.ToString("dd/MM/yyyy") ?? "-")</span></div>
+                                    <div><span class="data-label">ETA:</span> <span class="data-secondary">@(item.EtaPod?.ToString("dd/MM/yyyy") ?? "-")</span></div>
+                                </div>
+                            </td>
+                            <td class="align-middle">
+                                <div class="data-group">
+                                    <div class="d-flex align-items-center">
+                                        <span class="data-label">IN:</span>
+                                        <span class="data-val text-muted">@(item.FechaStacking?.ToString("dd/MM HH:mm") ?? "-")</span>
+                                        @if (item.ContenedorIngresado)
+                                        {
+                                            <span class="badge-in">INGRESADO</span>
+                                        }
+                                    </div>
+                                    <div class="d-flex align-items-center mt-1">
+                                        <span class="data-label">OUT:</span>
+                                        <span class="data-val text-muted">@(item.CutOffMatriz?.ToString("dd/MM HH:mm") ?? "-")</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="text-end pe-4 align-middle actions-cell">
+                                <div class="dropdown">
+                                    <a href="#" class="btn-action-dot" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></a>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="font-size: 12px; border-radius: 8px;">
+                                        <li><a class="dropdown-item py-2 fw-bold text-dark" asp-page="./Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square me-2 text-muted"></i> Edición Completa ERP</a></li>
+                                        <li><a class="dropdown-item py-2 fw-bold" asp-page="./ReservaPdf" asp-route-id="@item.Id" target="_blank"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i> Ver PDF Reserva</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form method="post" asp-page-handler="Delete" asp-route-id="@item.Id" onsubmit="return confirm('¿Eliminar operación de forma permanente?');">
+                                                <button type="submit" class="dropdown-item text-danger py-2 fw-bold"><i class="bi bi-trash3 me-2"></i> Eliminar Registro</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+
+                            <!-- Template dinámico vacío, se llenará por JS -->
+                            <template class="maritimo-template d-none"></template>
+                        </tr>
+
+                        @if (item.Unidadestecnicas != null && item.Unidadestecnicas.Any())
+                        {
+                            @foreach (var u in item.Unidadestecnicas)
+                            {
+                                <tr class="row-sub op-row"
+                                    onclick="abrirModalEdicion(this, event)"
+                                    data-id="@item.Id"
+                                    data-booking="@item.NumeroBooking"
+                                    data-naviera="@item.IdNaviera"
+                                    data-pol="@item.IdPuertoOrigen"
+                                    data-pod="@item.IdPuertoDestino"
+                                    data-terminal="@item.TerminalPortuario"
+                                    data-nave="@item.Nave"
+                                    data-etd="@(item.EtdPol?.ToString("yyyy-MM-dd"))"
+                                    data-eta="@(item.EtaPod?.ToString("yyyy-MM-dd"))"
+                                    data-stacking="@(item.FechaStacking?.ToString("yyyy-MM-ddTHH:mm"))"
+                                    data-cutoff="@(item.CutOffMatriz?.ToString("yyyy-MM-ddTHH:mm"))"
+                                    data-transbordo="@(string.IsNullOrWhiteSpace(item.Transbordo) ? "DIRECTO" : "TRANSBORDO")"
+                                    data-puertotransbordo="@item.Transbordo"
+                                    data-lar="@item.EstadoLar"
+                                    data-lardate="@(item.LateArrival?.ToString("yyyy-MM-ddTHH:mm"))"
+                                    data-ingresado="@(item.ContenedorIngresado ? "1" : "0")"
+                                    data-pago="@pagoStr">
+
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <i class="bi bi-arrow-return-right text-muted opacity-25"></i>
+                                            <span class="booking-txt text-muted text-uppercase" style="font-size: 12px;">@item.NumeroBooking</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2 bg-light border border-light rounded px-2 py-1 mt-1" style="width: fit-content; margin-left: 20px;">
+                                            <span class="text-nowrap" style="font-size: 10px; font-weight: 700; color: #64748b;"><i class="bi bi-box me-1"></i> @FormatearTipoPuro(u.TipoContenedor, u.IdTipoCarga)</span>
+                                            @if (!string.IsNullOrWhiteSpace(u.NroContenedor))
+                                            {
+                                                <span style="font-size: 11px; font-weight: 800; color: var(--atilson-dark);">@u.NroContenedor</span>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <td class="align-middle opacity-75"><span class="data-val text-wrap text-muted d-block">@nombreCortoCliente</span></td>
+
+                                    <td class="align-middle opacity-75">
+                                        <div class="data-group">
+                                            <span class="data-val">@(string.IsNullOrWhiteSpace(item.Nave) ? "TBA" : item.Nave)</span>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle opacity-75">
+                                        <div class="data-group">
+                                            <div><span class="data-label">POL:</span> <span class="data-secondary">@(item.IdPuertoOrigenNavigation?.NombrePuerto ?? "-")</span></div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle opacity-75">
+                                        <div class="data-group">
+                                            <div><span class="data-label">ETD:</span> <span class="data-secondary">@(item.EtdPol?.ToString("dd/MM/yyyy") ?? "-")</span></div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle opacity-75">
+                                        <div class="data-group">
+                                            <div class="d-flex align-items-center">
+                                                <span class="data-label">IN:</span>
+                                                <span class="data-val text-muted">@(item.FechaStacking?.ToString("dd/MM HH:mm") ?? "-")</span>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td class="text-end pe-4 align-middle actions-cell">
+                                        <div class="dropdown">
+                                            <a href="#" class="btn-action-dot" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></a>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="font-size: 12px; border-radius: 8px;">
+                                                <li><a class="dropdown-item py-2 fw-bold text-dark" asp-page="./Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square me-2 text-muted"></i> Edición Completa ERP</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="bi bi-water text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <p class="text-muted fw-bold mt-3 mb-0" style="font-size: 14px;">No hay operaciones marítimas bajo estos filtros.</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- EL NUEVO MODAL UNIFICADO PARA MARÍTIMO -->
+<div class="modal fade modal-minimal" id="modalEditMaritimo" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-mega-wide">
+        <div class="modal-content border-0" style="position: relative;">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" style="position: absolute; right: 20px; top: 20px; z-index: 1055; background-color: #fff; border-radius: 50%; padding: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);"></button>
+
+            <form method="post" asp-page-handler="UpdateMaritimo">
+                <input type="hidden" name="id" id="mod_IdOperacion" />
+
+                <div class="modal-body" id="mod_DynamicBody">
+                    <!-- El contenido del modal se inyecta por JS para mantenerlo limpio -->
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMsg"] != null)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+            Swal.fire({ title: 'Actualización Exitosa', text: '@Html.Raw(TempData["SuccessMsg"])', icon: 'success', confirmButtonColor: '#0f172a' });
+            });
+        </script>
+    }
+
+    <script>
+        // Options for the selects dynamically generated from ViewBag via hidden variables if needed,
+        // but since we read from dataset, we just clone the template.
+        // I will dynamically construct the inner HTML inside the modal to match Index.cshtml
+
+        function abrirModalEdicion(trElement, event) {
+        if (event.target.closest('.actions-cell')) return;
+
+        const d = trElement.dataset;
+        document.getElementById('mod_IdOperacion').value = d.id;
+
+        // Extraer las opciones de naviera y puertos de los selects ocultos o crearlos:
+        // Usaremos el DOM para encontrar los combos originales y copiarlos.
+        // Para simplificar, generamos el HTML calcado del Main Board.
+
+        let htmlForm = `
+        <div class="atilson-banner mb-3">
+        <div class="fw-bold text-uppercase" style="font-size: 13px; letter-spacing: 1px;">
+        <i class="bi bi-water me-2"></i> GESTIÓN MARÍTIMA RÁPIDA | BKG: ${d.booking}
+        </div>
+        </div>
+
+        <div class="row g-3">
+        <div class="col-lg-6">
+        <div class="form-section shadow-sm h-100" style="padding: 25px;">
+        <div class="section-title-sm mb-3">
+        <span><i class="bi bi-geo-alt-fill me-1"></i> Ruteo y Naviera</span>
+        <span class="badge bg-light text-dark border p-1" style="font-size:9px;">PAGO: ${d.pago || 'N/A'}</span>
+        </div>
+        <div class="row g-2">
+        <div class="col-md-6">
+        <label class="erp-label">Naviera (Modificar en ERP)</label>
+        <input type="text" class="form-control erp-input py-1 text-uppercase text-muted" value="${trElement.querySelector('td:nth-child(3) .data-secondary')?.innerText || '-'}" readonly />
+        </div>
+        <div class="col-md-6">
+        <label class="erp-label">Nave / Vessel</label>
+        <input type="text" name="ModNave" class="form-control erp-input py-1 text-uppercase" value="${d.nave}" placeholder="Ej: MSC SANTIAGO" />
+        </div>
+        <div class="col-md-6">
+        <label class="erp-label">POL (Origen)</label>
+        <input type="text" class="form-control erp-input py-1 text-muted" value="${trElement.querySelector('td:nth-child(4) .data-secondary:nth-child(1)')?.innerText.replace('POL: ', '') || '-'}" readonly />
+        </div>
+        <div class="col-md-6">
+        <label class="erp-label">POD (Destino)</label>
+        <input type="text" class="form-control erp-input py-1 text-muted" value="${trElement.querySelector('td:nth-child(4) .data-secondary:nth-child(2)')?.innerText.replace('POD: ', '') || '-'}" readonly />
+        </div>
+        <div class="col-md-12">
+        <label class="erp-label">Terminal Portuario</label>
+        <input type="text" name="ModTerminal" class="form-control erp-input py-1" value="${d.terminal}" placeholder="Ej: DP World / STI" />
+        </div>
+        <div class="col-md-6">
+        <label class="erp-label">Tipo Viaje</label>
+        <select class="form-select erp-input py-1 select-transbordo-mod" onchange="toggleTransbordo(this)">
+        <option value="DIRECTO" ${d.transbordo === 'DIRECTO' ? 'selected' : ''}>Directo</option>
+        <option value="TRANSBORDO" ${d.transbordo === 'TRANSBORDO' ? 'selected' : ''}>Transbordo</option>
+        </select>
+        </div>
+        <div class="col-md-6 div-transbordo-mod" style="display: ${d.transbordo === 'TRANSBORDO' ? 'block' : 'none'};">
+        <label class="erp-label">Puerto Transbordo</label>
+        <input type="text" name="ModTransbordo" class="form-control erp-input py-1" value="${d.puertotransbordo}" placeholder="Ej: CALLAO" />
+        </div>
+        </div>
+        </div>
+        </div>
+        <div class="col-lg-6">
+        <div class="form-section shadow-sm h-100" style="padding: 25px;">
+        <div class="section-title-sm mb-3">
+        <span class="text-success"><i class="bi bi-calendar-event me-1"></i> Itinerarios y Fechas Clave</span>
+        </div>
+        <div class="row g-2">
+        <div class="col-md-6">
+        <label class="erp-label">ETD (Zarpe)</label>
+        <input type="date" name="ModEtd" class="form-control erp-input py-1" value="${d.etd}" />
+        </div>
+        <div class="col-md-6">
+        <label class="erp-label">ETA (Arribo)</label>
+        <input type="date" name="ModEta" class="form-control erp-input py-1" value="${d.eta}" />
+        </div>
+        <div class="col-md-6">
+        <label class="erp-label">Stacking In (Apertura)</label>
+        <input type="datetime-local" name="ModStacking" class="form-control erp-input py-1" value="${d.stacking}" />
+        </div>
+        <div class="col-md-6">
+        <label class="erp-label text-danger">Cut-Off Matriz</label>
+        <input type="datetime-local" name="ModCutoff" class="form-control erp-input border-danger py-1" value="${d.cutoff}" />
+        </div>
+        <div class="col-md-6 mt-3">
+        <label class="erp-label text-warning">Gestión LAR</label>
+        <select name="ModEstadoLar" class="form-select erp-input fw-bold bg-warning bg-opacity-10 py-1 select-lar-mod" onchange="toggleLar(this)">
+        <option value="">No Solicitado</option>
+        <option value="SOLICITADO LAR" ${d.lar === 'SOLICITADO LAR' ? 'selected' : ''}>Solicitado LAR</option>
+        <option value="AUTORIZADO LAR" ${d.lar === 'AUTORIZADO LAR' ? 'selected' : ''}>Autorizado LAR</option>
+        <option value="SOLICITADO ELAR" ${d.lar === 'SOLICITADO ELAR' ? 'selected' : ''}>Solicitado ELAR</option>
+        <option value="AUTORIZADO ELAR" ${d.lar === 'AUTORIZADO ELAR' ? 'selected' : ''}>Autorizado ELAR</option>
+        </select>
+        </div>
+        <div class="col-md-6 mt-3 div-fecha-lar-mod" style="display: ${d.lar && d.lar.includes('AUTORIZADO') ? 'block' : 'none'};">
+        <label class="erp-label text-success">Nuevo Stacking Out (LAR)</label>
+        <input type="datetime-local" name="ModLateArrival" class="form-control erp-input border-success py-1" value="${d.lardate}" />
+        </div>
+        <div class="col-md-12 mt-4 pt-3 border-top">
+        <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" name="ModIngresado" value="true" ${d.ingresado === '1' ? 'checked' : ''} style="transform: scale(1.3); cursor: pointer;">
+        <label class="form-check-label fw-bold text-success ms-2" style="font-size: 11px; margin-top:2px;">CARGA INGRESADA A PUERTO (IN)</label>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+
+        <div class="mt-4 pt-2 text-end d-flex justify-content-between align-items-center border-top border-light">
+        <span class="text-muted" style="font-size: 11px;">* Para setear nuevas temperaturas, añadir o quitar unidades, utilice la Edición Completa ERP.</span>
+        <div>
+        <button type="button" class="btn btn-light border fw-bold text-muted me-2 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-dark fw-bold px-4 btn-sm shadow-sm"><i class="bi bi-save me-1"></i> Guardar Gestión</button>
+        </div>
+        </div>
+        `;
+
+        document.getElementById('mod_DynamicBody').innerHTML = htmlForm;
+        var myModal = new bootstrap.Modal(document.getElementById('modalEditMaritimo'));
+        myModal.show();
+        }
+
+        window.toggleTransbordo = function(sel) {
+        const div = sel.closest('.row').querySelector('.div-transbordo-mod');
+        const inp = div.querySelector('input');
+        if (sel.value === 'TRANSBORDO') {
+        div.style.display = 'block';
+        } else {
+        div.style.display = 'none';
+        inp.value = '';
+        }
+        }
+
+        window.toggleLar = function(sel) {
+        const div = sel.closest('.row').querySelector('.div-fecha-lar-mod');
+        if (sel.value.includes("AUTORIZADO")) {
+        div.style.display = 'block';
+        } else {
+        div.style.display = 'none';
+        }
+        }
+    </script>
+}

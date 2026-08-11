@@ -1,0 +1,173 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Plantas.CreateModel
+@{
+    ViewData["Title"] = "Nueva Planta";
+}
+<style>
+    :root {
+        --txt-main: #0f172a;
+        --txt-muted: #64748b;
+        --border-soft: #e2e8f0;
+        --bg-main: #ffffff;
+        --bg-soft: #f8fafc;
+        --atilson-dark: #2c1b4d;
+    }
+
+    body {
+        background-color: #f1f5f9;
+    }
+
+    .module-card {
+        background: var(--bg-main);
+        border: 1px solid var(--border-soft);
+        border-radius: 10px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+        margin-bottom: 25px;
+        overflow: hidden;
+    }
+
+    .module-header {
+        background-color: var(--bg-soft);
+        padding: 16px 25px;
+        border-bottom: 1px solid var(--border-soft);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .module-header h6 {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--txt-main);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+    .module-body {
+        padding: 30px;
+    }
+
+    .form-group-custom {
+        margin-bottom: 1.5rem;
+    }
+
+    .input-label {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--txt-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+        .input-label.required::after {
+            content: " *";
+            color: #e11d48;
+            font-size: 12px;
+        }
+
+    .input-modern {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--txt-main);
+        background-color: transparent;
+        border: none;
+        border-bottom: 1px solid #cbd5e1;
+        border-radius: 0;
+        padding: 8px 0;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    select.input-modern {
+        padding-right: 20px;
+    }
+
+    .input-modern:focus {
+        outline: none;
+        border-bottom-color: var(--atilson-dark);
+        box-shadow: 0 1px 0 0 var(--atilson-dark);
+    }
+
+    .input-modern::placeholder {
+        color: #94a3b8;
+        font-weight: 400;
+    }
+
+    .btn-submit-pro {
+        background: linear-gradient(135deg, var(--atilson-dark) 0%, #1a102e 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 14px 30px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 6px rgba(44, 27, 77, 0.2);
+        transition: all 0.2s ease;
+    }
+
+        .btn-submit-pro:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(44, 27, 77, 0.3);
+            color: white;
+        }
+</style>
+
+<div class="container-fluid py-4" style="max-width: 900px;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 800; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">Registrar Planta</h1>
+            <p class="text-muted small m-0 fw-medium">Añada un nuevo origen de carga o planta exportadora.</p>
+        </div>
+        <a asp-page="Index" class="btn btn-white border bg-white shadow-sm text-muted fw-bold px-4" style="font-size: 11px; letter-spacing: 0.5px;">CANCELAR Y VOLVER</a>
+    </div>
+
+    <form method="post">
+        <div class="module-card" style="border-top: 4px solid var(--atilson-dark);">
+            <div class="module-header">
+                <i class="bi bi-building-add text-muted fs-5"></i>
+                <h6>1. Datos de Identificación</h6>
+            </div>
+            <div class="module-body">
+                <div class="row gx-5 mb-0">
+                    <div class="col-md-12 form-group-custom mb-0">
+                        <label class="input-label required">Nombre de la Planta</label>
+                        <input asp-for="Planta.NombrePlanta" class="input-modern" placeholder="Ej: Planta Frutícola San José, Packing..." required />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-card" style="border-top: 4px solid #3b82f6;">
+            <div class="module-header bg-white">
+                <i class="bi bi-geo-alt-fill text-primary fs-5"></i>
+                <h6>2. Ubicación</h6>
+            </div>
+            <div class="module-body bg-light bg-opacity-25">
+                <div class="row gx-5 mb-0">
+                    <div class="col-md-6 form-group-custom mb-0">
+                        <label class="input-label">Ciudad / Región</label>
+                        <select asp-for="Planta.IdCiudad" class="input-modern" asp-items="ViewBag.IdCiudad">
+                            <option value="">-- Seleccionar Ciudad --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group-custom mb-0">
+                        <label class="input-label">Dirección Exacta</label>
+                        <input asp-for="Planta.Direccion" class="input-modern" placeholder="Ej: Ruta 5 Sur Km 250..." />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 mb-5 text-end">
+            <button type="submit" class="btn-submit-pro">
+                <i class="bi bi-hdd-fill me-2"></i> Guardar Nueva Planta
+            </button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,1313 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Finanzas.IndexModel
+@using AtilsonCargoSpa.Models
+@{
+    ViewData["Title"] = "Control Financiero Operativo";
+}
+
+@functions {
+    public static string AbreviarCliente(string? razonSocial)
+    {
+        if (string.IsNullOrWhiteSpace(razonSocial)) return "Sin Mandante";
+        string s = razonSocial.ToUpper().Trim();
+        if (s.Contains("ALGAMAR")) return "ALGAMAR S.A.";
+        if (s.Contains("DOÑA PATRICIA") || s.Contains("DONA PATRICIA")) return "DOÑA PATRICIA";
+
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\b(AGRICOLA|COMERCIAL|INDUSTRIAL|IMPORTADORA|EXPORTADORA|SOCIEDAD|LIMITADA|SPA|S\.A\.|LTDA)\b", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\b(Y|E|DE|DEL|LA|LOS)\b", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\s+", " ").Trim();
+        return string.IsNullOrWhiteSpace(s) ? razonSocial : s;
+    }
+}
+
+<style>
+    /* ATILSON FINTECH DESIGN SYSTEM */
+    :root {
+        --atilson-dark: #0f172a;
+        --txt-main: #1e293b;
+        --txt-muted: #64748b;
+        --bg-main: #ffffff;
+        --bg-soft: #f8fafc;
+        --border-soft: #e2e8f0;
+        --color-venta: #0284c7;
+        --color-costo: #dc2626;
+        --color-profit: #10b981;
+    }
+
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Inter', system-ui, sans-serif;
+        color: var(--txt-main);
+    }
+
+    /* NAVEGACIÓN SUPERIOR */
+    .workspace-nav {
+        background: var(--bg-main);
+        padding: 5px;
+        border-radius: 8px;
+        border: 1px solid var(--border-soft);
+        display: inline-flex;
+        gap: 2px;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .ws-btn {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 8px 18px;
+        border-radius: 6px;
+        color: var(--txt-muted);
+        text-decoration: none;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        letter-spacing: 0.5px;
+    }
+
+        .ws-btn:hover {
+            background: var(--bg-soft);
+            color: var(--txt-main);
+        }
+
+        .ws-btn.active {
+            background: var(--atilson-dark);
+            color: #ffffff;
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.15);
+        }
+
+        .ws-btn i {
+            font-size: 14px;
+            margin-right: 6px;
+        }
+
+    /* KPI CARDS GLOBALES */
+    .kpi-card {
+        border-radius: 12px;
+        padding: 20px 24px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #ffffff;
+    }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+    .kpi-bg-icon {
+        position: absolute;
+        right: -15px;
+        bottom: -20px;
+        font-size: 90px;
+        color: rgba(255, 255, 255, 0.08);
+        transform: rotate(-15deg);
+        pointer-events: none;
+        transition: all 0.4s ease;
+    }
+
+    .kpi-card:hover .kpi-bg-icon {
+        transform: rotate(0deg) scale(1.1);
+        color: rgba(255, 255, 255, 0.15);
+    }
+
+    .kpi-title {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        opacity: 0.9;
+    }
+
+    .kpi-value {
+        font-size: 24px;
+        font-weight: 900;
+        letter-spacing: -1px;
+        z-index: 1;
+        line-height: 1.1;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+    }
+
+    .kpi-desc {
+        font-size: 10px;
+        font-weight: 600;
+        margin-top: 8px;
+        z-index: 1;
+        opacity: 0.8;
+        border-top: 1px dashed rgba(255,255,255,0.2);
+        padding-top: 8px;
+    }
+
+    /* BOTONES DE HERRAMIENTAS Y BARRA FLOTANTE */
+    .btn-tool-pill {
+        background: #ffffff;
+        border: 1px solid var(--border-soft);
+        color: var(--txt-main);
+        font-size: 11px;
+        font-weight: 800;
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+        .btn-tool-pill:hover {
+            background: var(--bg-soft);
+            border-color: #cbd5e1;
+            color: var(--atilson-dark);
+        }
+
+        .btn-tool-pill.active {
+            background: var(--atilson-dark);
+            color: #ffffff;
+            border-color: var(--atilson-dark);
+        }
+
+    .filter-drawer {
+        background: white;
+        border: 1px solid var(--border-soft);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 20px -4px rgba(0,0,0,0.04);
+    }
+
+    .filter-label {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--txt-muted);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .selection-bar {
+        background: rgba(15, 23, 42, 0.96);
+        backdrop-filter: blur(12px);
+        color: #f8fafc;
+        padding: 12px 24px;
+        border-radius: 50px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+        animation: floatUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @@keyframes floatUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .sel-stat-item {
+        font-size: 11px;
+        font-weight: 600;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .sel-stat-val {
+        font-family: monospace;
+        font-size: 13px;
+        font-weight: 800;
+        color: #ffffff;
+    }
+
+    /* TABLA PRINCIPAL */
+    .fin-table-wrapper {
+        background: var(--bg-main);
+        border-radius: 10px;
+        border: 1px solid var(--border-soft);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        overflow: hidden;
+    }
+
+    .table-exec {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-bottom: 0;
+    }
+
+        .table-exec th {
+            background-color: var(--bg-soft);
+            color: var(--txt-muted);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-soft);
+            white-space: nowrap;
+        }
+
+        .table-exec td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--txt-main);
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table-exec tbody tr.row-main:hover td {
+            background-color: #f8fafc;
+            cursor: pointer;
+        }
+
+    .btn-edit {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 6px 12px;
+        border-radius: 6px;
+        background-color: var(--bg-soft);
+        border: 1px solid var(--border-soft);
+        color: var(--txt-main);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.15s;
+    }
+
+        .btn-edit:hover {
+            background-color: var(--atilson-dark);
+            color: white;
+            border-color: var(--atilson-dark);
+        }
+
+    .btn-toggle-row {
+        background: transparent;
+        border: 1px solid var(--border-soft);
+        border-radius: 6px;
+        color: var(--txt-muted);
+        cursor: pointer;
+        padding: 4px 8px;
+        transition: all 0.15s;
+        font-size: 12px;
+    }
+
+        .btn-toggle-row:hover {
+            background: var(--bg-soft);
+            color: var(--atilson-dark);
+        }
+
+        .btn-toggle-row.collapsed i::before {
+            content: "\F285";
+        }
+
+        .btn-toggle-row:not(.collapsed) i::before {
+            content: "\F286";
+        }
+
+    /* ACORDEÓN LIBRO MAYOR */
+    .row-detail {
+        background-color: #f8fafc;
+        border-bottom: 1px solid var(--border-soft);
+        box-shadow: inset 0 3px 6px -3px rgba(0,0,0,0.05);
+    }
+
+    .segmented-control {
+        display: inline-flex;
+        background: #e2e8f0;
+        padding: 3px;
+        border-radius: 8px;
+        gap: 3px;
+    }
+
+    .seg-btn {
+        border: none;
+        background: transparent;
+        padding: 8px 18px;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--txt-muted);
+        border-radius: 6px;
+        transition: all 0.2s;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .seg-btn:hover {
+            color: var(--txt-main);
+        }
+
+        .seg-btn.active-egresos {
+            background: white;
+            color: var(--color-costo);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .seg-btn.active-ingresos {
+            background: white;
+            color: var(--color-venta);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* 👇 AGREGA ESTO AQUÍ 👇 */
+        .seg-btn.active-resumen {
+            background: white;
+            color: var(--color-profit);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+    .sub-table-container {
+        background: white;
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        overflow: hidden;
+        min-height: 180px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .sub-table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+    }
+
+        .sub-table th, .sub-table td {
+            padding: 10px 16px !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+        }
+
+        .sub-table th {
+            background-color: #f8fafc;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--txt-muted);
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .sub-table td {
+            font-size: 11px;
+            font-weight: 600;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+    .group-header td {
+        background-color: #f8fafc !important;
+        font-size: 10px !important;
+        font-weight: 900 !important;
+        color: var(--atilson-dark) !important;
+        text-transform: uppercase;
+        border-top: 1px solid #e2e8f0 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    .group-general td {
+        background-color: #64748b !important;
+        color: #ffffff !important;
+        font-size: 10px !important;
+        font-weight: 900 !important;
+        text-transform: uppercase;
+        border-top: 1px solid #475569 !important;
+        border-bottom: 1px solid #475569 !important;
+    }
+
+    .badge-subtle {
+        font-size: 9px;
+        font-weight: 800;
+        padding: 4px 8px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .bg-subtle-ok {
+        background-color: #d1fae5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+
+    .bg-subtle-pend {
+        background-color: #f1f5f9;
+        color: var(--txt-muted);
+        border: 1px solid var(--border-soft);
+    }
+
+    .bg-subtle-alert {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+
+    .celda-resp-atilson {
+        background-color: #fff1f2 !important;
+        color: #e11d48 !important;
+        font-weight: 800;
+        border: 1px solid #fecdd3;
+        padding: 3px 6px;
+        border-radius: 4px;
+        font-size: 9px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .celda-resp-cliente {
+        background-color: #f8fafc;
+        color: var(--txt-muted);
+        font-weight: 800;
+        border: 1px solid var(--border-soft);
+        padding: 3px 6px;
+        border-radius: 4px;
+        font-size: 9px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .monto-tecnico {
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .col-select {
+        display: none;
+        width: 40px;
+        text-align: center;
+    }
+
+    .table-selection-active .col-select {
+        display: table-cell;
+        animation: fadeIn 0.2s ease;
+    }
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+</style>
+
+<div class="container-fluid py-4" style="padding-left: 30px; padding-right: 30px; max-width: 1650px;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom flex-wrap gap-3">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 900; color: var(--atilson-dark); margin: 0; letter-spacing: -0.5px;">DEPARTAMENTO DE FINANZAS</h1>
+            <p class="text-muted small m-0 fw-medium mt-1"></p>
+        </div>
+        <div class="d-flex gap-3 align-items-center flex-wrap">
+            <div class="px-4 py-2 bg-white border rounded-3 text-end shadow-sm" style="min-width: 170px; border-left: 4px solid var(--color-costo) !important;">
+                <span class="d-block text-muted" style="font-size: 9px; font-weight: 800; text-transform: uppercase;">Total Egresos (Costo)</span>
+                <div class="monto-tecnico" style="font-size: 16px; color: var(--color-costo);">USD $@Model.GranTotalEgresosUSD.ToString("N2")</div>
+                <div class="monto-tecnico text-muted mt-1 pt-1 border-top" style="font-size: 11px;">CLP $@Model.GranTotalEgresosCLP.ToString("N0")</div>
+            </div>
+            <div class="px-4 py-2 bg-white border rounded-3 text-end shadow-sm" style="min-width: 170px; border-left: 4px solid var(--color-venta) !important;">
+                <span class="d-block text-muted" style="font-size: 9px; font-weight: 800; text-transform: uppercase;">Total Ingresos (Venta)</span>
+                <div class="monto-tecnico" style="font-size: 16px; color: var(--color-venta);">USD $@Model.GranTotalIngresosUSD.ToString("N2")</div>
+                <div class="monto-tecnico text-muted mt-1 pt-1 border-top" style="font-size: 11px;">CLP $@Model.GranTotalIngresosCLP.ToString("N0")</div>
+            </div>
+            <div class="px-4 py-2 bg-white border rounded-3 text-end shadow-sm" style="min-width: 180px; border-left: 4px solid @(Model.ProfitNetoUSD >= 0 ? "var(--color-profit)" : "var(--color-costo)") !important;">
+                <span class="d-block text-muted" style="font-size: 9px; font-weight: 800; text-transform: uppercase;">Rentabilidad</span>
+                <div class="monto-tecnico" style="font-size: 16px; color: @(Model.ProfitNetoUSD >= 0 ? "var(--color-profit)" : "var(--color-costo)");">USD $@Model.ProfitNetoUSD.ToString("N2")</div>
+                <div class="monto-tecnico text-muted mt-1 pt-1 border-top" style="font-size: 11px;">CLP $@Model.ProfitNetoCLP.ToString("N0")</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="workspace-nav">
+        <a asp-page="/Finanzas/Index" class="ws-btn active"><i class="bi bi-graph-up-arrow"></i> Main Board</a>
+        <a asp-page="/Finanzas/OrdenesCompra" class="ws-btn"><i class="bi bi-receipt"></i> Órdenes de Compra (Costo)</a>
+        <a asp-page="/Finanzas/Facturacion" class="ws-btn"><i class="bi bi-file-earmark-spreadsheet"></i> Facturación (Ingreso)</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-5 g-3 mb-4">
+        <div class="col">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                <i class="bi bi-ship kpi-bg-icon"></i>
+                <div class="kpi-title"><i class="bi bi-circle-fill" style="color: #bae6fd; font-size:8px;"></i> Marítimos</div>
+                <div class="kpi-value">USD $@Model.TotalCostosMaritimosUSD.ToString("N2")</div>
+                <div class="kpi-desc">Fletes y Navieras operativas.</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+                <i class="bi bi-truck kpi-bg-icon"></i>
+                <div class="kpi-title"><i class="bi bi-circle-fill" style="color: #fde68a; font-size:8px;"></i> Terrestres</div>
+                <div class="kpi-value">CLP $@Model.TotalCostosTerrestresCLP.ToString("N0")</div>
+                <div class="kpi-desc">Inland, retiro y transporte.</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);">
+                <i class="bi bi-box-seam kpi-bg-icon"></i>
+                <div class="kpi-title"><i class="bi bi-circle-fill" style="color: #bae6fd; font-size:8px;"></i> Gate In / Out</div>
+                <div class="kpi-value">CLP $@Model.TotalCostosGateCLP.ToString("N0")</div>
+                <div class="kpi-desc">Movimientos de Terminal.</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);">
+                <i class="bi bi-file-earmark-text kpi-bg-icon"></i>
+                <div class="kpi-title"><i class="bi bi-circle-fill" style="color: #ddd6fe; font-size:8px;"></i> Documentales</div>
+                <div class="kpi-value">USD $@Model.TotalCostosDocumentalesUSD.ToString("N2")</div>
+                <div class="kpi-desc">Agencia, DUS y Certificados.</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); border-color: #fca5a5;">
+                <i class="bi bi-exclamation-octagon kpi-bg-icon"></i>
+                <div class="kpi-title" style="color:#fecaca;"><i class="bi bi-circle-fill text-danger" style="font-size:8px;"></i> Extracostos</div>
+                <div class="kpi-value text-white">USD $@Model.TotalExtracostosUSD.ToString("N2")</div>
+                <div class="kpi-desc" style="color:#fca5a5;">CLP $@Model.TotalExtracostosCLP.ToString("N0")</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="collapse filter-drawer" id="filterDrawer">
+        <form method="get" id="formFiltrosFinanzas">
+            <div class="row g-3 align-items-end mb-2">
+                <div class="col-12 col-md-4">
+                    <span class="filter-label">Cliente Mandante</span>
+                    <select asp-for="FilterClienteId" class="form-select form-select-sm bg-light fw-bold" onchange="this.form.submit()">
+                        <option value="">🏢 Todos los clientes</option>
+                        @foreach (var c in Model.ClientesList)
+                        {
+                            <option value="@c.Id">@c.RazonSocial</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <span class="filter-label">Proveedor Logístico</span>
+                    <select asp-for="FilterProveedorId" class="form-select form-select-sm bg-light fw-bold" onchange="this.form.submit()">
+                        <option value="">🚚 Todos los proveedores</option>
+                        @foreach (var p in Model.ProveedoresList)
+                        {
+                            <option value="@p.Id">@p.NombreProveedor</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <span class="filter-label">Buscar por Booking / Contenedor</span>
+                    <div class="input-group input-group-sm">
+                        <input type="text" asp-for="SearchString" class="form-control bg-light border-end-0 fw-bold" placeholder="Ej: BKG12345 o MSCU1234567">
+                        <button type="submit" class="input-group-text bg-light text-muted border-start-0" title="Aplicar"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-2">
+                    <span class="filter-label">Desde (ETD)</span>
+                    <input type="date" asp-for="FechaInicio" class="form-control form-control-sm bg-light fw-bold" />
+                </div>
+                <div class="col-12 col-md-2">
+                    <span class="filter-label">Hasta</span>
+                    <input type="date" asp-for="FechaFin" class="form-control form-control-sm bg-light fw-bold" />
+                </div>
+                <div class="col-12 col-md-3">
+                    <span class="filter-label">Estado Facturación (Venta)</span>
+                    <select asp-for="FilterEstadoFacturacion" class="form-select form-select-sm bg-light fw-bold" onchange="this.form.submit()">
+                        <option value="ALL">📦 Todas las operaciones</option>
+                        <option value="PENDIENTE">⏳ Pendientes de Facturar</option>
+                        <option value="FACTURADO">✅ Ya Facturadas</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <span class="filter-label">Estado Pago (Costo)</span>
+                    <select asp-for="FilterEstadoPago" class="form-select form-select-sm bg-light fw-bold" onchange="this.form.submit()">
+                        <option value="ALL">📦 Todos los estados</option>
+                        <option value="PENDIENTE">⏳ Con OC Pendientes</option>
+                        <option value="PAGADO">✅ Proveedores Pagados</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 d-flex justify-content-end">
+                    <a asp-page="./Index" class="btn btn-sm btn-outline-secondary w-100 fw-bold"><i class="bi bi-arrow-counterclockwise"></i> Limpiar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="selectionBar" class="selection-bar d-none">
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+            <span class="badge bg-white text-dark rounded-pill px-3 py-2" style="font-size: 11px;" id="lblCountSelect">0 op.</span>
+            <div class="d-flex gap-4 align-items-center border-start border-secondary ps-4 flex-wrap">
+                <div class="sel-stat-item">Venta USD: <span class="sel-stat-val" style="color: #38bdf8;" id="sumVentaUsdSel">$0</span></div>
+                <div class="sel-stat-item">Costo USD: <span class="sel-stat-val" style="color: #f87171;" id="sumCostoUsdSel">$0</span></div>
+                <div class="sel-stat-item border-end border-secondary pe-4">Profit USD: <span class="sel-stat-val" style="color: #34d399;" id="sumProfitUsdSel">$0</span></div>
+                <div class="sel-stat-item">Venta CLP: <span class="sel-stat-val" style="color: #38bdf8;" id="sumVentaClpSel">$0</span></div>
+                <div class="sel-stat-item">Costo CLP: <span class="sel-stat-val" style="color: #f87171;" id="sumCostoClpSel">$0</span></div>
+                <div class="sel-stat-item">Profit CLP: <span class="sel-stat-val" style="color: #34d399;" id="sumProfitClpSel">$0</span></div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <button type="button" class="btn-sel-action btn-sel-excel shadow-sm" onclick="exportarReal('excel', true)"><i class="bi bi-file-earmark-excel-fill"></i> Excel</button>
+            <button type="button" class="btn-sel-action btn-sel-pdf shadow-sm" onclick="exportarReal('pdf', true)"><i class="bi bi-file-earmark-pdf-fill text-danger"></i> PDF</button>
+            <button type="button" class="btn-sel-close ms-2" onclick="toggleSelectionMode()" title="Cerrar selección"><i class="bi bi-x-lg fs-5"></i></button>
+        </div>
+    </div>
+
+    <div class="fin-table-wrapper" id="tableContainer">
+        <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center bg-white flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn-tool-pill @(Model.FechaInicio.HasValue || Model.FechaFin.HasValue || !string.IsNullOrEmpty(Model.SearchString) || Model.FilterEstadoFacturacion != "ALL" || Model.FilterEstadoPago != "ALL" || Model.FilterClienteId.HasValue || Model.FilterProveedorId.HasValue ? "active" : "")" type="button" data-bs-toggle="collapse" data-bs-target="#filterDrawer">
+                    <i class="bi bi-sliders"></i> Filtros Avanzados
+                </button>
+                <button class="btn-tool-pill" type="button" id="btnModeSelect" onclick="toggleSelectionMode()">
+                    <i class="bi bi-check2-square"></i> Activar Selección
+                </button>
+                <span class="text-muted ms-3 border-start ps-3" style="font-size: 11px; font-weight: 800;"><i class="bi bi-table me-1"></i> DETALLE (@Model.Operaciones.Count Registros)</span>
+            </div>
+            <div class="d-flex gap-2">
+                <div class="dropdown">
+                    <button class="btn-tool-pill active dropdown-toggle" type="button" data-bs-toggle="dropdown"><i class="bi bi-cloud-arrow-down-fill"></i> Descargar Vista</button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 p-2" style="font-size: 12px;">
+                        <li><a class="dropdown-item rounded-2 py-2 fw-bold" href="#" onclick="exportarReal('excel', false)"><i class="bi bi-file-earmark-excel-fill text-success fs-6 me-2"></i>Exportar Excel (.csv)</a></li>
+                        <li><a class="dropdown-item rounded-2 py-2 fw-bold" href="#" onclick="exportarReal('pdf', false)"><i class="bi bi-file-earmark-pdf-fill text-danger fs-6 me-2"></i>Reporte PDF Ejecutivo</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-exec">
+                <thead>
+                    <tr>
+                        <th class="col-select text-center"><input class="form-check-input" type="checkbox" id="checkSelectAll" onclick="toggleSelectAll(this)"></th>
+                        <th style="width: 40px;" class="ps-3"></th>
+                        <th style="width: 16%;">Booking / Referencia</th>
+                        <th style="width: 22%;">Cliente Mandante</th>
+                        <th style="width: 14%;" class="text-end">Venta Total</th>
+                        <th style="width: 14%;" class="text-end">Costo Total</th>
+                        <th style="width: 14%;" class="text-end">Profit Neto</th>
+                        <th style="width: 10%;" class="text-center">Estado Legal</th>
+                        <th style="width: 7%;" class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Operaciones != null && Model.Operaciones.Any())
+                    {
+                        @foreach (var o in Model.Operaciones)
+                        {
+                            var fin = o.Finanzasoperacions?.FirstOrDefault();
+                            var transacciones = o.TransaccionesFinancieras != null ? o.TransaccionesFinancieras.ToList() : new List<AtilsonCargoSpa.Models.TransaccionesFinanciera>();
+                            var egresos = transacciones.Where(t => t.TipoMovimiento == "EGRESO").ToList();
+                            var ingresos = transacciones.Where(t => t.TipoMovimiento == "INGRESO").ToList();
+
+                            decimal cMarUsd = egresos.Where(t => (t.GrupoCobro == "Marítimo" || t.GrupoCobro == "MARITIMO") && t.Moneda == "USD").Sum(t => t.MontoNeto) + (fin?.CostoMaritimoNeto ?? 0m);
+                            decimal cDocUsd = egresos.Where(t => t.GrupoCobro == "Documental" && t.Moneda == "USD").Sum(t => t.MontoNeto) + (fin?.CostoAgenciaNeto ?? 0m);
+                            decimal cExtUsd = egresos.Where(t => t.GrupoCobro == "Extracosto" && t.Moneda == "USD").Sum(t => t.MontoNeto) + (o.ExtracostosOperacions?.Where(e => e.Moneda == "USD").Sum(e => e.Monto) ?? 0m);
+                            decimal totalCostoUsd = cMarUsd + cDocUsd + cExtUsd;
+
+                            decimal cTerrClp = egresos.Where(t => t.GrupoCobro == "Terrestre" && t.Moneda == "CLP").Sum(t => t.MontoNeto) + (fin?.CostoTerrestreNeto ?? 0m);
+                            decimal cGateClp = egresos.Where(t => t.GrupoCobro == "Gate" && t.Moneda == "CLP").Sum(t => t.MontoNeto) + (fin?.CostoGateNeto ?? 0m);
+                            decimal cExtClp = egresos.Where(t => t.GrupoCobro == "Extracosto" && t.Moneda == "CLP").Sum(t => t.MontoNeto) + (o.ExtracostosOperacions?.Where(e => e.Moneda == "CLP").Sum(e => e.Monto) ?? 0m);
+                            decimal totalCostoClp = cTerrClp + cGateClp + cExtClp;
+
+                            decimal vMarUsd = ingresos.Where(t => (t.GrupoCobro == "Marítimo" || t.GrupoCobro == "MARITIMO") && t.Moneda == "USD").Sum(t => t.MontoNeto) + (fin?.VentaMaritimo ?? 0m);
+                            decimal vDocUsd = ingresos.Where(t => t.GrupoCobro == "Documental" && t.Moneda == "USD").Sum(t => t.MontoNeto) + (fin?.VentaDocumental ?? 0m);
+                            decimal totalVentaUsd = vMarUsd + vDocUsd;
+
+                            decimal vTerrClp = ingresos.Where(t => t.GrupoCobro == "Terrestre" && t.Moneda == "CLP").Sum(t => t.MontoNeto) + (fin?.VentaTerrestre ?? 0m);
+                            decimal vGateClp = ingresos.Where(t => t.GrupoCobro == "Gate" && t.Moneda == "CLP").Sum(t => t.MontoNeto) + (fin?.VentaGate ?? 0m);
+                            decimal totalVentaClp = vTerrClp + vGateClp;
+
+                            decimal profitUsd = totalVentaUsd - totalCostoUsd;
+                            decimal profitClp = totalVentaClp - totalCostoClp;
+                            bool estaFacturado = ingresos.Any(t => t.EstadoFila == "FACTURADO" || t.EstadoFila == "CONCILIADO");
+
+                            <tr class="row-main">
+                                <td class="col-select text-center align-middle"><input class="form-check-input row-checkbox" type="checkbox" value="@o.Id" data-ventausd="@totalVentaUsd" data-costousd="@totalCostoUsd" data-profitusd="@profitUsd" data-ventaclp="@totalVentaClp" data-costoclp="@totalCostoClp" data-profitclp="@profitClp" onchange="recalculateSelectedTotals()"></td>
+                                <td class="text-center align-middle ps-3"><button class="btn-toggle-row collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#detail-@o.Id"><i class="bi bi-chevron-down"></i></button></td>
+                                <td>
+                                    <span class="fw-bold d-block" style="color: var(--atilson-dark); font-size: 13px;">@o.NumeroBooking</span>
+                                    <span class="text-muted" style="font-size: 10px;">ID: @o.Id | @(o.IdNavieraNavigation?.NombreNaviera ?? "Sin Naviera")</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-truncate d-block text-uppercase" style="font-size: 12px; max-width: 220px;" title="@o.IdClienteNavigation?.RazonSocial">
+                                        @(o.IdClienteNavigation?.RazonSocial ?? "Sin Mandante")
+                                    </span>
+                                </td>
+                                <td class="text-end monto-tecnico" style="color: var(--color-venta);">
+                                    USD $@totalVentaUsd.ToString("N2")<br><span class="text-muted" style="font-size:10px;">CLP $@totalVentaClp.ToString("N0")</span>
+                                </td>
+                                <td class="text-end monto-tecnico" style="color: var(--color-costo);">
+                                    USD $@totalCostoUsd.ToString("N2")<br><span class="text-muted" style="font-size:10px;">CLP $@totalCostoClp.ToString("N0")</span>
+                                </td>
+                                <td class="text-end monto-tecnico" style="color: @(profitUsd >= 0 ? "var(--color-profit)" : "var(--color-costo)");">
+                                    USD $@profitUsd.ToString("N2")<br><span style="font-size:10px; color: @(profitClp >= 0 ? "var(--color-profit)" : "var(--color-costo)") !important;">CLP $@profitClp.ToString("N0")</span>
+                                </td>
+                                <td class="text-center">
+                                    @if (estaFacturado)
+                                    {
+                                        <span class="badge-subtle bg-subtle-ok"><i class="bi bi-check2-all me-1"></i> FACTURADO</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="badge-subtle bg-subtle-pend"><i class="bi bi-clock me-1"></i> PENDIENTE</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a asp-page="./Edit" asp-route-id="@o.Id" class="btn-edit shadow-sm" title="Ajustar tarifas y presupuestos">
+                                        <i class="bi bi-pencil-square"></i> Editar
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <tr class="p-0 border-0">
+                                <td colspan="9" class="p-0 border-0">
+                                    <div id="detail-@o.Id" class="collapse row-detail">
+                                        <div class="p-4 w-100">
+                                            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                                <span class="text-dark" style="font-size: 12px; font-weight: 900; text-transform: uppercase;">
+                                                    <i class="bi bi-journal-text me-2 text-muted"></i> Libro Mayor Transaccional — BKG @o.NumeroBooking
+                                                </span>
+                                                <div class="segmented-control shadow-sm">
+                                                    <button class="seg-btn active-egresos" id="btn-egresos-@o.Id" onclick="switchTabFluid(@o.Id, 'egresos')" type="button">
+                                                        <i class="bi bi-arrow-down-left"></i> Egresos (Por Pagar)
+                                                    </button>
+                                                    <button class="seg-btn" id="btn-ingresos-@o.Id" onclick="switchTabFluid(@o.Id, 'ingresos')" type="button">
+                                                        <i class="bi bi-arrow-up-right"></i> Ingresos (Refacturación)
+                                                    </button>
+                                                    <button class="seg-btn" id="btn-resumen-@o.Id" onclick="switchTabFluid(@o.Id, 'resumen')" type="button">
+                                                        <i class="bi bi-calculator"></i> Resumen Operacional
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            @{
+                                                string NormalizarGrupo(string? g)
+                                                {
+                                                    if (string.IsNullOrWhiteSpace(g)) return "General";
+                                                    string s = g.ToUpper().Trim();
+                                                    if (s == "EXTRACOSTO" || s == "EXTRACOSTOS") return "Extracosto";
+                                                    if (s.Contains("MARIT") || s.Contains("MARÍ") || s.Contains("FLETE") || s.Contains("NAVIERA") || s.Contains("BL") || s.Contains("ROLEO") || s.Contains("LAR")) return "Marítimo";
+                                                    if (s.Contains("TERRES") || s.Contains("INLAND") || s.Contains("CAMI") || s.Contains("PLANTA") || s.Contains("FALSO") || s.Contains("RUTA")) return "Terrestre";
+                                                    if (s.Contains("GATE") || s.Contains("TERMINAL") || s.Contains("DEPÓ") || s.Contains("DEPO") || s.Contains("AFORO") || s.Contains("SCANNER") || s.Contains("VACIO") || s.Contains("RETIRO")) return "Gate";
+                                                    if (s.Contains("DOCUM") || s.Contains("AGENC") || s.Contains("CERT") || s.Contains("FITO") || s.Contains("SANI") || s.Contains("COA") || s.Contains("PROVID") || s.Contains("ADUANA")) return "Documental";
+                                                    if (s.Contains("EXTRA") || s.Contains("DESVIAC") || s.Contains("LATE") || s.Contains("DEMUR") || s.Contains("DETEN") || s.Contains("MULTA")) return "Extracosto";
+                                                    return "General";
+                                                }
+
+                                                var listaEgr = new List<(string Grupo, string Concepto, string Entidad, string Responsable, decimal Monto, string Moneda, string Estado, string NumDoc, int IdTx, bool EsReal)>();
+                                                foreach (var egr in egresos)
+                                                {
+                                                    string g = NormalizarGrupo(egr.GrupoCobro ?? egr.Concepto);
+                                                    string ent = !string.IsNullOrWhiteSpace(egr.IdProveedorNavigation?.NombreProveedor) ? egr.IdProveedorNavigation.NombreProveedor : "Proveedor Logístico";
+                                                    listaEgr.Add((g, egr.Concepto ?? "Gasto Operativo", ent, egr.ResponsablePago ?? "CLIENTE", egr.MontoNeto, egr.Moneda ?? "USD", egr.EstadoFila ?? "PROVISIÓN", egr.NumeroDocumento ?? "PENDIENTE", egr.Id, true));
+                                                }
+
+                                                var listaIng = new List<(string Grupo, string Concepto, string Entidad, string Responsable, decimal Monto, string Moneda, string Estado, string NumDoc, int IdTx, bool EsReal)>();
+                                                foreach (var ing in ingresos)
+                                                {
+                                                    string g = NormalizarGrupo(ing.GrupoCobro ?? ing.Concepto);
+                                                    listaIng.Add((g, ing.Concepto ?? "Cobro Operativo", "Tarifa Pactada BD", "CLIENTE", ing.MontoNeto, ing.Moneda ?? "USD", ing.EstadoFila ?? "FACTURADO", ing.NumeroDocumento ?? "POR EMITIR", ing.Id, true));
+                                                }
+
+                                                if (!listaEgr.Any(x => x.Grupo == "Marítimo") && (fin?.CostoMaritimoNeto ?? 0m) > 0)
+                                                    listaEgr.Add(("Marítimo", "Flete Marítimo (Tarifa BD)", o.IdNavieraNavigation?.NombreNaviera ?? "Naviera BD", "CLIENTE", fin!.CostoMaritimoNeto!.Value, "USD", "PROVISIÓN", "PENDIENTE", 0, true));
+                                                if (!listaIng.Any(x => x.Grupo == "Marítimo") && (fin?.VentaMaritimo ?? 0m) > 0)
+                                                    listaIng.Add(("Marítimo", "Venta Flete Marítimo", "Tarifa Pactada BD", "CLIENTE", fin!.VentaMaritimo!.Value, "USD", "PENDIENTE", "POR EMITIR", 0, true));
+                                                if (!listaEgr.Any(x => x.Grupo == "Terrestre") && (fin?.CostoTerrestreNeto ?? 0m) > 0)
+                                                    listaEgr.Add(("Terrestre", "Flete Terrestre / Inland", "Transporte BD", "CLIENTE", fin!.CostoTerrestreNeto!.Value, "CLP", "PROVISIÓN", "PENDIENTE", 0, true));
+                                                if (!listaIng.Any(x => x.Grupo == "Terrestre") && (fin?.VentaTerrestre ?? 0m) > 0)
+                                                    listaIng.Add(("Terrestre", "Venta Flete Terrestre", "Tarifa Pactada BD", "CLIENTE", fin!.VentaTerrestre!.Value, "CLP", "PENDIENTE", "POR EMITIR", 0, true));
+                                                if (!listaEgr.Any(x => x.Grupo == "Gate") && (fin?.CostoGateNeto ?? 0m) > 0)
+                                                    listaEgr.Add(("Gate", "Movimientos Gate / Terminal", "Terminal BD", "CLIENTE", fin!.CostoGateNeto!.Value, "CLP", "PROVISIÓN", "PENDIENTE", 0, true));
+                                                if (!listaIng.Any(x => x.Grupo == "Gate") && (fin?.VentaGate ?? 0m) > 0)
+                                                    listaIng.Add(("Gate", "Venta Gate In/Out", "Tarifa Pactada BD", "CLIENTE", fin!.VentaGate!.Value, "CLP", "PENDIENTE", "POR EMITIR", 0, true));
+                                                if (!listaEgr.Any(x => x.Grupo == "Documental") && (fin?.CostoAgenciaNeto ?? 0m) > 0)
+                                                    listaEgr.Add(("Documental", "Agencia y Documentación", "Agencia BD", "CLIENTE", fin!.CostoAgenciaNeto!.Value, "CLP", "PROVISIÓN", "PENDIENTE", 0, true));
+                                                if (!listaIng.Any(x => x.Grupo == "Documental") && (fin?.VentaDocumental ?? 0m) > 0)
+                                                    listaIng.Add(("Documental", "Venta Servicios Documentales", "Tarifa Pactada BD", "CLIENTE", fin!.VentaDocumental!.Value, "CLP", "PENDIENTE", "POR EMITIR", 0, true));
+
+                                                if (o.ExtracostosOperacions != null)
+                                                {
+                                                    foreach (var ex in o.ExtracostosOperacions.Where(e => e.Monto > 0))
+                                                    {
+                                                        string nomEx = ex.TipoCosto + (string.IsNullOrWhiteSpace(ex.Motivo) ? "" : $" ({ex.Motivo})");
+                                                        string respEx = string.IsNullOrWhiteSpace(ex.Responsable) ? "CLIENTE" : ex.Responsable.ToUpper();
+                                                        if (!listaEgr.Any(i => i.Concepto.Contains(ex.TipoCosto ?? "")))
+                                                            listaEgr.Add(("Extracosto", nomEx, "Desviación Operativa", respEx, ex.Monto, ex.Moneda ?? "USD", "PROVISIÓN", "PENDIENTE", 0, true));
+                                                    }
+                                                }
+
+                                                var espejoEgresos = new List<(string Grupo, string Concepto, string Entidad, string Responsable, decimal Monto, string Moneda, string Estado, string NumDoc, int IdTx, bool EsReal)>(listaEgr);
+                                                var espejoIngresos = new List<(string Grupo, string Concepto, string Entidad, string Responsable, decimal Monto, string Moneda, string Estado, string NumDoc, int IdTx, bool EsReal)>(listaIng);
+
+                                                foreach (var egr in listaEgr)
+                                                {
+                                                    if (egr.Responsable == "ATILSON") continue;
+                                                    if (!espejoIngresos.Any(i => i.Grupo == egr.Grupo && (i.Concepto.IndexOf("Flete", StringComparison.OrdinalIgnoreCase) >= 0 && egr.Concepto.IndexOf("Flete", StringComparison.OrdinalIgnoreCase) >= 0 || i.Concepto.Equals(egr.Concepto, StringComparison.OrdinalIgnoreCase) || i.Concepto.Contains(egr.Concepto) || egr.Concepto.Contains(i.Concepto))))
+                                                        espejoIngresos.Add((egr.Grupo, egr.Concepto, $"Refacturación ({egr.Entidad})", egr.Responsable, egr.Monto, egr.Moneda, "POR COBRAR", "POR EMITIR", 0, false));
+                                                }
+                                                foreach (var ing in listaIng)
+                                                {
+                                                    if (!espejoEgresos.Any(e => e.Grupo == ing.Grupo && (e.Concepto.IndexOf("Flete", StringComparison.OrdinalIgnoreCase) >= 0 && ing.Concepto.IndexOf("Flete", StringComparison.OrdinalIgnoreCase) >= 0 || e.Concepto.Equals(ing.Concepto, StringComparison.OrdinalIgnoreCase) || e.Concepto.Contains(ing.Concepto) || ing.Concepto.Contains(e.Concepto))))
+                                                        espejoEgresos.Add((ing.Grupo, ing.Concepto, "Directo Atilson", "CLIENTE", 0m, ing.Moneda, "SIN COSTO EXTERNO", "-", 0, false));
+                                                }
+                                                // 👇 NUEVO: FUSIÓN DE EGRESOS E INGRESOS PARA EL RESUMEN OPERACIONAL 👇
+                                                var resumenOperacional = espejoEgresos.Select(e => (Grupo: e.Grupo, Concepto: e.Concepto, Moneda: e.Moneda, Costo: e.Monto, Venta: 0m))
+                                                    .Concat(espejoIngresos.Select(i => (Grupo: i.Grupo, Concepto: i.Concepto, Moneda: i.Moneda, Costo: 0m, Venta: i.Monto)))
+                                                    .GroupBy(x => new { x.Grupo, x.Concepto, x.Moneda })
+                                                    .Select(g => (
+                                                        Grupo: g.Key.Grupo,
+                                                        Concepto: g.Key.Concepto,
+                                                        Moneda: g.Key.Moneda,
+                                                        Costo: g.Sum(x => x.Costo),
+                                                        Venta: g.Sum(x => x.Venta),
+                                                        Profit: g.Sum(x => x.Venta) - g.Sum(x => x.Costo)
+                                                    )).OrderBy(x => x.Concepto).ToList();
+                                            }
+                                            }
+
+                                            <div id="view-egresos-@o.Id" class="sub-table-container">
+                                                <table class="sub-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 28%; padding-left: 20px !important;">Concepto / Servicio Logístico</th>
+                                                            <th style="width: 22%;">Entidad (Proveedor)</th>
+                                                            <th style="width: 16%;" class="text-center">Resp. Financiera</th>
+                                                            <th style="width: 14%;" class="text-end">Monto Neto</th>
+                                                            <th style="width: 12%;" class="text-center">N° Factura</th>
+                                                            <th style="width: 8%; padding-right: 20px !important;" class="text-center">Acción</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @if (!espejoEgresos.Any())
+                                                        {
+                                                            <tr><td colspan="6" class="text-center text-muted py-4">No hay gastos registrados.</td></tr>
+                                                        }
+                                                        else
+                                                        {
+                                                            var grupos = new[] { "Marítimo", "Terrestre", "Gate", "Documental", "Extracosto", "General" };
+                                                            foreach (var g in grupos)
+                                                            {
+                                                                var items = espejoEgresos.Where(t => string.Equals(t.Grupo, g, StringComparison.OrdinalIgnoreCase)).OrderBy(t => t.Concepto).ToList();
+                                                                if (items.Any())
+                                                                {
+                                                                    <tr class="@(g == "General" ? "group-general" : "group-header")">
+                                                                        <td colspan="6" style="padding-left: 20px !important;">
+                                                                            @if (g == "General")
+                                                                            {
+                                                                                <i class="bi bi-gear-fill me-2 opacity-75"></i> <span>ÁREA ADMINISTRATIVA / GLOBAL</span>
+                                                                            }
+                                                                            else if (g == "Extracosto")
+                                                                            {
+
+                                                                                <i class="bi bi-exclamation-octagon-fill me-2 text-danger opacity-75"></i> <span>DESVIACIONES & EXTRACOSTOS</span>
+                                                                            }
+                                                                            else
+                                                                            {
+
+                                                                                <i class="bi bi-folder2-open me-2 text-primary opacity-75"></i> <span>ÁREA OPERATIVA @g.ToUpper()</span>
+                                                                            }
+                                                                        </td>
+                                                                    </tr>
+                                                                    foreach (var t in items)
+                                                                    {
+                                                                        <tr>
+                                                                            <td class="text-dark fw-bold" style="padding-left: 20px !important;">@t.Concepto</td>
+                                                                            <td class="text-muted fw-bold" title="@t.Entidad">@t.Entidad</td>
+                                                                            <td class="text-center">
+                                                                                @if (t.Responsable == "ATILSON")
+                                                                                {
+                                                                                    <span class="celda-resp-atilson"><i class="bi bi-exclamation-triangle-fill"></i> T/A Atilson</span>
+                                                                                }
+                                                                                else
+                                                                                {
+
+                                                                                    <span class="celda-resp-cliente"><i class="bi bi-check2"></i> C Cliente</span>
+                                                                                }
+                                                                            </td>
+                                                                            <td class="text-end monto-tecnico" style="color: var(--fin-cost);">@t.Moneda $@t.Monto.ToString("N2")</td>
+                                                                            <td class="text-center text-muted font-monospace fw-bold">@t.NumDoc</td>
+                                                                            <td class="text-center" style="padding-right: 20px !important;">
+                                                                                @if (t.EsReal && t.IdTx > 0 && (t.Estado == "PROVISION" || t.Estado == "PROVISIÓN"))
+                                                                                {
+                                                                                    <button type="button" class="btn btn-sm btn-danger fw-bold py-1 px-2 shadow-sm" style="font-size: 9px;" onclick="abrirModalConciliacion(@t.IdTx, '@t.Concepto', @t.Monto.ToString(System.Globalization.CultureInfo.InvariantCulture), '@t.Moneda', 'EGRESO')">
+                                                                                        <i class="bi bi-check-square me-1"></i> Validar
+                                                                                    </button>
+                                                                                }
+                                                                                else if (t.EsReal && t.IdTx > 0)
+                                                                                {
+                                                                                    <span class="badge-subtle bg-subtle-ok"><i class="bi bi-check2-all me-1"></i> OK</span>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <span class="text-muted opacity-25"><i class="bi bi-dash-lg"></i></span>
+                                                                                }
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div id="view-ingresos-@o.Id" class="sub-table-container d-none">
+                                                <table class="sub-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 28%; padding-left: 20px !important;">Concepto Comercial</th>
+                                                            <th style="width: 22%;">Origen / Tarifa</th>
+                                                            <th style="width: 16%;" class="text-center">Tipo de Cobro</th>
+                                                            <th style="width: 14%;" class="text-end">Monto Neto</th>
+                                                            <th style="width: 12%;" class="text-center">Estado Facturación</th>
+                                                            <th style="width: 8%; padding-right: 20px !important;" class="text-center">Acción</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @if (!espejoIngresos.Any())
+                                                        {
+                                                            <tr><td colspan="6" class="text-center text-muted py-4">No hay cobros registrados.</td></tr>
+                                                        }
+                                                        else
+                                                        {
+                                                            var grupos = new[] { "Marítimo", "Terrestre", "Gate", "Documental", "Extracosto", "General" };
+                                                            foreach (var g in grupos)
+                                                            {
+                                                                var items = espejoIngresos.Where(t => string.Equals(t.Grupo, g, StringComparison.OrdinalIgnoreCase)).OrderBy(t => t.Concepto).ToList();
+                                                                if (items.Any())
+                                                                {
+                                                                    <tr class="@(g == "General" ? "group-general" : "group-header")">
+                                                                        <td colspan="6" style="padding-left: 20px !important;">
+                                                                            @if (g == "General")
+                                                                            {
+                                                                                <i class="bi bi-gear-fill me-2 opacity-75"></i> <span>ÁREA ADMINISTRATIVA / GLOBAL</span>
+                                                                            }
+                                                                            else if (g == "Extracosto")
+                                                                            {
+
+                                                                                <i class="bi bi-exclamation-octagon-fill me-2 text-danger opacity-75"></i> <span>DESVIACIONES & EXTRACOSTOS</span>
+                                                                            }
+                                                                            else
+                                                                            {
+
+                                                                                <i class="bi bi-folder2-open me-2 text-primary opacity-75"></i> <span>ÁREA OPERATIVA @g.ToUpper()</span>
+                                                                            }
+                                                                        </td>
+                                                                    </tr>
+                                                                    foreach (var t in items)
+                                                                    {
+                                                                        <tr>
+                                                                            <td class="text-dark fw-bold" style="padding-left: 20px !important;">@t.Concepto</td>
+                                                                            <td class="text-muted fw-bold">@t.Entidad</td>
+                                                                            <td class="text-center">
+                                                                                @if (t.EsReal)
+                                                                                {
+                                                                                    <span class="badge-subtle bg-subtle-pend border-primary text-primary bg-primary bg-opacity-10">TARIFA PACTADA</span>
+                                                                                }
+                                                                                else
+                                                                                {
+
+                                                                                    <span class="badge-subtle bg-subtle-alert"><i class="bi bi-arrow-repeat me-1"></i> REFACTURACIÓN</span>
+                                                                                }
+                                                                            </td>
+                                                                            <td class="text-end monto-tecnico" style="color: var(--fin-revenue);">@t.Moneda $@t.Monto.ToString("N2")</td>
+                                                                            <td class="text-center text-muted font-monospace fw-bold">@(t.EsReal ? (t.Estado == "FACTURADO" ? "FACTURADO" : "PENDIENTE") : "POR EMITIR")</td>
+                                                                            <td class="text-center" style="padding-right: 20px !important;">
+                                                                                @if (t.EsReal && t.IdTx > 0 && (t.Estado == "PROVISION" || t.Estado == "PROVISIÓN"))
+                                                                                {
+                                                                                    <button type="button" class="btn btn-sm btn-primary fw-bold py-1 px-2 shadow-sm" style="font-size: 9px;" onclick="abrirModalConciliacion(@t.IdTx, '@t.Concepto', @t.Monto.ToString(System.Globalization.CultureInfo.InvariantCulture), '@t.Moneda', 'INGRESO')">
+                                                                                        <i class="bi bi-link-45deg me-1"></i> Vincular
+                                                                                    </button>
+                                                                                }
+                                                                                else if (t.EsReal && t.IdTx > 0)
+                                                                                {
+                                                                                    <span class="badge-subtle bg-subtle-ok"><i class="bi bi-check2-all me-1"></i> OK</span>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <span class="text-muted opacity-25" title="Enlace operativo pendiente"><i class="bi bi-lock-fill"></i></span>
+                                                                                }
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div id="view-resumen-@o.Id" class="sub-table-container d-none">
+                                                <table class="sub-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 32%; padding-left: 20px !important;">Concepto Analizado</th>
+                                                            <th style="width: 14%;" class="text-center">Moneda</th>
+                                                            <th style="width: 18%;" class="text-end">Costo Real (Egreso)</th>
+                                                            <th style="width: 18%;" class="text-end">Cobro (Ingreso)</th>
+                                                            <th style="width: 18%; padding-right: 20px !important;" class="text-end">Profit Neto</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @if (!resumenOperacional.Any())
+                                                        {
+                                                            <tr><td colspan="5" class="text-center text-muted py-4">No hay datos suficientes para el análisis.</td></tr>
+                                                        }
+                                                        else
+                                                        {
+                                                            var grupos = new[] { "Marítimo", "Terrestre", "Gate", "Documental", "Extracosto", "General" };
+                                                            foreach (var g in grupos)
+                                                            {
+                                                                var itemsRes = resumenOperacional.Where(r => string.Equals(r.Grupo, g, StringComparison.OrdinalIgnoreCase)).ToList();
+                                                                if (itemsRes.Any())
+                                                                {
+                                                                    <tr class="@(g == "General" ? "group-general" : "group-header")">
+                                                                        <td colspan="5" style="padding-left: 20px !important;">
+                                                                            @if (g == "General")
+                                                                            {
+                                                                                <i class="bi bi-gear-fill me-2 opacity-75"></i> <span>ÁREA ADMINISTRATIVA / GLOBAL</span>
+                                                                            }
+                                                                            else if (g == "Extracosto")
+                                                                            {
+                                                                                <i class="bi bi-exclamation-octagon-fill me-2 text-danger opacity-75"></i> <span>DESVIACIONES & EXTRACOSTOS</span>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <i class="bi bi-folder2-open me-2 text-primary opacity-75"></i> <span>ÁREA OPERATIVA @g.ToUpper()</span>
+                                                                            }
+                                                                        </td>
+                                                                    </tr>
+                                                                    foreach (var res in itemsRes)
+                                                                    {
+                                                                        <tr>
+                                                                            <td class="text-dark fw-bold" style="padding-left: 20px !important;">@res.Concepto</td>
+                                                                            <td class="text-center font-monospace fw-bold text-muted">@res.Moneda</td>
+                                                                            <td class="text-end monto-tecnico" style="color: var(--color-costo);">$@res.Costo.ToString("N2")</td>
+                                                                            <td class="text-end monto-tecnico" style="color: var(--color-venta);">$@res.Venta.ToString("N2")</td>
+                                                                            <td class="text-end monto-tecnico fw-bold" style="padding-right: 20px !important; color: @(res.Profit > 0 ? "var(--color-profit)" : (res.Profit < 0 ? "var(--color-costo)" : "var(--txt-muted)"));">
+                                                                                @(res.Profit > 0 ? "+" : "")$@res.Profit.ToString("N2")
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
+                                <span class="fw-bold fs-6">No hay registros financieros.</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalConciliacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header border-bottom-0 pb-2 pt-3" id="modalHeader" style="background: var(--bg-soft);">
+                <h6 class="modal-title fw-bold" style="font-size: 14px; color: var(--atilson-dark);" id="modalTitle"></h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="font-size: 10px;"></button>
+            </div>
+            <form method="post" asp-page-handler="ConciliarTransaccion">
+                <div class="modal-body pt-2 pb-3 px-4">
+                    <input type="hidden" id="idTransaccion" name="idTransaccion" />
+
+                    <div class="mb-3">
+                        <label class="form-label m-0 text-muted" style="font-size: 10px; font-weight: 800; text-transform: uppercase;">Concepto Registrado</label>
+                        <input type="text" id="txtConcepto" class="form-control form-control-sm bg-light fw-bold text-dark border-0 mt-1" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label m-0 text-dark" style="font-size: 10px; font-weight: 800; text-transform: uppercase;">N° Factura / Documento</label>
+                        <div class="input-group input-group-sm mt-1 shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-hash"></i></span>
+                            <input type="text" id="numeroDocumento" name="numeroDocumento" class="form-control font-monospace border-start-0 fw-bold" placeholder="Ej: 45892" required autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label m-0 text-dark" style="font-size: 10px; font-weight: 800; text-transform: uppercase;">Monto Neto Definitivo</label>
+                        <div class="input-group input-group-sm mt-1 shadow-sm">
+                            <span class="input-group-text bg-white fw-bold text-muted font-monospace border-end-0" id="lblMoneda"></span>
+                            <input type="number" step="0.01" id="montoNeto" name="montoNeto" class="form-control font-monospace fw-bold text-end border-start-0 fs-6" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 px-4 pb-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-sm btn-white border fw-bold text-muted px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="btnSubmitModal" class="btn btn-sm fw-bold px-4 shadow-sm"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function switchTabFluid(idOp, tab) {
+            const btnEgresos = document.getElementById('btn-egresos-' + idOp);
+            const btnIngresos = document.getElementById('btn-ingresos-' + idOp);
+            const btnResumen = document.getElementById('btn-resumen-' + idOp);
+
+            const viewEgresos = document.getElementById('view-egresos-' + idOp);
+            const viewIngresos = document.getElementById('view-ingresos-' + idOp);
+            const viewResumen = document.getElementById('view-resumen-' + idOp);
+
+            // Reiniciar botones
+            btnEgresos.className = 'seg-btn';
+            btnIngresos.className = 'seg-btn';
+            btnResumen.className = 'seg-btn';
+
+            // Ocultar todas las tablas
+            viewEgresos.classList.add('d-none');
+            viewIngresos.classList.add('d-none');
+            viewResumen.classList.add('d-none');
+
+            // Mostrar solo la seleccionada
+            if (tab === 'egresos') {
+                btnEgresos.className = 'seg-btn active-egresos';
+                viewEgresos.classList.remove('d-none');
+            } else if (tab === 'ingresos') {
+                btnIngresos.className = 'seg-btn active-ingresos';
+                viewIngresos.classList.remove('d-none');
+            } else if (tab === 'resumen') {
+                btnResumen.className = 'seg-btn active-resumen';
+                viewResumen.classList.remove('d-none');
+            }
+        }
+
+        function toggleSelectionMode() {
+            const container = document.getElementById('tableContainer');
+            const selBar = document.getElementById('selectionBar');
+            const btnMode = document.getElementById('btnModeSelect');
+
+            container.classList.toggle('table-selection-active');
+
+            if (container.classList.contains('table-selection-active')) {
+                selBar.classList.remove('d-none');
+                btnMode.classList.add('active');
+                btnMode.innerHTML = '<i class="bi bi-check2-square"></i> Activo';
+            } else {
+                selBar.classList.add('d-none');
+                btnMode.classList.remove('active');
+                btnMode.innerHTML = '<i class="bi bi-check2-square"></i> Activar Selección';
+                document.getElementById('checkSelectAll').checked = false;
+                document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+                recalculateSelectedTotals();
+            }
+        }
+
+        function recalculateSelectedTotals() {
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            let vUsd = 0, cUsd = 0, pUsd = 0, vClp = 0, cClp = 0, pClp = 0;
+
+            checkedBoxes.forEach(cb => {
+                vUsd += parseFloat(cb.dataset.ventausd || 0);
+                cUsd += parseFloat(cb.dataset.costousd || 0);
+                pUsd += parseFloat(cb.dataset.profitusd || 0);
+                vClp += parseFloat(cb.dataset.ventaclp || 0);
+                cClp += parseFloat(cb.dataset.costoclp || 0);
+                pClp += parseFloat(cb.dataset.profitclp || 0);
+            });
+
+            document.getElementById('lblCountSelect').innerText = `${checkedBoxes.length} op.`;
+            document.getElementById('sumVentaUsdSel').innerText = `$${vUsd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('sumCostoUsdSel').innerText = `$${cUsd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('sumProfitUsdSel').innerText = `$${pUsd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('sumVentaClpSel').innerText = `$${vClp.toLocaleString('es-CL', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('sumCostoClpSel').innerText = `$${cClp.toLocaleString('es-CL', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('sumProfitClpSel').innerText = `$${pClp.toLocaleString('es-CL', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+        }
+
+        function toggleSelectAll(masterCheckbox) {
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = masterCheckbox.checked);
+            recalculateSelectedTotals();
+        }
+
+        function exportarReal(formato, soloSeleccionados) {
+            const handler = formato === 'excel' ? 'ExportExcel' : 'ExportPdf';
+            let url = window.location.pathname + '?handler=' + handler;
+
+            if (soloSeleccionados) {
+                let ids = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => ids.push(cb.value));
+                if (ids.length === 0) {
+                    alert('⚠️ Por favor seleccione al menos una operación para descargar');
+                    return;
+                }
+                url += `&ids=${ids.join(',')}`;
+            } else {
+                const params = new URLSearchParams(window.location.search);
+                params.delete('handler');
+                if (params.toString()) url += `&${params.toString()}`;
+            }
+
+            if (formato === 'pdf') {
+                const win = window.open(url, '_blank');
+                if (!win) alert('⚠️ Tu navegador bloqueó la ventana emergente.');
+            } else {
+                window.location.href = url;
+            }
+        }
+
+        function abrirModalConciliacion(id, concepto, montoProvisional, moneda, tipo) {
+            document.getElementById('idTransaccion').value = id;
+            document.getElementById('txtConcepto').value = concepto;
+            document.getElementById('montoNeto').value = montoProvisional;
+            document.getElementById('lblMoneda').innerText = moneda;
+
+            let title = document.getElementById('modalTitle');
+            let btnSubmit = document.getElementById('btnSubmitModal');
+
+            if (tipo === 'EGRESO') {
+                title.innerHTML = '<i class="bi bi-receipt text-danger me-1"></i> Validar Factura Proveedor';
+                btnSubmit.className = "btn btn-sm btn-danger fw-bold px-4 shadow-sm";
+                btnSubmit.innerText = "Contabilizar Egreso";
+            } else {
+                title.innerHTML = '<i class="bi bi-file-earmark-check text-primary me-1"></i> Registrar Factura de Venta';
+                btnSubmit.className = "btn btn-sm btn-primary fw-bold px-4 shadow-sm";
+                btnSubmit.innerText = "Vincular Ingreso";
+            }
+
+            document.getElementById('numeroDocumento').value = '';
+            new bootstrap.Modal(document.getElementById('modalConciliacion')).show();
+        }
+    </script>
+}

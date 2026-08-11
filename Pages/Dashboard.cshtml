@@ -1,0 +1,775 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Centro de Mando Operativo";
+
+    // Extrae los valores desde C#. Si no existen aún en tu DashboardModel.cs, usa un valor de muestra (Fallback).
+    int integrales = Model.GetType().GetProperty("CountIntegral")?.GetValue(Model) as int? ?? 15;
+    int maritimas = Model.GetType().GetProperty("CountMaritimo")?.GetValue(Model) as int? ?? 32;
+    int transporte = Model.GetType().GetProperty("CountTerrestre")?.GetValue(Model) as int? ?? 10;
+    int documentales = Model.GetType().GetProperty("CountDocumental")?.GetValue(Model) as int? ?? 8;
+
+    int maritimasATiempo = Model.GetType().GetProperty("CountMaritimoATiempo")?.GetValue(Model) as int? ?? 22;
+    int maritimasLAR = Model.GetType().GetProperty("CountMaritimoConLAR")?.GetValue(Model) as int? ?? 10;
+
+    int matricesConfirmadas = Model.GetType().GetProperty("CountMatricesConfirmadas")?.GetValue(Model) as int? ?? 45;
+    int matricesPendientes = Model.GetType().GetProperty("CountMatricesPendientes")?.GetValue(Model) as int? ?? 12;
+    int totalMatrices = matricesConfirmadas + matricesPendientes;
+    double pctConfirmadas = totalMatrices > 0 ? ((double)matricesConfirmadas / totalMatrices) * 100 : 0;
+
+    int bkgPendienteNaviera = Model.GetType().GetProperty("CountPendienteNaviera")?.GetValue(Model) as int? ?? 5;
+    int bkgConfirmadoCliente = Model.GetType().GetProperty("CountConfirmadoCliente")?.GetValue(Model) as int? ?? 28;
+    int bkgCancelados = Model.GetType().GetProperty("CountCanceladas")?.GetValue(Model) as int? ?? 3;
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    /* ========================================================
+    VARIABLES Y PALETA CORPORATIVA ATILSON (LUMINOSA)
+    ======================================================== */
+    :root {
+    --atilson-dark: #0f172a; /* Slate 900 */
+    --atilson-purple: #6d2d9e; /* Púrpura Corporativo */
+    --atilson-purple-light: #9b51e0;
+    --atilson-accent: #0ea5e9; /* Cyan 500 para data points */
+
+    --txt-main: #1e293b; /* Texto principal oscuro */
+    --txt-muted: #64748b; /* Texto secundario */
+    --border-soft: #e2e8f0; /* Bordes grises suaves */
+    --bg-body: #f1f5f9; /* Fondo Base Gris Claro (Igual a vistas operativas) */
+    --bg-panel: #ffffff; /* Fondo Paneles Blancos */
+    }
+
+    body {
+    background-color: var(--bg-body);
+    color: var(--txt-main);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* Ocultar el footer del Layout principal si interfieren */
+    footer {
+    display: none !important;
+    }
+
+    /* ========================================================
+    EFECTOS Y ANIMACIONES
+    ======================================================== */
+    .fade-in {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .d-1 {
+    animation-delay: 0.1s;
+    }
+
+    .d-2 {
+    animation-delay: 0.2s;
+    }
+
+    .d-3 {
+    animation-delay: 0.3s;
+    }
+
+    @@keyframes fadeIn {
+    to {
+    opacity: 1;
+    transform: translateY(0);
+    }
+    }
+
+    /* ========================================================
+    HERO BANNER CORPORATIVO
+    ======================================================== */
+    .tech-banner {
+    position: relative;
+    background: linear-gradient(135deg, var(--atilson-dark) 0%, var(--atilson-purple) 100%);
+    border-radius: 12px;
+    padding: 35px 45px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 20px -5px rgba(109, 45, 158, 0.25);
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ffffff;
+    }
+
+    .banner-content {
+    position: relative;
+    z-index: 1;
+    }
+
+    .banner-title {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin: 0;
+    color: #ffffff;
+    }
+
+    .banner-subtitle {
+    font-size: 13px;
+    color: #e2e8f0;
+    margin-top: 6px;
+    font-weight: 500;
+    }
+
+    /* Reloj Funcional */
+    .clock-widget {
+    text-align: right;
+    position: relative;
+    z-index: 1;
+    }
+
+    .clock-time {
+    font-family: 'Consolas', monospace;
+    font-size: 40px;
+    font-weight: 300;
+    letter-spacing: -2px;
+    color: #ffffff;
+    line-height: 1;
+    }
+
+    .clock-time span {
+    color: #d8b4fe;
+    font-weight: 700;
+    opacity: 0.7;
+    }
+
+    .clock-date {
+    font-size: 11px;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 4px;
+    font-weight: 700;
+    }
+
+    /* ========================================================
+    NAVEGACIÓN INTERNA (TABS)
+    ======================================================== */
+    .nav-tabs-custom {
+    border-bottom: 1px solid var(--border-soft);
+    gap: 15px;
+    margin-bottom: 25px;
+    }
+
+    .nav-tabs-custom .nav-link {
+    color: var(--txt-muted);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px 15px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    }
+
+    .nav-tabs-custom .nav-link:hover {
+    color: var(--atilson-purple);
+    }
+
+    .nav-tabs-custom .nav-link.active {
+    color: var(--atilson-purple);
+    border-bottom-color: var(--atilson-purple);
+    }
+
+    /* ========================================================
+    PANELES Y TARJETAS BLANCAS (DATA CARDS)
+    ======================================================== */
+    .data-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 24px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    }
+
+    .data-panel:hover {
+    border-color: var(--atilson-purple-light);
+    box-shadow: 0 10px 15px -3px rgba(109, 45, 158, 0.1);
+    transform: translateY(-3px);
+    }
+
+    .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    }
+
+    .panel-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--txt-main);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    }
+
+    .panel-title i {
+    color: var(--atilson-purple);
+    font-size: 14px;
+    }
+
+    /* KPIs Numéricos */
+    .kpi-title {
+    font-size: 10px;
+    color: var(--txt-muted);
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    }
+
+    .kpi-value {
+    font-size: 36px;
+    color: var(--atilson-dark);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1px;
+    }
+
+    .kpi-sub {
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    }
+
+    /* Filtros dentro de paneles */
+    .panel-filter {
+    background: var(--bg-soft);
+    border: 1px solid var(--border-soft);
+    color: var(--txt-main);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+    }
+
+    .panel-filter:focus {
+    border-color: var(--atilson-purple);
+    }
+
+    /* ========================================================
+    TABLAS (LUMINOSAS, ESTILO INDEX)
+    ======================================================== */
+    .table-light-custom {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    }
+
+    .table-light-custom th {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+    font-weight: 800;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    letter-spacing: 0.5px;
+    background-color: var(--bg-soft);
+    }
+
+    .table-light-custom td {
+    font-size: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--txt-main);
+    font-weight: 600;
+    vertical-align: middle;
+    transition: background-color 0.2s;
+    }
+
+    .table-light-custom tr:last-child td {
+    border-bottom: none;
+    }
+
+    .table-light-custom tr:hover td {
+    background-color: var(--bg-soft);
+    cursor: pointer;
+    }
+
+    .bkg-ref {
+    color: var(--atilson-purple);
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 13px;
+    }
+
+    .status-badge {
+    font-size: 9px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid transparent;
+    display: inline-block;
+    white-space: nowrap;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+    width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+    background: var(--bg-soft);
+    }
+
+    ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+    }
+</style>
+
+<div class="container-fluid pt-3 pb-5">
+
+    <div class="tech-banner fade-in">
+        <div class="banner-content">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <span class="badge bg-white text-dark px-2 py-1 shadow-sm" style="font-size: 9px; letter-spacing: 1px; font-weight: 800;">
+                    <i class="bi bi-circle-fill me-1 text-success" style="font-size: 6px; vertical-align: middle;"></i> EN LÍNEA
+                </span>
+            </div>
+            <h1 class="banner-title">Panel de Control Operativo</h1>
+            <p class="banner-subtitle">Métricas en tiempo real y gestión consolidada del flujo de carga.</p>
+        </div>
+        <div class="clock-widget d-none d-md-block">
+            <div class="clock-time" id="systemClock">--<span>:</span>--<span>:</span>--</div>
+            <div class="clock-date">@DateTime.Now.ToString("dd MMM yyyy", new System.Globalization.CultureInfo("es-ES")) &nbsp;|&nbsp; SCL</div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs-custom fade-in d-1" id="dashTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-overview" data-bs-toggle="tab" data-bs-target="#pane-overview" type="button" role="tab"><i class="bi bi-bar-chart-fill"></i> Visión General</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-operaciones" data-bs-toggle="tab" data-bs-target="#pane-operaciones" type="button" role="tab"><i class="bi bi-cone-striped"></i> Análisis Operativo</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-finanzas" data-bs-toggle="tab" data-bs-target="#pane-finanzas" type="button" role="tab"><i class="bi bi-currency-dollar"></i> Inteligencia Financiera</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="dashTabsContent">
+
+        <div class="tab-pane fade show active" id="pane-overview" role="tabpanel">
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-3 fade-in d-1">
+                    <div class="data-panel justify-content-center">
+                        <div class="kpi-title">Volumen Total (Bookings)</div>
+                        <div class="kpi-value">@Model.TotalBookings</div>
+                        <div><span class="kpi-sub" style="background: #e0f2fe; color: #0284c7;"><i class="bi bi-arrow-up-right"></i> Activos en sistema</span></div>
+                    </div>
+                </div>
+                <div class="col-md-3 fade-in d-2">
+                    <div class="data-panel justify-content-center">
+                        <div class="kpi-title">Matrices Pendientes</div>
+                        <div class="kpi-value text-warning">@matricesPendientes</div>
+                        <div><span class="kpi-sub" style="background: #fef3c7; color: #d97706; border: 1px solid #fde68a;"><i class="bi bi-clock-history"></i> Requieren Atención</span></div>
+                    </div>
+                </div>
+                <div class="col-md-3 fade-in d-3">
+                    <div class="data-panel justify-content-center">
+                        <div class="kpi-title">Operaciones Canceladas</div>
+                        <div class="kpi-value text-danger">@bkgCancelados</div>
+                        <div><span class="kpi-sub" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;"><i class="bi bi-x-circle"></i> No efectuadas</span></div>
+                    </div>
+                </div>
+                <div class="col-md-3 fade-in d-4">
+                    <div class="data-panel justify-content-center" style="border-color: @(Model.CantidadCriticos > 0 ? "#fecaca" : "var(--border-soft)");">
+                        <div class="kpi-title">Alertas Críticas (Cut-Off)</div>
+                        <div class="kpi-value" style="color: @(Model.CantidadCriticos > 0 ? "#ef4444" : "var(--atilson-dark)");">@Model.CantidadCriticos</div>
+                        <div>
+                            @if (Model.CantidadCriticos > 0)
+                            {
+                                <span class="kpi-sub" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;"><i class="bi bi-exclamation-circle"></i> Acción Inmediata</span>
+                            }
+                            else
+                            {
+                                <span class="kpi-sub" style="background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;"><i class="bi bi-check2-all"></i> Sin Vencimientos</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+
+                <div class="col-lg-4 fade-in d-2">
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <h6 class="panel-title"><i class="bi bi-pie-chart"></i> Mix de Servicios</h6>
+                        </div>
+                        <div class="flex-grow-1 position-relative" style="min-height: 250px;">
+                            <canvas id="serviceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 fade-in d-3">
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <h6 class="panel-title"><i class="bi bi-water"></i> Control Marítimo (LAR)</h6>
+                        </div>
+                        <div class="flex-grow-1 position-relative" style="min-height: 250px;">
+                            <canvas id="maritimeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 fade-in d-4">
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <h6 class="panel-title"><i class="bi bi-journal-bookmark"></i> Estado de Bookings</h6>
+                        </div>
+                        <div class="flex-grow-1 position-relative" style="min-height: 250px;">
+                            <canvas id="bookingStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 fade-in d-4">
+                <div class="col-lg-4">
+                    <div class="data-panel">
+                        <div class="panel-header border-bottom pb-3 mb-3">
+                            <h6 class="panel-title"><i class="bi bi-file-earmark-text"></i> Desempeño Documental (Matrices)</h6>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size: 11px; color: var(--txt-muted); font-weight: 700; text-transform: uppercase;">Confirmadas vs Pendientes</span>
+                            <span style="font-size: 11px; color: var(--txt-main); font-weight: 800;">@matricesConfirmadas de @totalMatrices (@Math.Round(pctConfirmadas)%)</span>
+                        </div>
+                        <div class="progress mt-2" style="height: 12px; background: #fecaca; border-radius: 6px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: @Math.Round(pctConfirmadas)%; border-radius: 6px;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-3" style="font-size: 10px; color: var(--txt-muted); font-weight: 700;">
+                            <span><i class="bi bi-circle-fill text-success me-1"></i> @matricesConfirmadas Confirmadas</span>
+                            <span><i class="bi bi-circle-fill text-danger me-1"></i> @matricesPendientes Pendientes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="data-panel p-0 overflow-hidden">
+                        <div class="panel-header border-bottom border-soft p-4 m-0" style="background-color: var(--bg-soft);">
+                            <h6 class="panel-title m-0"><i class="bi bi-hdd-network"></i> Registro de Actividad Reciente</h6>
+                            <a asp-page="/Operaciones/Index" class="btn btn-sm fw-bold px-4 rounded-pill" style="background-color: var(--atilson-purple); color: white; font-size: 10px; letter-spacing: 1px;">VER CONSOLA COMPLETA</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table-light-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Ref. Booking</th>
+                                        <th>Exportador / Cliente</th>
+                                        <th>Destino (POD)</th>
+                                        <th>Fase Operativa</th>
+                                        <th class="text-end">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.UltimasOperaciones != null && Model.UltimasOperaciones.Any())
+                                    {
+                                        @foreach (var op in Model.UltimasOperaciones)
+                                        {
+                                            var estadoFlow = (op.EstadoWorkflow ?? "SOLICITADO").ToUpper();
+                                            var estBg = "#f8fafc"; var estTxt = "#64748b"; var estBorder = "transparent";
+
+                                            if (estadoFlow.Contains("SOLICITADO") || estadoFlow.Contains("CONFIRMADO") || estadoFlow.Contains("ENVIO"))
+                                            { estBg = "#fef3c7"; estTxt = "#d97706"; estBorder = "#fde68a"; }
+                                            else if (estadoFlow.Contains("EN RUTA") || estadoFlow.Contains("ENTREGADO"))
+                                            { estBg = "#e0f2fe"; estTxt = "#0284c7"; estBorder = "#bae6fd"; }
+                                            else if (estadoFlow.Contains("EMBARCADO") || estadoFlow.Contains("ZARPE") || estadoFlow.Contains("PROXIMO"))
+                                            { estBg = "#f3e8ff"; estTxt = "#7e22ce"; estBorder = "#e9d5ff"; }
+                                            else if (estadoFlow.Contains("ARRIBADO") || estadoFlow.Contains("FINALIZADO") || estadoFlow.Contains("RETIRADO"))
+                                            { estBg = "#dcfce7"; estTxt = "#16a34a"; estBorder = "#bbf7d0"; }
+                                            else if (estadoFlow.Contains("CANCELADO"))
+                                            { estBg = "#fef2f2"; estTxt = "#dc2626"; estBorder = "#fecaca"; }
+
+                                            <tr onclick="window.location.href='/Operaciones/Edit?id=@op.Id'">
+                                                <td class="bkg-ref">@op.NumeroBooking</td>
+                                                <td>@(op.IdClienteNavigation?.RazonSocial ?? op.IdClienteNavigation?.NombreCliente ?? "S/N")</td>
+                                                <td><i class="bi bi-geo-alt text-muted opacity-50 me-2"></i> @(op.IdPuertoDestinoNavigation?.NombrePuerto ?? "TBA")</td>
+                                                <td><span class="status-badge" style="background-color: @estBg; color: @estTxt; border-color: @estBorder;">@estadoFlow</span></td>
+                                                <td class="text-end pe-4"><i class="bi bi-box-arrow-in-up-right text-muted opacity-75 fs-5"></i></td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tab-pane fade" id="pane-operaciones" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <h6 class="panel-title"><i class="bi bi-radar"></i> Índice de Eficiencia Logística</h6>
+                        </div>
+                        <div class="flex-grow-1 position-relative" style="min-height: 250px;">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <h6 class="panel-title"><i class="bi bi-list-check"></i> Estado de Tareas por Módulo</h6>
+                        </div>
+                        <div class="p-3">
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span style="font-size: 11px; color: var(--txt-muted); font-weight: 700; text-transform: uppercase;">Emisión de Matrices (Navieras)</span>
+                                    <span style="font-size: 11px; color: var(--txt-main); font-weight: 800;">85% Completado</span>
+                                </div>
+                                <div class="progress" style="height: 6px; background: var(--bg-soft);">
+                                    <div class="progress-bar" role="progressbar" style="width: 85%; background-color: var(--atilson-purple);"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span style="font-size: 11px; color: var(--txt-muted); font-weight: 700; text-transform: uppercase;">Aprobación de Aduanas (DUS)</span>
+                                    <span style="font-size: 11px; color: var(--txt-main); font-weight: 800;">60% Completado</span>
+                                </div>
+                                <div class="progress" style="height: 6px; background: var(--bg-soft);">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 60%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span style="font-size: 11px; color: var(--txt-muted); font-weight: 700; text-transform: uppercase;">Asignación Transporte Terrestre</span>
+                                    <span style="font-size: 11px; color: var(--txt-main); font-weight: 800;">45% Completado</span>
+                                </div>
+                                <div class="progress" style="height: 6px; background: var(--bg-soft);">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 45%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pane-finanzas" role="tabpanel">
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="data-panel justify-content-center" style="border-left: 4px solid #10b981;">
+                        <div class="kpi-title">Ingresos Proyectados (Mes)</div>
+                        <div class="kpi-value text-success">USD 45.2K</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="data-panel justify-content-center" style="border-left: 4px solid #ef4444;">
+                        <div class="kpi-title">Extracostos Registrados</div>
+                        <div class="kpi-value text-danger">USD 2.8K</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="data-panel justify-content-center" style="border-left: 4px solid #0ea5e9;">
+                        <div class="kpi-title">Margen Bruto Estimado</div>
+                        <div class="kpi-value text-info">28.5%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <h6 class="panel-title"><i class="bi bi-bar-chart"></i> Flujo Financiero: Ingresos vs Costos Logísticos</h6>
+                        </div>
+                        <div class="flex-grow-1 position-relative" style="min-height: 280px;">
+                            <canvas id="financeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        // RELOJ DIGITAL
+        function updateClock() {
+        const now = new Date();
+        let h = now.getHours().toString().padStart(2, '0');
+        let m = now.getMinutes().toString().padStart(2, '0');
+        let s = now.getSeconds().toString().padStart(2, '0');
+        let clockEl = document.getElementById('systemClock');
+        if(clockEl) clockEl.innerHTML = `${h}<span>:</span>${m}<span>:</span>${s}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Configuración Global Chart.js
+        Chart.defaults.font.family = "'Inter', 'Segoe UI', system-ui, sans-serif";
+        Chart.defaults.color = '#64748b';
+        Chart.defaults.borderColor = '#e2e8f0';
+
+        // GRÁFICO 1: MIX DE SERVICIOS
+        const ctxServ = document.getElementById('serviceChart');
+        if(ctxServ) {
+        new Chart(ctxServ, {
+        type: 'doughnut',
+        data: {
+        labels: ['Integral', 'Solo Marítimo', 'Solo Transporte', 'Solo Documental'],
+        datasets: [{
+        data: [@integrales, @maritimas, @transporte, @documentales],
+        backgroundColor: ['#0f172a', '#0ea5e9', '#10b981', '#7e22ce'],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverOffset: 4
+        }]
+        },
+        options: {
+        responsive: true, maintainAspectRatio: false, cutout: '70%',
+        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15, font: { size: 10, weight: '600' } } } }
+        }
+        });
+        }
+
+        // GRÁFICO 2: ESTADO MARÍTIMO (LAR)
+        const ctxMar = document.getElementById('maritimeChart');
+        if(ctxMar) {
+        new Chart(ctxMar, {
+        type: 'doughnut',
+        data: {
+        labels: ['A Tiempo (Sin LAR)', 'Con Late Arrival (LAR)'],
+        datasets: [{
+        data: [@maritimasATiempo, @maritimasLAR],
+        backgroundColor: ['#16a34a', '#f59e0b'],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverOffset: 4
+        }]
+        },
+        options: {
+        responsive: true, maintainAspectRatio: false, cutout: '70%',
+        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15, font: { size: 10, weight: '600' } } } }
+        }
+        });
+        }
+
+        // GRÁFICO 3: ESTATUS DE BOOKINGS
+        const ctxBkg = document.getElementById('bookingStatusChart');
+        if(ctxBkg) {
+        new Chart(ctxBkg, {
+        type: 'bar',
+        data: {
+        labels: ['Sol. Naviera', 'Conf. Cliente', 'Canceladas'],
+        datasets: [{
+        label: 'Operaciones',
+        data: [@bkgPendienteNaviera, @bkgConfirmadoCliente, @bkgCancelados],
+        backgroundColor: ['#f59e0b', '#0ea5e9', '#ef4444'],
+        borderRadius: 6
+        }]
+        },
+        options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+        x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } },
+        y: { beginAtZero: true, grid: { borderDash: [4,4] }, border: { display: false }, ticks: { stepSize: 1 } }
+        }
+        }
+        });
+        }
+
+        // ==========================================
+        // GRÁFICO 4: FINANZAS MIXTO (BARRAS + LÍNEA)
+        // ==========================================
+        const ctxFin = document.getElementById('financeChart');
+        if(ctxFin) {
+        new Chart(ctxFin, {
+        type: 'bar',
+        data: {
+        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+        datasets: [
+        {
+        type: 'line',
+        label: 'Margen (%)',
+        data: [25, 28, 24, 30],
+        borderColor: '#0ea5e9',
+        backgroundColor: '#0ea5e9',
+        borderWidth: 3,
+        fill: false,
+        yAxisID: 'y1'
+        },
+        {
+        type: 'bar',
+        label: 'Ingresos',
+        data: [12000, 15000, 14000, 18000],
+        backgroundColor: '#6d2d9e',
+        borderRadius: 4,
+        yAxisID: 'y'
+        },
+        {
+        type: 'bar',
+        label: 'Costos Extras',
+        data: [1500, 800, 2200, 400],
+        backgroundColor: '#ef4444',
+        borderRadius: 4,
+        yAxisID: 'y'
+        }
+        ]
+        },
+        options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { usePointStyle: true, font: { size: 11, weight:'600' } } } },
+        scales: {
+        x: { grid: { display: false }, border: { display: false } },
+        y: {
+        type: 'linear', display: true, position: 'left',
+        grid: { borderDash: [4,4], color: '#e2e8f0' }, border: { display: false }
+        },
+        y1: {
+        type: 'linear', display: true, position: 'right',
+        grid: { drawOnChartArea: false }, border: { display: false },
+        ticks: { callback: function(value) { return value + '%'; } }
+        }
+        }
+        }
+        });
+        }
+        });
+    </script>
+}

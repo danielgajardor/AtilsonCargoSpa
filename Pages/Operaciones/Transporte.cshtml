@@ -1,0 +1,832 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Operaciones.TransporteModel
+@{
+    ViewData["Title"] = "Panel de Transporte";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* PALETA MINIMALISTA Y CORPORATIVA ATILSON */
+    :root { 
+        --atilson-dark: #0f172a; 
+        --atilson-purple: #6d2d9e;
+        --txt-main: #1e293b; 
+        --txt-muted: #64748b; 
+        --border-soft: #e2e8f0; 
+        --bg-main: #ffffff; 
+        --bg-soft: #f8fafc; 
+    }
+    
+    body { background-color: #f1f5f9; font-family: 'Inter', system-ui, sans-serif; }
+
+    /* NAVEGACIÓN Y FILTROS */
+    .workspace-nav { background: var(--bg-main); padding: 5px; border-radius: 8px; border: 1px solid var(--border-soft); display: inline-flex; gap: 2px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+    .ws-btn { font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 8px 18px; border-radius: 6px; color: var(--txt-muted); text-decoration: none; transition: all 0.2s; display: flex; align-items: center; letter-spacing: 0.5px; }
+    .ws-btn:hover { background: var(--bg-soft); color: var(--txt-main); }
+    .ws-btn.active { background: var(--atilson-dark); color: #ffffff; box-shadow: 0 2px 5px rgba(15, 23, 42, 0.15); }
+    .ws-btn i { font-size: 14px; margin-right: 6px; }
+
+    .filter-panel { background: #fff; padding: 12px 20px; border-radius: 12px; border: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .search-wrapper { display: flex; align-items: center; gap: 15px; flex-grow: 1; max-width: 500px; position: relative;}
+    .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--txt-muted); font-size: 16px;}
+    .search-input { border: 1px solid var(--border-soft); font-size: 13px; font-weight: 600; width: 100%; outline: none; color: var(--txt-main); background: var(--bg-soft); border-radius: 20px; padding: 10px 15px 10px 40px; transition: all 0.2s;}
+    .search-input:focus { border-color: var(--atilson-dark); background: var(--bg-main); box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1); }
+
+    /* TABLA Y FILAS */
+    .table-container { background: var(--bg-main); border: 1px solid var(--border-soft); overflow-x: auto; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); position: relative; }
+    .table-exec { min-width: 1400px; border-collapse: separate; border-spacing: 0; margin-bottom: 0; }
+    .table-exec th { background: var(--bg-soft); color: var(--txt-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; padding: 16px 20px; border-bottom: 1px solid var(--border-soft); font-weight: 800; white-space: nowrap; }
+    .table-exec td { padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 12px; vertical-align: top; transition: background-color 0.15s ease; cursor: pointer; }
+    
+    /* COLUMNA FIJA (STICKY) */
+    .table-exec th:first-child, .table-exec td:first-child { position: sticky; left: 0; z-index: 2; border-right: 1px solid var(--border-soft); }
+    .table-exec th:first-child { background-color: #f8fafc; z-index: 3; }
+    .row-clickable td:first-child { background-color: #ffffff; }
+    .row-clickable:hover td:first-child { background-color: var(--bg-soft); }
+    .row-sub td:first-child { background-color: #fafcfd; }
+    .row-sub:hover td:first-child { background-color: #f1f5f9; }
+    .row-clickable:hover td { background-color: var(--bg-soft); }
+    .row-sub td { background-color: #fafcfd; border-bottom: 1px solid #f1f5f9; position: relative; }
+    .row-sub:hover td { background-color: #f1f5f9; }
+
+    .booking-txt { font-size: 13px; font-weight: 900; letter-spacing: -0.3px; color: var(--atilson-dark); }
+    .tree-icon { color: #94a3b8; font-size: 14px; margin-right: 6px; }
+
+    .data-group { display: flex; flex-direction: column; gap: 4px; mt-1; }
+    .data-primary { font-weight: 700; color: var(--txt-main); font-size: 13px; line-height: 1.2; }
+    .data-secondary { font-size: 11px; color: var(--txt-muted); font-weight: 600; }
+    /* RUTA LOGÍSTICA GRID (ALINEADA Y ORDENADA) */
+    .route-box-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr; /* 3 cajas iguales + 2 flechas automáticas */
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+    min-width: 320px; /* Para asegurar que no colapse demasiado */
+    }
+
+    .route-node-grid {
+    background: #ffffff;
+    border: 1px solid var(--border-soft);
+    color: var(--txt-main);
+    padding: 6px 8px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column; /* Icono arriba, texto abajo para ahorrar ancho */
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    }
+
+    .route-node-grid i {
+    font-size: 14px;
+    margin-bottom: 2px;
+    }
+
+    .route-arrow-grid {
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 900;
+    }
+    .badge-mov { font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid transparent; }
+    .mov-expo { color: #0284c7; background-color: #e0f2fe; border-color: #bae6fd; }
+    .mov-impo { color: #16a34a; background-color: #dcfce7; border-color: #bbf7d0; }
+
+    .data-label { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; display: inline-block; width: 35px; }
+    
+    .btn-action-dot { color: #94a3b8; font-size: 18px; padding: 5px; text-decoration: none; border-radius: 50%; transition: all 0.2s; }
+    .btn-action-dot:hover { background-color: #f1f5f9; color: #0f172a; }
+
+    /* ESTILOS DEL MODAL DE CORREO */
+    .email-preview { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; font-family: monospace; font-size: 12px; white-space: pre-wrap; width: 100%; height: 300px; resize: none; color: #0f172a; }
+    
+    /* MODAL ULTRA COMPACTO */
+    .modal-mega-wide { max-width: 1000px; width: 95%; margin: 1.5rem auto; }
+    .modal-minimal .modal-content { border-radius: 12px; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); overflow: hidden; background-color: var(--bg-soft); }
+    .modal-minimal .modal-body { padding: 20px 25px; }
+
+    .atilson-banner { background: linear-gradient(135deg, #0f172a 0%, #6d2d9e 100%); color: #fff; border-radius: 10px; padding: 15px 25px; margin-bottom: 20px; box-shadow: 0 4px 10px -2px rgba(109, 45, 158, 0.25); position: relative; }
+    
+    .form-section { background: #ffffff; border: 1px solid var(--border-soft); border-radius: 8px; padding: 20px 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .section-title-sm { font-size: 12px; font-weight: 900; color: var(--atilson-dark); text-transform: uppercase; border-bottom: 1px solid var(--border-soft); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .erp-label { font-size: 10px; font-weight: 800; color: var(--txt-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    .erp-input { font-size: 13px; border: 1px solid var(--border-soft); border-radius: 6px; background-color: var(--bg-soft); padding: 8px 12px; width: 100%; color: var(--txt-main); font-weight: 600; transition: all 0.2s; }
+    .erp-input:focus { border-color: var(--atilson-purple); background: #fff; box-shadow: 0 0 0 3px rgba(109, 45, 158, 0.1); outline: none; }
+</style>
+
+<div class="container-fluid py-4">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 900; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">WORKSPACE: TRANSPORTE</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Control de flotas, rutas y consolidaciones terrestres</p>
+        </div>
+    </div>
+
+    <div class="workspace-nav">
+        <a asp-page="./Index" class="ws-btn"><i class="bi bi-grid-fill"></i> Main Board</a>
+        <a asp-page="./Maritimo" class="ws-btn"><i class="bi bi-water"></i> Marítimo</a>
+        <a asp-page="./Transporte" class="ws-btn active"><i class="bi bi-truck"></i> Transporte</a>
+        <a asp-page="./Documental" class="ws-btn"><i class="bi bi-file-earmark-check"></i> Documental</a>
+        <a asp-page="./Almacenamiento" class="ws-btn"><i class="bi bi-boxes"></i> Almacenamiento</a>
+    </div>
+
+    <div class="filter-panel">
+        <form method="get" class="d-flex w-100 align-items-center gap-3 m-0 p-0">
+            <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" asp-for="SearchString" class="search-input" id="liveSearchInput" placeholder="Buscar por Transportista o Booking..." autocomplete="off">
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-dark btn-sm fw-bold px-4 rounded-pill" style="background-color: var(--atilson-dark);">Buscar</button>
+                @if(!string.IsNullOrEmpty(Model.SearchString)) {
+                    <a asp-page="./Transporte" class="btn btn-light btn-sm border fw-bold px-3 rounded-pill text-muted">Limpiar</a>
+                }
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container shadow-sm">
+        <table class="table table-exec" id="opsTable">
+            <thead>
+                <tr>
+                    <th style="min-width: 220px;">Booking / Contenedores</th>
+                    <th>Cliente</th>
+                    <th>Ruta Logística Asignada</th>
+                    <th>Transporte (Proveedor)</th>
+                    <th>Chofer / Patente</th>
+                    <th>Presentación Carga</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Operaciones != null && Model.Operaciones.Any())
+                {
+                    @foreach (var item in Model.Operaciones)
+                    {
+                        var nombreCortoCliente = !string.IsNullOrWhiteSpace(item.IdClienteNavigation?.NombreCliente) ? item.IdClienteNavigation.NombreCliente : item.IdClienteNavigation?.RazonSocial;
+                        
+                        int valServicio = item.IdTipoServicio.GetValueOrDefault(0);
+                        bool esExpo = valServicio <= 7;
+                        
+                        var terr = item.OperacionesTerrestres?.FirstOrDefault();
+                        
+                        var nodoDeposito = string.IsNullOrWhiteSpace(terr?.DepositoRetiro) ? "TBA" : terr.DepositoRetiro;
+                        var nodoPlanta = string.IsNullOrWhiteSpace(terr?.PlantaCarga) ? "TBA" : terr.PlantaCarga;
+                        var nodoPuerto = esExpo ? (item.IdPuertoOrigenNavigation?.NombrePuerto ?? "TBA") : (item.IdPuertoDestinoNavigation?.NombrePuerto ?? "TBA");
+
+                        bool showAlerta = (terr?.SolicitudEnviada == true && terr?.AsignacionEnviada != true);
+                        string rowAlertClass = showAlerta ? "row-alert" : "";
+
+                        string FormatearTipoPuro(string tipoConte, int? tipoCarga) {
+                            int tcNum = tipoCarga.GetValueOrDefault(1);
+                            string tc = (tipoConte ?? "40' HC").Replace("'", "").Replace("REEFER", "RF");
+                            if (!tc.Contains("DRY") && !tc.Contains("RF")) tc += (tcNum == 2 ? " RF" : " DRY");
+                            return tc;
+                        }
+
+                        string FormatearTransporte(string empresa)
+                        {
+                            if (string.IsNullOrWhiteSpace(empresa)) return "Sin Asignar";
+                            return empresa.ToUpper()
+                                .Replace("TRANSPORTES ", "")
+                                .Replace("TRANSPORTE ", "")
+                                .Replace(" LOGISTICA", "")
+                                .Replace(" SPA", "")
+                                .Replace(" LTDA", "")
+                                .Replace(".", "")
+                                .Trim();
+                        }
+
+                        <tr class="row-clickable op-row @rowAlertClass" onclick="abrirModalTransporte(this, event)" data-id="@item.Id">
+                            <td>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="booking-txt text-uppercase">@item.NumeroBooking</span>
+                                    <span class="badge-mov @(esExpo ? "mov-expo" : "mov-impo")">@(esExpo ? "EXPO" : "IMPO")</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 bg-light border border-light rounded px-2 py-1 mt-1" style="width: fit-content;">
+                                    <span class="text-nowrap" style="font-size: 10px; font-weight: 700; color: #64748b;"><i class="bi bi-box me-1"></i> @FormatearTipoPuro(item.TipoContenedor, item.IdTipoCarga)</span>
+                                    @if (!string.IsNullOrWhiteSpace(item.NumeroContenedor))
+                                    {
+                                        <span style="font-size: 11px; font-weight: 800; color: var(--atilson-dark);">@item.NumeroContenedor</span>
+                                    }
+                                </div>
+                            </td>
+
+                            <td class="align-middle">
+                                <span class="data-val d-block text-truncate" style="max-width: 140px;" title="@nombreCortoCliente">@nombreCortoCliente</span>
+                            </td>
+
+                            <td class="align-middle">
+                                <div class="route-box-grid">
+                                    @if (esExpo)
+                                    {
+                                        <div class="route-node-grid">
+                                            <i class="bi bi-box text-muted"></i>
+                                            <span class="text-truncate" style="max-width: 80px;" title="@nodoDeposito">@nodoDeposito</span>
+                                        </div>
+                                        <i class="bi bi-caret-right-fill route-arrow-grid"></i>
+
+                                        <div class="route-node-grid">
+                                            <i class="bi bi-building text-muted"></i>
+                                            <span class="text-truncate" style="max-width: 80px;" title="@nodoPlanta">@nodoPlanta</span>
+                                        </div>
+                                        <i class="bi bi-caret-right-fill route-arrow-grid"></i>
+
+                                        <div class="route-node-grid">
+                                            <i class="bi bi-water text-primary"></i>
+                                            <span class="text-truncate" style="max-width: 80px;" title="@nodoPuerto">@nodoPuerto</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="route-node-grid">
+                                            <i class="bi bi-water text-primary"></i>
+                                            <span class="text-truncate" style="max-width: 80px;" title="@nodoPuerto">@nodoPuerto</span>
+                                        </div>
+                                        <i class="bi bi-caret-right-fill route-arrow-grid"></i>
+
+                                        <div class="route-node-grid">
+                                            <i class="bi bi-building text-muted"></i>
+                                            <span class="text-truncate" style="max-width: 80px;" title="@nodoPlanta">@nodoPlanta</span>
+                                        </div>
+                                        <i class="bi bi-caret-right-fill route-arrow-grid"></i>
+
+                                        <div class="route-node-grid">
+                                            <i class="bi bi-box text-muted"></i>
+                                            <span class="text-truncate" style="max-width: 80px;" title="@nodoDeposito">@nodoDeposito</span>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+
+                            <td class="align-middle opacity-75">
+                                <span class="data-primary d-block text-uppercase text-dark text-truncate" style="max-width: 140px;" title="@(terr?.EmpresaTransporte ?? "Sin Asignar")">
+                                    <i class="bi bi-truck me-1"></i> @FormatearTransporte(terr?.EmpresaTransporte)
+                                </span>
+                            </td>
+
+                            <td class="align-middle opacity-75">
+                                <div class="data-group">
+                                    <span class="data-primary">@(string.IsNullOrWhiteSpace(terr?.NombreConductor) ? "TBA" : terr.NombreConductor)</span>
+                                    <span class="data-secondary fw-bold text-dark border px-1 rounded" style="width:fit-content; background:#f1f5f9;">PPU: @(terr?.Patente ?? "-")</span>
+                                </div>
+                            </td>
+
+                            <td class="align-middle opacity-75">
+                                @if (terr?.FechaCarga != null) { 
+                                    <span class="data-primary text-success"><i class="bi bi-calendar-check me-1"></i> @terr.FechaCarga.Value.ToString("dd/MM/yyyy HH:mm")</span> 
+                                } else { 
+                                    <span class="data-secondary" style="font-style: italic;">Sin Programar</span> 
+                                }
+                            </td>
+
+                            <td class="text-end pe-4 align-middle actions-cell">
+                                <div class="dropdown">
+                                    <a href="#" class="btn-action-dot" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></a>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="font-size: 13px;">
+                                        <li><a class="dropdown-item py-2 fw-bold text-dark" asp-page="./Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square me-2 text-muted"></i> Edición Completa ERP</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item py-2 fw-bold text-dark" href="#" onclick="abrirGeneradorCorreos('@item.Id', 'data_main_@item.Id', 'solicitud')"><i class="bi bi-envelope me-2 text-muted"></i> Solicitud (A Proveedor)</a></li>
+                                        <li><a class="dropdown-item py-2 fw-bold text-primary" href="#" onclick="abrirGeneradorCorreos('@item.Id', 'data_main_@item.Id', 'preliminar')"><i class="bi bi-envelope-exclamation me-2"></i> Asig. Preliminar (A Cliente)</a></li>
+                                        <li><a class="dropdown-item py-2 fw-bold text-success" href="#" onclick="abrirGeneradorCorreos('@item.Id', 'data_main_@item.Id', 'completa')"><i class="bi bi-envelope-check me-2"></i> Asig. Completa (A Cliente)</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                            
+                            <!-- DATA HIDDEN PARA JAVASCRIPT LIGERO Y SEGURO -->
+                            <div class="d-none" id="data_main_@item.Id"
+                                 data-id="@item.Id"
+                                 data-cliente="@nombreCortoCliente"
+                                 data-booking="@item.NumeroBooking"
+                                 data-pol="@(item.IdPuertoOrigenNavigation?.NombrePuerto ?? "-")"
+                                 data-pod="@(item.IdPuertoDestinoNavigation?.NombrePuerto ?? "-")"
+                                 data-commodity="@(item.Commodity ?? "GENERAL")"
+                                 data-tcntr="@FormatearTipoPuro(item.TipoContenedor, item.IdTipoCarga)"
+                                 data-numcntrs="@(1 + (item.Unidadestecnicas?.Count ?? 0))"
+                                 data-ncntr="@(string.IsNullOrWhiteSpace(item.NumeroContenedor) ? "PENDIENTE" : item.NumeroContenedor)"
+                                 data-sello="@(string.IsNullOrWhiteSpace(item.NumeroSello) ? "PENDIENTE" : item.NumeroSello)"
+                                 
+                                 data-empresa="@(string.IsNullOrWhiteSpace(terr?.EmpresaTransporte) ? "" : terr.EmpresaTransporte)"
+                                 data-conductor="@(string.IsNullOrWhiteSpace(terr?.NombreConductor) ? "" : terr.NombreConductor)"
+                                 data-rut="@(string.IsNullOrWhiteSpace(terr?.RutTransporte) ? "" : terr.RutTransporte)"
+                                 data-celular="@(string.IsNullOrWhiteSpace(terr?.TelefonoConductor) ? "" : terr.TelefonoConductor)"
+                                 data-patente="@(string.IsNullOrWhiteSpace(terr?.Patente) ? "" : terr.Patente)"
+                                 data-planta="@(string.IsNullOrWhiteSpace(terr?.PlantaCarga) ? "" : terr.PlantaCarga)"
+                                 data-deposito="@(string.IsNullOrWhiteSpace(terr?.DepositoRetiro) ? "" : terr.DepositoRetiro)"
+                                 data-fechastr="@(terr?.FechaCarga?.ToString("dd/MM/yyyy HH:mm") ?? "")">
+                            </div>
+
+                            <template class="transporte-template d-none">
+                                <div class="atilson-banner mb-3">
+                                    <div class="fw-bold text-uppercase" style="font-size: 13px; letter-spacing: 1px;">
+                                        <i class="bi bi-truck me-2"></i> GESTIÓN LOGÍSTICA | BKG: @item.NumeroBooking
+                                    </div>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-lg-12">
+                                        <div class="form-section shadow-sm" style="padding: 25px;">
+                                            <div class="section-title-sm mb-3">
+                                                <span><i class="bi bi-building me-1"></i> Empresa y Conductor</span>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <label class="erp-label">Empresa de Transporte</label>
+                                                    <input type="text" name="ModEmpresa" class="form-control erp-input text-uppercase" value="@terr?.EmpresaTransporte" placeholder="Ej: Transportes Muñoz" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="erp-label">RUT Transporte</label>
+                                                    <input type="text" name="ModRut" class="form-control erp-input" value="@terr?.RutTransporte" placeholder="Ej: 76.123.456-K" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="erp-label">Correo Op. Transporte</label>
+                                                    <input type="email" name="ModCorreo" class="form-control erp-input" value="@terr?.CorreoTransporte" placeholder="operaciones@@..." />
+                                                </div>
+                                                <div class="col-md-12"><hr class="m-0 border-light my-2"></div>
+                                                <div class="col-md-6">
+                                                    <label class="erp-label">Nombre del Conductor</label>
+                                                    <input type="text" name="ModConductor" class="form-control erp-input text-uppercase" value="@terr?.NombreConductor" placeholder="Nombre Apellido" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="erp-label">Teléfono Conductor</label>
+                                                    <input type="text" name="ModTelefono" class="form-control erp-input" value="@terr?.TelefonoConductor" placeholder="+56 9..." />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="erp-label text-danger">Patente (PPU)</label>
+                                                    <input type="text" name="ModPatente" class="form-control erp-input text-uppercase border-danger" value="@terr?.Patente" placeholder="XXXXXX" />
+                                                </div>
+                                                <div class="col-md-6 mt-3">
+                                                    <label class="erp-label">Tipo Unidad (Rampa)</label>
+                                                    <input type="text" name="ModTipoUnidad" class="form-control erp-input text-uppercase" value="@terr?.TipoUnidadTransporte" placeholder="Ej: Rampa Genset" />
+                                                </div>
+                                                <div class="col-md-6 mt-3">
+                                                    <label class="erp-label text-primary">Link Tracking GPS</label>
+                                                    <input type="url" name="ModTracking" class="form-control erp-input border-primary" value="@terr?.LinkTracking" placeholder="https://..." />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <div class="form-section shadow-sm mt-1" style="padding: 25px;">
+                                            <div class="section-title-sm mb-3">
+                                                <span class="text-success"><i class="bi bi-geo-alt-fill me-1"></i> Ruta y Control de Tiempos</span>
+                                            </div>
+                                            
+                                            <!-- ALERTA DE ASIGNACIÓN PARCIAL -->
+                                            <div id="alert-asignacion-@item.Id" class="alert alert-danger py-2 px-3 mb-3 @(showAlerta ? "" : "d-none")" style="font-size:11px; border-left: 4px solid #ef4444;">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i> Se ha enviado una asignación preliminar (o solicitud al proveedor). <strong>Falta enviar la asignación completa al cliente (requiere contenedor y sello).</strong>
+                                            </div>
+
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <label class="erp-label">Depósito de Retiro</label>
+                                                    <input type="text" name="ModDeposito" class="form-control erp-input text-uppercase" value="@terr?.DepositoRetiro" placeholder="Ej: MEDLOG" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="erp-label">Planta de Carga</label>
+                                                    <input type="text" name="ModPlanta" class="form-control erp-input text-uppercase" value="@terr?.PlantaCarga" placeholder="Ej: Planta Sur" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="erp-label">Zona Embarque</label>
+                                                    <input type="text" name="ModZona" class="form-control erp-input text-uppercase" value="@terr?.ZonaEmbarque" placeholder="Ej: V Región" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="erp-label text-danger">Fecha/Hora Presentación Carga</label>
+                                                    <input type="datetime-local" name="ModFechaCarga" class="form-control erp-input border-warning" value="@(terr?.FechaCarga?.ToString("yyyy-MM-ddTHH:mm"))" />
+                                                </div>
+                                                
+                                                <div class="col-md-12 mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                                                    <!-- BOTONERA CORREOS -->
+                                                    <div class="d-flex gap-2 flex-wrap">
+                                                        <button type="button" class="btn btn-sm btn-outline-dark fw-bold" onclick="abrirGeneradorCorreos('@item.Id', 'data_main_@item.Id', 'solicitud')"><i class="bi bi-envelope"></i> Solicitud Serv.</button>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary fw-bold" onclick="abrirGeneradorCorreos('@item.Id', 'data_main_@item.Id', 'preliminar')"><i class="bi bi-envelope-exclamation"></i> Asig. Preliminar</button>
+                                                        <button type="button" class="btn btn-sm btn-outline-success fw-bold" onclick="abrirGeneradorCorreos('@item.Id', 'data_main_@item.Id', 'completa')"><i class="bi bi-envelope-check"></i> Asig. Completa</button>
+                                                    </div>
+                                                    <div>
+                                                        <button type="button" class="btn btn-light border fw-bold text-muted me-2 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                                        <button type="submit" class="btn btn-dark fw-bold px-4 btn-sm shadow-sm"><i class="bi bi-save me-1"></i> Guardar Logística</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </tr>
+
+                        @if(item.Unidadestecnicas != null && item.Unidadestecnicas.Any()) {
+                            @foreach(var u in item.Unidadestecnicas) {
+                                bool showAlertaSub = (terr?.SolicitudEnviada == true && terr?.AsignacionEnviada != true);
+                                string rowAlertSubClass = showAlertaSub ? "row-alert" : "";
+                                
+                                <tr class="row-sub op-row @rowAlertSubClass" onclick="abrirModalTransporte(this, event)" data-id="@item.Id">
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <i class="bi bi-arrow-return-right tree-icon"></i>
+                                            <span class="booking-txt text-muted" style="font-size: 12px;">@item.NumeroBooking</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2 bg-light border border-light rounded px-2 py-1 mt-1" style="width: fit-content; margin-left: 20px;">
+                                            <span class="text-nowrap" style="font-size: 10px; font-weight: 700; color: #64748b;"><i class="bi bi-box me-1"></i> @FormatearTipoPuro(u.TipoContenedor, u.IdTipoCarga)</span>
+                                            @if(!string.IsNullOrWhiteSpace(u.NroContenedor)) {
+                                                <span style="font-size: 11px; font-weight: 800; color: var(--atilson-dark);">@u.NroContenedor</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="align-middle opacity-75"><span class="data-val text-wrap text-muted" style="max-width: 150px;">@nombreCortoCliente</span></td>
+                                    
+                                    <td class="align-middle opacity-75">
+                                        <div class="route-box">
+                                            @if (esExpo) {
+                                                <span class="route-node"><i class="bi bi-box"></i> @nodoDeposito</span>
+                                                <i class="bi bi-arrow-right route-arrow"></i>
+                                                <span class="route-node"><i class="bi bi-building"></i> @nodoPlanta</span>
+                                                <i class="bi bi-arrow-right route-arrow"></i>
+                                                <span class="route-node"><i class="bi bi-water"></i> @nodoPuerto</span>
+                                            } else {
+                                                <span class="route-node"><i class="bi bi-water"></i> @nodoPuerto</span>
+                                                <i class="bi bi-arrow-right route-arrow"></i>
+                                                <span class="route-node"><i class="bi bi-building"></i> @nodoPlanta</span>
+                                                <i class="bi bi-arrow-right route-arrow"></i>
+                                                <span class="route-node"><i class="bi bi-box"></i> @nodoDeposito</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="align-middle opacity-75">
+                                        <span class="data-primary text-wrap d-block text-uppercase text-dark" style="max-width: 150px;">
+                                            <i class="bi bi-truck me-1"></i> @(string.IsNullOrWhiteSpace(terr?.EmpresaTransporte) ? "Sin Asignar" : terr.EmpresaTransporte)
+                                        </span>
+                                    </td>
+                                    <td class="align-middle opacity-75">
+                                        <div class="data-group">
+                                            <span class="data-primary">@(string.IsNullOrWhiteSpace(terr?.NombreConductor) ? "TBA" : terr.NombreConductor)</span>
+                                            <span class="data-secondary fw-bold text-dark border px-1 rounded" style="width:fit-content; background:#f1f5f9;">PPU: @(terr?.Patente ?? "-")</span>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle opacity-75">
+                                        @if (terr?.FechaCarga != null) { 
+                                            <span class="data-primary text-success"><i class="bi bi-calendar-check me-1"></i> @terr.FechaCarga.Value.ToString("dd/MM/yyyy HH:mm")</span> 
+                                        } else { 
+                                            <span class="data-secondary" style="font-style: italic;">Sin Programar</span> 
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4 align-middle actions-cell">
+                                        <div class="dropdown">
+                                            <a href="#" class="btn-action-dot" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></a>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="font-size: 13px;">
+                                                <li><a class="dropdown-item py-2 fw-bold text-dark" asp-page="./Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square me-2 text-muted"></i> Edición Completa ERP</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item py-2 fw-bold text-dark" href="#" onclick="abrirGeneradorCorreos('@item.Id', 'data_sub_@u.Id', 'solicitud')"><i class="bi bi-envelope me-2 text-muted"></i> Solicitud (A Proveedor)</a></li>
+                                                <li><a class="dropdown-item py-2 fw-bold text-primary" href="#" onclick="abrirGeneradorCorreos('@item.Id', 'data_sub_@u.Id', 'preliminar')"><i class="bi bi-envelope-exclamation me-2"></i> Asig. Preliminar (A Cliente)</a></li>
+                                                <li><a class="dropdown-item py-2 fw-bold text-success" href="#" onclick="abrirGeneradorCorreos('@item.Id', 'data_sub_@u.Id', 'completa')"><i class="bi bi-envelope-check me-2"></i> Asig. Completa (A Cliente)</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    
+                                    <div class="d-none" id="data_sub_@u.Id"
+                                         data-id="@item.Id"
+                                         data-cliente="@nombreCortoCliente"
+                                         data-booking="@item.NumeroBooking"
+                                         data-pol="@(item.IdPuertoOrigenNavigation?.NombrePuerto ?? "-")"
+                                         data-pod="@(item.IdPuertoDestinoNavigation?.NombrePuerto ?? "-")"
+                                         data-commodity="@(item.Commodity ?? "GENERAL")"
+                                         data-tcntr="@FormatearTipoPuro(u.TipoContenedor, u.IdTipoCarga)"
+                                         data-numcntrs="1"
+                                         data-ncntr="@(string.IsNullOrWhiteSpace(u.NroContenedor) ? "PENDIENTE" : u.NroContenedor)"
+                                         data-sello="@(string.IsNullOrWhiteSpace(u.NumeroSello) ? "PENDIENTE" : u.NumeroSello)"
+                                         data-empresa="@(string.IsNullOrWhiteSpace(terr?.EmpresaTransporte) ? "" : terr.EmpresaTransporte)"
+                                         data-conductor="@(string.IsNullOrWhiteSpace(terr?.NombreConductor) ? "" : terr.NombreConductor)"
+                                         data-rut="@(string.IsNullOrWhiteSpace(terr?.RutTransporte) ? "" : terr.RutTransporte)"
+                                         data-celular="@(string.IsNullOrWhiteSpace(terr?.TelefonoConductor) ? "" : terr.TelefonoConductor)"
+                                         data-patente="@(string.IsNullOrWhiteSpace(terr?.Patente) ? "" : terr.Patente)"
+                                         data-planta="@(string.IsNullOrWhiteSpace(terr?.PlantaCarga) ? "" : terr.PlantaCarga)"
+                                         data-deposito="@(string.IsNullOrWhiteSpace(terr?.DepositoRetiro) ? "" : terr.DepositoRetiro)"
+                                         data-fechastr="@(terr?.FechaCarga?.ToString("dd/MM/yyyy HH:mm") ?? "")">
+                                    </div>
+                                    
+                                    <template class="transporte-template d-none">
+                                        <div class="atilson-banner mb-3">
+                                            <div class="fw-bold text-uppercase" style="font-size: 13px; letter-spacing: 1px;">
+                                                <i class="bi bi-truck me-2"></i> GESTIÓN LOGÍSTICA (ADICIONAL) | BKG: @item.NumeroBooking
+                                            </div>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-lg-12">
+                                                <div class="form-section shadow-sm" style="padding: 25px;">
+                                                    <div class="section-title-sm mb-3">
+                                                        <span><i class="bi bi-building me-1"></i> Empresa y Conductor</span>
+                                                    </div>
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <label class="erp-label">Empresa de Transporte</label>
+                                                            <input type="text" name="ModEmpresa" class="form-control erp-input text-uppercase" value="@terr?.EmpresaTransporte" placeholder="Ej: Transportes Muñoz" />
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="erp-label">RUT Transporte</label>
+                                                            <input type="text" name="ModRut" class="form-control erp-input" value="@terr?.RutTransporte" placeholder="Ej: 76.123.456-K" />
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="erp-label">Correo Op. Transporte</label>
+                                                            <input type="email" name="ModCorreo" class="form-control erp-input" value="@terr?.CorreoTransporte" placeholder="operaciones@@..." />
+                                                        </div>
+                                                        <div class="col-md-12"><hr class="m-0 border-light my-2"></div>
+                                                        <div class="col-md-6">
+                                                            <label class="erp-label">Nombre del Conductor</label>
+                                                            <input type="text" name="ModConductor" class="form-control erp-input text-uppercase" value="@terr?.NombreConductor" placeholder="Nombre Apellido" />
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="erp-label">Teléfono Conductor</label>
+                                                            <input type="text" name="ModTelefono" class="form-control erp-input" value="@terr?.TelefonoConductor" placeholder="+56 9..." />
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="erp-label text-danger">Patente (PPU)</label>
+                                                            <input type="text" name="ModPatente" class="form-control erp-input text-uppercase border-danger" value="@terr?.Patente" placeholder="XXXXXX" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div class="form-section shadow-sm mt-1" style="padding: 25px;">
+                                                    <div class="section-title-sm mb-3">
+                                                        <span class="text-success"><i class="bi bi-geo-alt-fill me-1"></i> Ruta y Control de Tiempos</span>
+                                                    </div>
+                                                    
+                                                    <div id="alert-asignacion-sub-@u.Id" class="alert alert-danger py-2 px-3 mb-3 @(showAlertaSub ? "" : "d-none")" style="font-size:11px; border-left: 4px solid #ef4444;">
+                                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Se ha enviado una asignación preliminar (o solicitud). <strong>Falta enviar la asignación completa al cliente.</strong>
+                                                    </div>
+
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <label class="erp-label">Depósito de Retiro</label>
+                                                            <input type="text" name="ModDeposito" class="form-control erp-input text-uppercase" value="@terr?.DepositoRetiro" placeholder="Ej: MEDLOG" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="erp-label">Planta de Carga</label>
+                                                            <input type="text" name="ModPlanta" class="form-control erp-input text-uppercase" value="@terr?.PlantaCarga" placeholder="Ej: Planta Sur" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="erp-label">Zona Embarque</label>
+                                                            <input type="text" name="ModZona" class="form-control erp-input text-uppercase" value="@terr?.ZonaEmbarque" placeholder="Ej: V Región" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="erp-label text-danger">Fecha/Hora Presentación Carga</label>
+                                                            <input type="datetime-local" name="ModFechaCarga" class="form-control erp-input border-warning" value="@(terr?.FechaCarga?.ToString("yyyy-MM-ddTHH:mm"))" />
+                                                        </div>
+                                                        
+                                                        <div class="col-md-12 mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                                                            <div class="d-flex gap-2 flex-wrap">
+                                                                <button type="button" class="btn btn-sm btn-outline-dark fw-bold" onclick="abrirGeneradorCorreos('@item.Id', 'data_sub_@u.Id', 'solicitud')"><i class="bi bi-envelope"></i> Solicitud Serv.</button>
+                                                                <button type="button" class="btn btn-sm btn-outline-primary fw-bold" onclick="abrirGeneradorCorreos('@item.Id', 'data_sub_@u.Id', 'preliminar')"><i class="bi bi-envelope-exclamation"></i> Asig. Preliminar</button>
+                                                                <button type="button" class="btn btn-sm btn-outline-success fw-bold" onclick="abrirGeneradorCorreos('@item.Id', 'data_sub_@u.Id', 'completa')"><i class="bi bi-envelope-check"></i> Asig. Completa</button>
+                                                            </div>
+                                                            <div>
+                                                                <button type="button" class="btn btn-light border fw-bold text-muted me-2 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                                                <button type="submit" class="btn btn-dark fw-bold px-4 btn-sm shadow-sm"><i class="bi bi-save me-1"></i> Guardar Logística</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </tr>
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="bi bi-truck text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <p class="text-muted fw-bold mt-3 mb-0" style="font-size: 14px;">No hay operaciones terrestres activas.</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MEGA MODAL UNIFICADO PARA TRANSPORTE -->
+<div class="modal fade modal-minimal" id="modalEditTransporte" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-mega-wide">
+    <div class="modal-content border-0" style="position: relative;">
+      <button type="button" class="btn-close" data-bs-dismiss="modal" style="position: absolute; right: 20px; top: 20px; z-index: 1055; background-color: #fff; border-radius: 50%; padding: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);"></button>
+      <form method="post" asp-page-handler="UpdateTransporte">
+          <input type="hidden" name="id" id="mod_IdOperacion" />
+          <div class="modal-body" id="mod_DynamicBody"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL UNIFICADO: GENERADOR DE CORREOS -->
+<div class="modal fade modal-minimal" id="modalGeneradorCorreos" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0">
+          <div class="modal-header" style="background: var(--atilson-dark);">
+              <div>
+                  <h5 class="modal-title fw-bold text-white m-0" style="font-size: 15px;"><i class="bi bi-envelope-paper me-2 text-primary"></i> Notificador y Solicitudes</h5>
+                  <p class="text-muted m-0 mt-1" style="font-size:11px;" id="tipoCorreoTxt">Configurando envío de información...</p>
+              </div>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <form method="post" asp-page-handler="SendCorreosTransporte">
+              <input type="hidden" name="idOperacion" id="solicitudOpId" />
+              <input type="hidden" name="tipoCorreo" id="tipoCorreoHidden" />
+              
+              <div class="modal-body bg-white p-4">
+                  <div class="row g-2 mb-3">
+                      <div class="col-12">
+                          <span class="mod-label">Para:</span>
+                          <input type="text" name="destinatario" id="emailToPreview" class="form-control erp-input fw-bold text-primary" required />
+                      </div>
+                      <div class="col-12 mt-2">
+                          <span class="mod-label">Copia (CC):</span>
+                          <input type="text" name="cc" id="emailCcPreview" class="form-control erp-input" />
+                      </div>
+                      <div class="col-12 mt-2">
+                          <span class="mod-label">Asunto:</span>
+                          <input type="text" name="asunto" id="emailAsuntoPreview" class="form-control erp-input fw-bold text-dark" required />
+                      </div>
+                  </div>
+                  
+                  <span class="mod-label">Cuerpo del Mensaje (Editable):</span>
+                  <textarea name="cuerpo" id="emailCuerpoPreview" class="form-control email-preview" required></textarea>
+              </div>
+              <div class="modal-footer bg-light border-top py-2">
+                  <button type="button" class="btn btn-light border fw-bold text-muted me-auto" onclick="copiarCorreoPreview()" style="font-size: 12px;">
+                      <i class="bi bi-copy me-1"></i> Copiar Texto
+                  </button>
+                  <button type="button" class="btn btn-light border fw-bold text-muted" data-bs-dismiss="modal" style="font-size: 12px;">Cancelar</button>
+                  <button type="submit" class="btn btn-dark fw-bold px-4 shadow-sm" style="font-size: 12px; background-color: var(--atilson-dark);">
+                      <i class="bi bi-send-fill me-1"></i> Registrar y Enviar
+                  </button>
+              </div>
+          </form>
+      </div>
+  </div>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMsg"] != null)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                Swal.fire({
+                    title: '¡Operación Exitosa!',
+                    html: '@Html.Raw(TempData["SuccessMsg"])',
+                    icon: 'success',
+                    confirmButtonColor: 'var(--atilson-dark)'
+                });
+            });
+        </script>
+    }
+
+    <script>
+        function abrirModalTransporte(trElement, event) {
+            if (event.target.closest('.actions-cell')) return;
+            const idOperacion = trElement.dataset.id;
+            document.getElementById('mod_IdOperacion').value = idOperacion;
+            
+            let template = trElement.querySelector('.transporte-template');
+            if(template && template.innerHTML.trim() === ""){
+                let tempRow = trElement;
+                while(tempRow.previousElementSibling){
+                    tempRow = tempRow.previousElementSibling;
+                    if(tempRow.classList.contains('row-main') || tempRow.classList.contains('row-clickable') && !tempRow.classList.contains('row-sub')){
+                        template = tempRow.querySelector('.transporte-template');
+                        break;
+                    }
+                }
+            }
+
+            if (template) {
+                document.getElementById('mod_DynamicBody').innerHTML = template.innerHTML;
+                var myModal = new bootstrap.Modal(document.getElementById('modalEditTransporte'));
+                myModal.show();
+            }
+        }
+
+        // --- CEREBRO GENERADOR DE CORREOS Y VALIDACIONES ---
+        window.abrirGeneradorCorreos = function(idOp, dataId, tipo) {
+            let dataEl = document.getElementById(dataId);
+            if(!dataEl) return;
+            let d = dataEl.dataset;
+            
+            let isModalOpen = document.getElementById('modalEditTransporte').classList.contains('show');
+            let formTerrestre = document.getElementById(`terrestre-${idOp}`) || document.getElementById(`terrestre-sub-${idOp}`);
+            let formGeneral = document.getElementById(`gen-form-${idOp}`) || document.getElementById(`gen-form-sub-${idOp}`);
+
+            let empresa = (isModalOpen && formTerrestre?.querySelector('input[name="ModEmpresa"]')?.value) || d.empresa || "[EMPRESA]";
+            let conductor = (isModalOpen && formTerrestre?.querySelector('input[name="ModConductor"]')?.value) || d.conductor || "[CONDUCTOR]";
+            let rut = (isModalOpen && formTerrestre?.querySelector('input[name="ModRut"]')?.value) || d.rut || "[RUT]";
+            let telefono = (isModalOpen && formTerrestre?.querySelector('input[name="ModTelefono"]')?.value) || d.celular || "[TELEFONO]";
+            let patente = (isModalOpen && formTerrestre?.querySelector('input[name="ModPatente"]')?.value) || d.patente || "[PATENTE]";
+            let planta = (isModalOpen && formTerrestre?.querySelector('input[name="ModPlanta"]')?.value) || d.planta || "[PLANTA]";
+            let deposito = (isModalOpen && formTerrestre?.querySelector('input[name="ModDeposito"]')?.value) || d.deposito || "[DEPÓSITO]";
+            
+            let fecha = d.fechastr;
+            if(isModalOpen && formTerrestre?.querySelector('input[name="ModFechaCarga"]')?.value) {
+                let fVal = formTerrestre.querySelector('input[name="ModFechaCarga"]').value;
+                if(fVal) fecha = fVal.replace("T", " ");
+            }
+            if(!fecha) fecha = "[FECHA - HORA]";
+
+            let contenedor = (isModalOpen && formGeneral?.querySelector('input[name="NumeroContenedor"]')?.value) || d.ncntr || "PENDIENTE";
+            let sello = (isModalOpen && formGeneral?.querySelector('input[name="NumeroSello"]')?.value) || d.sello || "PENDIENTE";
+            
+            let booking = d.booking || "[BOOKING]";
+            let numcntrs = d.numcntrs || "1";
+            let tcntr = d.tcntr || "40' HC";
+            let commodity = d.commodity || "GENERAL";
+            let pol = d.pol || "TBA";
+            let cliente = d.cliente || "[CLIENTE]";
+
+            let to = ""; let cc = ""; let asunto = ""; let cuerpo = "";
+
+            if(tipo === 'solicitud') {
+                document.getElementById('tipoCorreoTxt').innerText = "Enviando Solicitud al Proveedor";
+                to = "proveedor1@transporte.cl; proveedor2@transporte.cl; proveedor3@transporte.cl";
+                cc = "usuario@atilson.cl; finanzas@atilson.cl; booking_export@atilson.cl";
+                asunto = `SOLICITUD SERVICIO TRANSPORTE // BKG: ${booking} (${numcntrs} X ${tcntr}) // ${cliente.toUpperCase()}`;
+                cuerpo = `Estimado equipo de ${empresa}, buenos días:\n\nJunto con saludar, favor considerar el siguiente servicio, notar detalle:\n\nBOOKING: ${booking}\nT/UNIDAD: ${numcntrs}x ${tcntr}\nT/CARGA: ${commodity}\nRETIRO VACÍO: ${deposito}\nENTREGA FULL: ${pol}\nPAGO: 15 DÍAS UNA VEZ EMITIDA FACTURA.\n\nPRESENTACIÓN EN PLANTA: ${fecha} Hrs.\nPLANTA: ${planta}\n\nQuedamos atentos a confirmación y datos del conductor.\n\nSaludos Cordiales,\nOperaciones Atilson Cargo`;
+            } 
+            else if(tipo === 'preliminar') {
+                document.getElementById('tipoCorreoTxt').innerText = "Enviando Asignación Preliminar al Cliente";
+                to = "cliente1@empresa.cl; cliente2@empresa.cl; cliente3@empresa.cl; cliente4@empresa.cl";
+                cc = "operaciones@atilson.cl";
+                asunto = `ASIGNACIÓN LOGÍSTICA PRELIMINAR // BKG: ${booking}`;
+                cuerpo = `Estimado Cliente, buenos días:\n\nLe enviamos los datos del conductor preliminar asignado para su carga (Booking: ${booking}):\n\nConductor: ${conductor}\nRUT: ${rut}\nTeléfono: ${telefono}\nPatente: ${patente}\nFecha Presentación: ${fecha}\n\n*Nota: El número de contenedor y sello serán enviados en la asignación completa cuando la unidad sea retirada del depósito y verificada.*\n\nSaludos Cordiales,\nOperaciones Atilson Cargo`;
+            } 
+            else if(tipo === 'completa') {
+                if(!contenedor || contenedor.includes('PENDIENTE') || !sello || sello.includes('PENDIENTE')) {
+                    Swal.fire({
+                        title: 'Datos Faltantes', 
+                        html: '<p class="small text-muted">No puedes enviar la asignación completa porque el <strong>N° de Contenedor</strong> o el <strong>Sello</strong> no han sido registrados en la base de datos.</p>',
+                        icon: 'error',
+                        confirmButtonColor: '#0f172a'
+                    });
+                    return;
+                }
+                
+                document.getElementById('tipoCorreoTxt').innerText = "Enviando Asignación Completa al Cliente";
+                to = "cliente1@empresa.cl; cliente2@empresa.cl; cliente3@empresa.cl; cliente4@empresa.cl";
+                cc = "operaciones@atilson.cl";
+                asunto = `ASIGNACIÓN LOGÍSTICA COMPLETA // BKG: ${booking} // CONTENEDOR: ${contenedor}`;
+                cuerpo = `Estimado Cliente, buenos días:\n\nLe enviamos la asignación completa y definitiva para su carga:\n\nBooking: ${booking}\nContenedor: ${contenedor}\nSello: ${sello}\n\nDatos de Transporte:\nConductor: ${conductor}\nRUT: ${rut}\nTeléfono: ${telefono}\nPatente: ${patente}\nFecha Presentación: ${fecha}\n\nQuedamos atentos ante cualquier duda.\n\nSaludos Cordiales,\nOperaciones Atilson Cargo`;
+            }
+            
+            document.getElementById('emailToPreview').value = to;
+            document.getElementById('emailCcPreview').value = cc;
+            document.getElementById('emailAsuntoPreview').value = asunto;
+            document.getElementById('emailCuerpoPreview').value = cuerpo;
+            
+            document.getElementById('solicitudOpId').value = idOp;
+            document.getElementById('tipoCorreoHidden').value = tipo;
+            
+            // Cerramos el modal de edición si estaba abierto para evitar solapamiento visual
+            var editModalEl = document.getElementById('modalEditTransporte');
+            if(editModalEl.classList.contains('show')) {
+                var editModalObj = bootstrap.Modal.getInstance(editModalEl);
+                if(editModalObj) editModalObj.hide();
+            }
+
+            setTimeout(() => {
+                new bootstrap.Modal(document.getElementById('modalGeneradorCorreos')).show();
+            }, 300);
+        };
+
+        window.copiarCorreoPreview = function() {
+            let to = document.getElementById('emailToPreview').value;
+            let cc = document.getElementById('emailCcPreview').value;
+            let asunto = document.getElementById('emailAsuntoPreview').value;
+            let cuerpo = document.getElementById('emailCuerpoPreview').value;
+            
+            const textoCompleto = `PARA: ${to}\nCC: ${cc}\nASUNTO: ${asunto}\n\n${cuerpo}`;
+            navigator.clipboard.writeText(textoCompleto).then(() => {
+                Swal.fire({ icon: 'success', title: '¡Copiado!', text: 'El correo está listo en tu portapapeles para Outlook/Gmail.', timer: 2000, showConfirmButton: false });
+            });
+        };
+
+        // BUSCADOR EN TIEMPO REAL TABLA
+        document.getElementById('liveSearchInput').addEventListener('keyup', function() {
+            let filter = this.value.toLowerCase();
+            let rows = document.querySelectorAll('.op-row');
+            
+            rows.forEach(row => {
+                let text = row.innerText.toLowerCase();
+                if(text.indexOf(filter) > -1) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+}

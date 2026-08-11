@@ -1,0 +1,583 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Portal.IndexModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Portal de Clientes - Atilson Cargo";
+    string nombreUsuario = User.Identity?.Name ?? "Cliente";
+    string inicialUsuario = nombreUsuario.Substring(0, 1).ToUpper();
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+            :root {
+                --atilson-dark: #0f172a;
+                --atilson-darker: #020617;
+                --atilson-accent: #0ea5e9;
+                --atilson-purple: #6d2d9e;
+                --atilson-purple-soft: #f3e8ff;
+                --dark-text: #1e293b;
+                --text-muted: #64748b;
+                --text-light: #94a3b8;
+                --bg-body: #f8fafc;
+                --bg-surface: #ffffff;
+                --border-color: #e2e8f0;
+                --sidebar-width: 260px;
+                --sidebar-collapsed-width: 84px;
+            }
+
+            body {
+                font-family: 'Inter', sans-serif;
+                background-color: var(--bg-body);
+                color: var(--dark-text);
+                overflow-x: hidden;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            /* SIDEBAR */
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                width: var(--sidebar-width);
+                background-color: var(--atilson-dark);
+                color: white;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                box-shadow: 4px 0 25px rgba(0,0,0,0.15);
+                z-index: 1000;
+                transition: width 0.3s ease;
+                border-right: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .sidebar-header {
+                height: 85px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .brand-logo-link {
+                display: flex;
+                align-items: center;
+                text-decoration: none;
+            }
+
+            .logo-blanco {
+                max-height: 35px;
+                filter: brightness(0) invert(1);
+                transition: transform 0.3s ease;
+            }
+
+                .logo-blanco:hover {
+                    transform: scale(1.05);
+                }
+
+            .minimal-toggle {
+                background: transparent;
+                border: none;
+                color: rgba(255,255,255,0.4);
+                font-size: 26px;
+                cursor: pointer;
+                padding: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: color 0.2s;
+            }
+
+                .minimal-toggle:hover {
+                    color: white;
+                }
+
+            .sidebar-nav {
+                list-style: none;
+                padding: 25px 15px;
+                margin: 0;
+                flex-grow: 1;
+                overflow-y: auto;
+                scrollbar-width: none;
+            }
+
+                .sidebar-nav::-webkit-scrollbar {
+                    display: none;
+                }
+
+            .nav-link {
+                color: rgba(255,255,255,0.6);
+                padding: 12px 18px;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                text-decoration: none;
+                transition: all 0.2s;
+                border-left: 3px solid transparent;
+                white-space: nowrap;
+                margin-bottom: 4px;
+                cursor: pointer;
+            }
+
+                .nav-link i {
+                    font-size: 18px;
+                    margin-right: 14px;
+                    min-width: 20px;
+                    text-align: center;
+                }
+
+                .nav-link:hover {
+                    background-color: rgba(255,255,255,0.05);
+                    color: white;
+                    transform: translateX(4px);
+                }
+
+                .nav-link.active {
+                    background-color: rgba(109, 45, 158, 0.15);
+                    color: #d8b4fe;
+                    border-left-color: #d8b4fe;
+                }
+
+            .sidebar-title {
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                color: rgba(255,255,255,0.3);
+                padding-left: 18px;
+                margin-top: 25px !important;
+                margin-bottom: 10px !important;
+            }
+
+            .sidebar-user-footer {
+                padding: 24px 20px;
+                border-top: 1px solid rgba(255,255,255,0.05);
+                background-color: var(--atilson-darker);
+                overflow: hidden;
+            }
+
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(135deg, var(--atilson-purple) 0%, #3b1459 100%);
+                border-radius: 10px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-weight: 900;
+                margin-right: 14px;
+                color: #fff;
+                flex-shrink: 0;
+            }
+
+            .btn-logout {
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.1);
+                color: rgba(255,255,255,0.6);
+                padding: 10px;
+                width: 100%;
+                border-radius: 8px;
+                font-size: 11px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-top: 15px;
+                transition: all 0.2s;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+            }
+
+                .btn-logout:hover {
+                    background: rgba(239, 68, 68, 0.1);
+                    border-color: rgba(239, 68, 68, 0.5);
+                    color: #fca5a5;
+                }
+
+            /* MAIN CONTENT */
+            .main-content {
+                margin-left: var(--sidebar-width);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                transition: margin-left 0.3s ease;
+            }
+
+            .topbar {
+                height: 85px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 40px;
+                border-bottom: 1px solid var(--border-soft);
+                background: rgba(255,255,255,0.9);
+                backdrop-filter: blur(8px);
+                position: sticky;
+                top: 0;
+                z-index: 990;
+            }
+
+            .page-title {
+                font-size: 22px;
+                font-weight: 900;
+                color: var(--dark-text);
+                margin: 0;
+                letter-spacing: -0.5px;
+            }
+
+            .content-area {
+                padding: 30px 40px;
+                flex-grow: 1;
+            }
+
+            .portal-view {
+                display: none;
+                animation: fadeUp 0.4s ease forwards;
+            }
+
+                .portal-view.active {
+                    display: block;
+                }
+            @@keyframes fadeUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* COMPONENTES */
+            .saas-card {
+                background: #ffffff;
+                border: 1px solid var(--border-soft);
+                border-radius: 12px;
+                padding: 25px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+                margin-bottom: 25px;
+                transition: box-shadow 0.3s;
+            }
+
+                .saas-card:hover {
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.04);
+                }
+
+            .kpi-icon {
+                width: 50px;
+                height: 50px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 22px;
+            }
+
+                .kpi-icon.blue {
+                    background: #e0f2fe;
+                    color: #0284c7;
+                }
+
+                .kpi-icon.purple {
+                    background: var(--atilson-purple-soft);
+                    color: var(--atilson-purple);
+                }
+
+                .kpi-icon.green {
+                    background: #dcfce7;
+                    color: #16a34a;
+                }
+
+            .data-label {
+                font-size: 10px;
+                font-weight: 800;
+                color: #94a3b8;
+                text-transform: uppercase;
+                display: block;
+                margin-bottom: 4px;
+                letter-spacing: 0.5px;
+            }
+
+            .search-input-group {
+                position: relative;
+                flex-grow: 1;
+                max-width: 600px;
+                display: flex;
+            }
+
+                .search-input-group i {
+                    position: absolute;
+                    left: 15px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: var(--text-muted);
+                    z-index: 10;
+                }
+
+            .tracking-input {
+                font-size: 14px;
+                font-weight: 700;
+                text-transform: uppercase;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px 0 0 8px;
+                padding: 12px 15px 12px 40px;
+                color: var(--dark-text);
+                width: 100%;
+                outline: none;
+            }
+
+                .tracking-input:focus {
+                    border-color: var(--atilson-purple);
+                    box-shadow: inset 0 0 0 1px var(--atilson-purple);
+                }
+
+            .btn-track {
+                background: var(--atilson-dark);
+                color: white;
+                border: none;
+                border-radius: 0 8px 8px 0;
+                padding: 0 25px;
+                font-weight: 700;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                transition: background 0.2s;
+            }
+
+                .btn-track:hover {
+                    background: var(--atilson-purple);
+                }
+
+            .table-exec {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                margin-bottom: 0;
+            }
+
+                .table-exec th {
+                    background: var(--bg-soft);
+                    color: var(--text-muted);
+                    font-size: 10px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    padding: 14px 20px;
+                    border-bottom: 1px solid var(--border-soft);
+                    font-weight: 800;
+                }
+
+                .table-exec td {
+                    padding: 14px 20px;
+                    border-bottom: 1px solid #f1f5f9;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: var(--dark-text);
+                    vertical-align: middle;
+                }
+
+                .table-exec tbody tr.clickable {
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                }
+
+                    .table-exec tbody tr.clickable:hover td {
+                        background-color: var(--bg-soft);
+                    }
+
+            .status-badge {
+                font-size: 9px;
+                font-weight: 800;
+                padding: 4px 8px;
+                border-radius: 4px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                display: inline-block;
+                border: 1px solid transparent;
+            }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/Portal" class="brand-logo-link"><img src="~/img/Atilson.png" alt="Atilson" class="logo-blanco" /></a>
+        </div>
+
+        <ul class="sidebar-nav">
+            <li class="nav-item sidebar-title">Mi Espacio</li>
+            <li><a class="nav-link active" data-target="view-dashboard" onclick="navTo('view-dashboard', 'Panel Principal')"><i class="bi bi-grid-1x2-fill"></i> <span class="nav-text">Dashboard</span></a></li>
+
+            <li><a class="nav-link" href="/Portal/Tracking"><i class="bi bi-crosshair"></i> <span class="nav-text">Localizar Carga</span></a></li>
+
+            <li class="nav-item sidebar-title">Gestión Operativa</li>
+            <li><a class="nav-link" data-target="view-embarques" onclick="navTo('view-embarques', 'Historial de Embarques')"><i class="bi bi-box-seam-fill"></i> <span class="nav-text">Mis Embarques</span></a></li>
+            <li><a class="nav-link" data-target="view-documentos" onclick="navTo('view-documentos', 'Documentación y BLs')"><i class="bi bi-file-earmark-pdf-fill"></i> <span class="nav-text">Documentos BL</span></a></li>
+        </ul>
+
+        <div class="sidebar-user-footer">
+            <div class="d-flex align-items-center">
+                <div class="user-avatar" title="@nombreUsuario">@inicialUsuario</div>
+                <div class="user-info" style="line-height: 1.2;">
+                    <span class="d-block fw-bold" style="font-size: 13px; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@nombreUsuario</span>
+                    <span style="font-size: 10px; font-weight: 600; color: var(--atilson-accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@@Model.EmpresaCliente</span>
+                </div>
+            </div>
+            <form method="post" asp-page="/Logout" title="Cerrar Sesión">
+                <button type="submit" class="btn-logout"><span>Cerrar Sesión</span></button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2 class="page-title" id="pageTitle">Panel Principal</h2>
+        </header>
+
+        <div class="content-wrapper">
+            <div id="view-dashboard" class="portal-view active">
+                <div class="row align-items-center mb-4 pb-2 border-bottom border-soft">
+                    <div class="col-md-8">
+                        <h3 class="fw-black mb-1 text-dark" style="font-size: 22px; letter-spacing: -0.5px;">Resumen Operativo</h3>
+                        <p class="text-muted small m-0">Monitorea el estado general de tus reservas en tiempo real.</p>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4"><div class="saas-card m-0 d-flex align-items-center gap-3"><div class="kpi-icon purple"><i class="bi bi-activity"></i></div><div><h3 class="fw-black m-0 fs-3 text-dark">@Model.EmbarquesActivos</h3><span class="data-label m-0 mt-1">Operaciones Activas</span></div></div></div>
+                    <div class="col-md-4"><div class="saas-card m-0 d-flex align-items-center gap-3"><div class="kpi-icon blue"><i class="bi bi-water"></i></div><div><h3 class="fw-black m-0 fs-3 text-dark">@Model.EnTransito</h3><span class="data-label m-0 mt-1">Cargas en Tránsito</span></div></div></div>
+                    <div class="col-md-4"><div class="saas-card m-0 d-flex align-items-center gap-3"><div class="kpi-icon green"><i class="bi bi-check2-circle"></i></div><div><h3 class="fw-black m-0 fs-3 text-dark">@Model.Entregados</h3><span class="data-label m-0 mt-1">Entregas Completadas</span></div></div></div>
+                </div>
+
+                <div class="saas-card p-4 mb-4 bg-white">
+                    <h6 class="fw-bold mb-3" style="color: var(--atilson-dark); font-size: 14px;"><i class="bi bi-search text-muted me-1"></i> Búsqueda Rápida de Embarque</h6>
+                    <form method="get" action="/Portal/Tracking" class="d-flex">
+                        <div class="search-input-group w-100">
+                            <i class="bi bi-search"></i>
+                            <input type="text" name="BookingNumber" class="tracking-input" placeholder="Ingresa el N° de Booking o Referencia..." required autocomplete="off">
+                            <button class="search-btn btn-track" type="submit">Localizar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="saas-card p-0 overflow-hidden">
+                    <div class="p-4 border-bottom border-soft d-flex justify-content-between align-items-center bg-light">
+                        <h6 class="fw-bold m-0" style="color: var(--atilson-dark); font-size: 14px;">Movimientos Recientes</h6>
+                        <button class="btn btn-link text-decoration-none fw-bold p-0 text-muted" style="font-size: 12px;" onclick="navTo('view-embarques', 'Historial de Embarques')">Ver historial completo <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table-exec m-0">
+                            <thead>
+                                <tr><th>Ref / Booking</th><th>Ruta Logística</th><th>Últ. Actualización</th><th>Estado Actual</th><th class="text-end">Rastrear</th></tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.MisOperaciones.Any())
+                                {
+                                    foreach (var op in Model.MisOperaciones.Take(5))
+                                    {
+                                        var estadoFlow = (op.EstadoWorkflow ?? "EN PROCESO").ToUpper();
+                                        var estBg = "#f8fafc"; var estTxt = "#64748b"; var estBorder = "transparent";
+
+                                        if (estadoFlow.Contains("SOLICITADO") || estadoFlow.Contains("CONFIRMADO") || estadoFlow.Contains("ENVIO")) { estBg = "#fef3c7"; estTxt = "#d97706"; estBorder = "#fde68a"; }
+                                        else if (estadoFlow.Contains("EN RUTA") || estadoFlow.Contains("ENTREGADO")) { estBg = "#e0f2fe"; estTxt = "#0284c7"; estBorder = "#bae6fd"; }
+                                        else if (estadoFlow.Contains("EMBARCADO") || estadoFlow.Contains("ZARPE") || estadoFlow.Contains("PROXIMO")) { estBg = "#f3e8ff"; estTxt = "#7e22ce"; estBorder = "#e9d5ff"; }
+                                        else if (estadoFlow.Contains("ARRIBADO") || estadoFlow.Contains("FINALIZADO") || estadoFlow.Contains("RETIRADO")) { estBg = "#dcfce7"; estTxt = "#16a34a"; estBorder = "#bbf7d0"; }
+
+                                        <tr class="clickable" onclick="window.location.href='/Portal/Tracking?BookingNumber=@op.NumeroBooking'">
+                                            <td class="fw-bold text-dark">@op.NumeroBooking</td>
+                                            <td>@(op.IdPuertoOrigenNavigation?.NombrePuerto ?? "-") <i class="bi bi-arrow-right text-muted opacity-50 mx-1"></i> @(op.IdPuertoDestinoNavigation?.NombrePuerto ?? "-")</td>
+                                            <td class="text-muted">@(op.FechaModificacion?.ToString("dd MMM yyyy") ?? "-")</td>
+                                            <td><span class="status-badge" style="background-color: @estBg; color: @estTxt; border-color: @estBorder;">@estadoFlow</span></td>
+                                            <td class="text-end"><i class="bi bi-box-arrow-in-up-right text-muted fs-6"></i></td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr><td colspan="5" class="text-center py-5 text-muted fw-bold">No se registran operaciones recientes.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-embarques" class="portal-view">
+                <div class="saas-card p-0 overflow-hidden">
+                    <div class="p-4 border-bottom border-soft bg-white"><h6 class="fw-bold m-0" style="color: var(--atilson-dark); font-size: 14px;">Directorio de Embarques</h6></div>
+                    <div style="max-height: 600px; overflow-y: auto;">
+                        <table class="table-exec m-0">
+                            <thead><tr><th>Ref / Booking</th><th>Ruta Asignada</th><th>Fechas Estimadas</th><th>Estado General</th><th class="text-end">Rastrear</th></tr></thead>
+                            <tbody>
+                                @foreach (var op in Model.MisOperaciones)
+                                {
+                                    var estadoFlow = (op.EstadoWorkflow ?? "EN PROCESO").ToUpper();
+                                    var estBg = "#f8fafc"; var estTxt = "#64748b"; var estBorder = "transparent";
+                                    if (estadoFlow.Contains("SOLICITADO") || estadoFlow.Contains("CONFIRMADO") || estadoFlow.Contains("ENVIO")) { estBg = "#fef3c7"; estTxt = "#d97706"; estBorder = "#fde68a"; } else if (estadoFlow.Contains("EN RUTA") || estadoFlow.Contains("ENTREGADO")) { estBg = "#e0f2fe"; estTxt = "#0284c7"; estBorder = "#bae6fd"; } else if (estadoFlow.Contains("EMBARCADO") || estadoFlow.Contains("ZARPE") || estadoFlow.Contains("PROXIMO")) { estBg = "#f3e8ff"; estTxt = "#7e22ce"; estBorder = "#e9d5ff"; } else if (estadoFlow.Contains("ARRIBADO") || estadoFlow.Contains("FINALIZADO") || estadoFlow.Contains("RETIRADO")) { estBg = "#dcfce7"; estTxt = "#16a34a"; estBorder = "#bbf7d0"; }
+                                    <tr class="clickable" onclick="window.location.href='/Portal/Tracking?BookingNumber=@op.NumeroBooking'">
+                                        <td class="fw-bold text-dark">@op.NumeroBooking</td>
+                                        <td><span class="d-block fw-bold text-dark mb-1" style="font-size: 12px;">POL: @(op.IdPuertoOrigenNavigation?.NombrePuerto ?? "-")</span><span class="data-label m-0 text-muted">POD: @(op.IdPuertoDestinoNavigation?.NombrePuerto ?? "-")</span></td>
+                                        <td><span class="d-block fw-bold text-dark mb-1" style="font-size: 12px;">ETD: @(op.EtdPol?.ToString("dd/MM/yyyy") ?? "-")</span><span class="data-label m-0 text-muted">ETA: @(op.EtaPod?.ToString("dd/MM/yyyy") ?? "-")</span></td>
+                                        <td><span class="status-badge" style="background-color: @estBg; color: @estTxt; border-color: @estBorder;">@estadoFlow</span></td>
+                                        <td class="text-end"><i class="bi bi-box-arrow-in-up-right text-muted"></i></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-documentos" class="portal-view">
+                <div class="saas-card p-0 overflow-hidden">
+                    <div class="p-4 border-bottom border-soft bg-white"><h6 class="fw-bold m-0" style="color: var(--atilson-dark); font-size: 14px;">Repositorio Documental (BLs)</h6><p class="text-muted small m-0 mt-1">Accede a la documentación asociada a tus embarques finalizados.</p></div>
+                    <table class="table-exec m-0">
+                        <thead><tr><th>Ref / Booking</th><th>Destino (POD)</th><th>Documentos Adjuntos</th><th class="text-end">Descargar</th></tr></thead>
+                        <tbody>
+                            @foreach (var op in Model.MisOperaciones.Where(o => o.EstadoWorkflow != "SOLICITADO" && o.EstadoWorkflow != "CANCELADO").Take(10))
+                            {
+                                <tr>
+                                    <td class="fw-bold text-dark">@op.NumeroBooking</td>
+                                    <td>@(op.IdPuertoDestinoNavigation?.NombrePuerto ?? "-")</td>
+                                    <td><span class="badge bg-light text-dark border me-1 py-2"><i class="bi bi-file-earmark-text text-muted"></i> Matriz BL</span><span class="badge bg-light text-dark border py-2"><i class="bi bi-receipt text-muted"></i> HBL Final</span></td>
+                                    <td class="text-end"><button class="btn btn-sm btn-light border text-muted"><i class="bi bi-download"></i></button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        window.navTo = function(targetId, titleStr) {
+        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        let targetMenu = document.querySelector(`.nav-link[data-target="${targetId}"]`);
+        if(targetMenu) targetMenu.classList.add('active');
+
+        document.querySelectorAll('.portal-view').forEach(el => el.classList.remove('active'));
+        let targetView = document.getElementById(targetId);
+        if(targetView) targetView.classList.add('active');
+
+        if(titleStr) document.getElementById('pageTitle').innerText = titleStr;
+        };
+        });
+    </script>
+</body>
+</html>

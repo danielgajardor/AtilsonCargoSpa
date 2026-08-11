@@ -1,0 +1,996 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Operaciones.DocumentalModel
+@{
+    ViewData["Title"] = "Panel Documental";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* PALETA MINIMALISTA Y CORPORATIVA ATILSON */
+    :root {
+    --atilson-dark: #0f172a;
+    --atilson-purple: #6d2d9e;
+    --txt-main: #1e293b;
+    --txt-muted: #64748b;
+    --border-soft: #e2e8f0;
+    --bg-main: #ffffff;
+    --bg-soft: #f8fafc;
+    }
+
+    body {
+    background-color: #f1f5f9;
+    font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    /* NAVEGACIÓN Y FILTROS */
+    .workspace-nav {
+    background: var(--bg-main);
+    padding: 5px;
+    border-radius: 8px;
+    border: 1px solid var(--border-soft);
+    display: inline-flex;
+    gap: 2px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .ws-btn {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    border-radius: 6px;
+    color: var(--txt-muted);
+    text-decoration: none;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    letter-spacing: 0.5px;
+    }
+
+    .ws-btn:hover {
+    background: var(--bg-soft);
+    color: var(--txt-main);
+    }
+
+    .ws-btn.active {
+    background: var(--atilson-dark);
+    color: #ffffff;
+    box-shadow: 0 2px 5px rgba(15, 23, 42, 0.15);
+    }
+
+    .ws-btn i {
+    font-size: 14px;
+    margin-right: 6px;
+    }
+
+    .filter-panel {
+    background: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    }
+
+    .search-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-grow: 1;
+    max-width: 500px;
+    position: relative;
+    }
+
+    .search-wrapper i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--txt-muted);
+    font-size: 16px;
+    }
+
+    .search-input {
+    border: 1px solid var(--border-soft);
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    outline: none;
+    color: var(--txt-main);
+    background: var(--bg-soft);
+    border-radius: 20px;
+    padding: 10px 15px 10px 40px;
+    transition: all 0.2s;
+    }
+
+    .search-input:focus {
+    border-color: var(--atilson-dark);
+    background: var(--bg-main);
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+    }
+
+    /* TABLA PRINCIPAL */
+    .table-container {
+    background: var(--bg-main);
+    border: 1px solid var(--border-soft);
+    overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    position: relative;
+    }
+
+    .table-exec {
+    min-width: 1200px;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 0;
+    }
+
+    .table-exec th {
+    background: var(--bg-soft);
+    color: var(--txt-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    font-weight: 800;
+    white-space: nowrap;
+    }
+
+    .table-exec td {
+    padding: 14px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 12px;
+    vertical-align: top;
+    transition: background-color 0.15s ease;
+    cursor: pointer;
+    }
+
+    /* COLUMNA FIJA (STICKY) */
+    .table-exec th:first-child, .table-exec td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    border-right: 1px solid var(--border-soft);
+    }
+
+    .table-exec th:first-child {
+    background-color: #f8fafc;
+    z-index: 3;
+    }
+
+    .row-clickable td:first-child {
+    background-color: #ffffff;
+    }
+
+    .row-clickable:hover td:first-child {
+    background-color: var(--bg-soft);
+    }
+
+    .row-sub td:first-child {
+    background-color: #fafcfd;
+    }
+
+    .row-sub:hover td:first-child {
+    background-color: #f1f5f9;
+    }
+
+    .row-clickable:hover td {
+    background-color: var(--bg-soft);
+    }
+
+    .row-sub td {
+    background-color: #fafcfd;
+    border-bottom: 1px solid #f1f5f9;
+    position: relative;
+    }
+
+    .row-sub:hover td {
+    background-color: #f1f5f9;
+    }
+
+    .booking-txt {
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: -0.3px;
+    color: var(--atilson-dark);
+    }
+
+    .tree-icon {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-right: 6px;
+    }
+
+    .data-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    mt-1;
+    }
+
+    .data-primary {
+    font-weight: 700;
+    color: var(--txt-main);
+    font-size: 13px;
+    line-height: 1.2;
+    }
+
+    .data-secondary {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--txt-muted);
+    }
+
+    .badge-mov {
+    font-size: 9px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    }
+
+    .mov-expo {
+    color: #0284c7;
+    background-color: #e0f2fe;
+    border-color: #bae6fd;
+    }
+
+    .mov-impo {
+    color: #16a34a;
+    background-color: #dcfce7;
+    border-color: #bbf7d0;
+    }
+
+    .servicio-bw {
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    width: fit-content;
+    }
+
+    /* ESTADOS DOCUMENTALES */
+    .doc-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    }
+
+    .doc-status.ok {
+    background-color: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    }
+
+    .doc-status.pending {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    }
+
+    .doc-status.warning {
+    background-color: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    }
+
+    .btn-action-dot {
+    color: #94a3b8;
+    font-size: 18px;
+    padding: 5px;
+    text-decoration: none;
+    border-radius: 50%;
+    transition: all 0.2s;
+    }
+
+    .btn-action-dot:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    }
+
+    /* =========================================================
+    NUEVO MEGA MODAL: ULTRA COMPACTO, ESTABLE Y CON AIRE
+    ========================================================= */
+    .modal-mega-wide {
+    max-width: 1000px;
+    width: 95%;
+    margin: 1.5rem auto;
+    }
+
+    .modal-minimal .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+    overflow: hidden;
+    background-color: var(--bg-soft);
+    }
+
+    .modal-minimal .modal-body {
+    padding: 20px 25px;
+    }
+
+    .atilson-banner {
+    background: linear-gradient(135deg, #0f172a 0%, #6d2d9e 100%);
+    color: #fff;
+    border-radius: 10px;
+    padding: 15px 25px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px -2px rgba(109, 45, 158, 0.25);
+    position: relative;
+    }
+
+    .banner-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 4px;
+    }
+
+    .banner-input {
+    border: 1px solid transparent;
+    background: transparent;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: 100%;
+    pointer-events: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: 0.2s;
+    margin-left: -10px;
+    }
+
+    .edit-mode .banner-input {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.4);
+    pointer-events: auto;
+    }
+
+    .edit-mode .banner-input:focus {
+    background: rgba(255,255,255,0.25);
+    outline: none;
+    border-color: #fff;
+    }
+
+    .edit-mode select.banner-input {
+    appearance: auto;
+    }
+
+    .edit-mode select.banner-input option {
+    color: #0f172a;
+    background: #fff;
+    }
+
+    .btn-edit-banner {
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+    }
+
+    .btn-edit-banner:hover {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+    }
+
+    /* TABS MODERNOS TIPO FOLDER */
+    .modern-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 0;
+    padding-bottom: 0;
+    padding-left: 10px;
+    }
+
+    .modern-tabs .nav-link {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 30px;
+    border-radius: 8px 8px 0 0;
+    color: var(--txt-muted);
+    background: #f1f5f9;
+    border: 1px solid var(--border-soft);
+    transition: all 0.2s ease;
+    margin-bottom: -1px;
+    box-shadow: none;
+    }
+
+    .modern-tabs .nav-link:hover {
+    color: var(--atilson-purple);
+    background: #e2e8f0;
+    }
+
+    .modern-tabs .nav-link.active {
+    background: #ffffff !important;
+    color: var(--atilson-purple) !important;
+    border-color: var(--border-soft) var(--border-soft) #ffffff var(--border-soft) !important;
+    border-top: 3px solid var(--atilson-purple) !important;
+    z-index: 2;
+    position: relative;
+    }
+
+    /* SECCIONES DE FORMULARIO CON ALTURA FIJA PARA NO BRINCAR */
+    .modal-minimal .tab-content {
+    position: relative;
+    }
+
+    .modal-minimal .tab-content .form-section {
+    background: #ffffff;
+    border: 1px solid var(--border-soft);
+    border-radius: 0 8px 8px 8px;
+    padding: 20px 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    min-height: 310px;
+    }
+
+    .section-title-sm {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--atilson-dark);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    }
+
+    .mod-label {
+    font-size: 9px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    display: block;
+    }
+
+    .inline-field {
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    width: 100%;
+    transition: all 0.2s;
+    pointer-events: none;
+    margin-left: -10px;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    }
+
+    .edit-mode .inline-field {
+    border-color: var(--border-soft);
+    background: #f8fafc;
+    pointer-events: auto;
+    }
+
+    .edit-mode select.inline-field {
+    appearance: auto;
+    }
+
+    .edit-mode .inline-field:focus {
+    border-color: var(--atilson-purple);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(109, 45, 158, 0.1);
+    background: #fff;
+    }
+
+    .btn-edit-inline {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--atilson-purple);
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: 0.2s;
+    }
+
+    .btn-edit-inline:hover {
+    background: #f3e8ff;
+    border-color: #d8b4fe;
+    }
+
+    .erp-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--txt-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: block;
+    }
+
+    .erp-input {
+    font-size: 13px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    background-color: var(--bg-soft);
+    padding: 8px 12px;
+    width: 100%;
+    color: var(--txt-main);
+    font-weight: 600;
+    transition: all 0.2s;
+    }
+
+    .erp-input:focus {
+    border-color: var(--atilson-purple);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(109, 45, 158, 0.1);
+    outline: none;
+    }
+</style>
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 900; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">WORKSPACE: DOCUMENTAL</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Control de matrices, DUS, BL y tramitación aduanera</p>
+        </div>
+    </div>
+
+    <div class="workspace-nav">
+        <a asp-page="./Index" class="ws-btn"><i class="bi bi-grid-fill"></i> Main Board</a>
+        <a asp-page="./Maritimo" class="ws-btn"><i class="bi bi-water"></i> Marítimo</a>
+        <a asp-page="./Transporte" class="ws-btn"><i class="bi bi-truck"></i> Transporte</a>
+        <a asp-page="./Documental" class="ws-btn active"><i class="bi bi-file-earmark-check"></i> Documental</a>
+        <a asp-page="./Almacenamiento" class="ws-btn"><i class="bi bi-boxes"></i> Almacenamiento</a>
+    </div>
+
+    <div class="filter-panel">
+        <form method="get" class="d-flex w-100 align-items-center gap-3 m-0 p-0">
+            <div class="search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" asp-for="SearchString" class="search-input" id="liveSearchInput" placeholder="Buscar por Booking, DUS, Agencia o Cliente..." autocomplete="off">
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-dark btn-sm fw-bold px-4 rounded-pill" style="background-color: var(--atilson-dark);">Buscar</button>
+                @if (!string.IsNullOrEmpty(Model.SearchString))
+                {
+                    <a asp-page="./Documental" class="btn btn-light btn-sm border fw-bold px-3 rounded-pill text-muted">Limpiar</a>
+                }
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container shadow-sm">
+        <table class="table table-exec" id="opsTable">
+            <thead>
+                <tr>
+                    <th style="min-width: 180px;">Booking / Contenedores</th>
+                    <th>Cliente</th>
+                    <th>Razón Social</th>
+                    <th>Agencia Aduana / DUS</th>
+                    <th>Estado DUS</th>
+                    <th>Matriz y Visados</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Operaciones != null && Model.Operaciones.Any())
+                {
+                    @foreach (var item in Model.Operaciones)
+                    {
+                        var nombreCortoCliente = !string.IsNullOrWhiteSpace(item.IdClienteNavigation?.NombreCliente) ? item.IdClienteNavigation.NombreCliente : item.IdClienteNavigation?.RazonSocial;
+                        var razonSocial = item.IdClienteNavigation?.RazonSocial ?? "-";
+
+                        int valServicio = item.IdTipoServicio.GetValueOrDefault(0);
+                        bool esExpo = valServicio <= 7;
+
+                        var nombreServicio = valServicio switch
+                        {
+                            1 => "Expo Integral",
+                            2 => "Expo Mar. + Terr.",
+                            3 => "Expo Mar. + Doc.",
+                            4 => "Expo Terr. + Doc.",
+                            5 => "Expo Solo Marítimo",
+                            6 => "Expo Solo Terrestre",
+                            7 => "Expo Documental",
+                            8 => "Impo Integral",
+                            9 => "Impo Mar. + Terr.",
+                            10 => "Impo Mar. + Doc.",
+                            11 => "Impo Terr. + Doc.",
+                            12 => "Impo Solo Mar.",
+                            13 => "Impo Solo Terr.",
+                            14 => "Impo Solo Doc.",
+                            _ => "Por Confirmar"
+                        };
+
+                        var doc = item.OperacionesDocumentales?.FirstOrDefault();
+
+                        // Lógicas del negocio Documental
+                        var estadoDoc = doc?.EstadoDocumental ?? "PENDIENTE";
+                        bool matrizOk = doc?.MatrizPresentada == true;
+                        bool guiavOk = doc?.GuiaVisado == true;
+                        bool extOk = doc?.ExtensionDocumental == true;
+
+                        string FormatearTipoPuro(string tipoConte, int? tipoCarga)
+                        {
+                            int tcNum = tipoCarga.GetValueOrDefault(1);
+                            string tc = (tipoConte ?? "40' HC").Replace("'", "").Replace("REEFER", "RF");
+                            if (!tc.Contains("DRY") && !tc.Contains("RF")) tc += (tcNum == 2 ? " RF" : " DRY");
+                            return tc;
+                        }
+
+                        <tr class="row-clickable op-row" onclick="abrirModalDocumental(this, event)" data-id="@item.Id"
+                            data-booking="@item.NumeroBooking"
+                            data-cliente="@nombreCortoCliente"
+                            data-servicio="@nombreServicio"
+                            data-ncntr="@item.NumeroContenedor"
+                            data-tcntr="@FormatearTipoPuro(item.TipoContenedor, item.IdTipoCarga)"
+                            data-commodity="@item.Commodity"
+                            data-agencia="@doc?.AgenciaAduana"
+                            data-dus="@doc?.DusDin"
+                            data-estadodoc="@estadoDoc"
+                            data-matriz="@(matrizOk ? "1" : "0")"
+                            data-guia="@(guiavOk ? "1" : "0")"
+                            data-ext="@(extOk ? "1" : "0")">
+
+                            <td>
+                                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-light">
+                                    <span class="data-primary" style="font-size: 14px; margin-bottom: 0;">@item.NumeroBooking</span>
+                                    <span class="badge-mov @(esExpo ? "mov-expo" : "mov-impo")" style="margin-top:2px;">@(esExpo ? "EXPO" : "IMPO")</span>
+                                </div>
+                                <div class="d-flex flex-column gap-1 mt-1">
+                                    <div class="d-flex align-items-center gap-2 bg-light border border-light rounded px-2 py-1" style="width: fit-content;">
+                                        <span style="font-size: 10px; font-weight: 700; color: #64748b;"><i class="bi bi-box me-1"></i> @FormatearTipoPuro(item.TipoContenedor, item.IdTipoCarga)</span>
+                                        @if (!string.IsNullOrWhiteSpace(item.NumeroContenedor))
+                                        {
+                                            <span style="font-size: 11px; font-weight: 800; color: var(--atilson-dark);">@item.NumeroContenedor</span>
+                                        }
+                                    </div>
+                                    @if (item.Unidadestecnicas != null && item.Unidadestecnicas.Any())
+                                    {
+                                        foreach (var u in item.Unidadestecnicas)
+                                        {
+                                            <div class="d-flex align-items-center gap-2 bg-light border border-light rounded px-2 py-1" style="width: fit-content;">
+                                                <span style="font-size: 10px; font-weight: 700; color: #64748b;"><i class="bi bi-box me-1"></i> @FormatearTipoPuro(u.TipoContenedor, u.IdTipoCarga)</span>
+                                                @if (!string.IsNullOrWhiteSpace(u.NroContenedor))
+                                                {
+                                                    <span style="font-size: 11px; font-weight: 800; color: var(--atilson-dark);">@u.NroContenedor</span>
+                                                }
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </td>
+
+                            <td class="align-middle">
+                                <span class="data-primary d-block text-truncate" style="max-width: 140px;" title="@nombreCortoCliente">@nombreCortoCliente</span>
+                            </td>
+                            <td class="align-middle">
+                                <span class="data-secondary text-muted d-block text-truncate" style="max-width: 140px;" title="@razonSocial">@razonSocial</span>
+                            </td>
+
+                            <td class="align-middle">
+                                <div class="data-group">
+                                    <span class="data-primary text-wrap text-uppercase" style="color: #16a34a; max-width: 180px;"><i class="bi bi-bank me-1"></i> @(string.IsNullOrWhiteSpace(doc?.AgenciaAduana) ? "Sin Agencia Asignada" : doc.AgenciaAduana)</span>
+                                    <span class="data-secondary fw-bold mt-1">DUS/DIN: <span class="@(string.IsNullOrWhiteSpace(doc?.DusDin) ? "text-danger" : "text-dark border border-secondary border-opacity-25 px-1 rounded bg-light")">@(string.IsNullOrWhiteSpace(doc?.DusDin) ? "Pendiente" : doc.DusDin.ToUpper())</span></span>
+                                </div>
+                            </td>
+
+                            <td class="align-middle">
+                                <div class="mb-1 mt-1">
+                                    @if (estadoDoc == "APROBADO")
+                                    {
+                                        <div class="doc-status ok"><i class="bi bi-check-circle-fill"></i> LEGALIZADO</div>
+                                    }
+                                    else if (estadoDoc == "EN_PROCESO")
+                                    {
+                                        <div class="doc-status warning"><i class="bi bi-arrow-repeat"></i> EN TRÁMITE</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="doc-status pending"><i class="bi bi-shield-exclamation"></i> PENDIENTE</div>
+                                    }
+                                </div>
+                            </td>
+
+                            <td class="align-middle">
+                                <div class="d-flex flex-column gap-1 mt-1">
+                                    @if (matrizOk)
+                                    {
+                                        <span style="font-size: 10px; font-weight: 700; color: #059669;"><i class="bi bi-check-circle-fill me-1"></i> V°B° Matriz Enviado</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="font-size: 10px; font-weight: 700; color: #dc2626;"><i class="bi bi-x-circle me-1"></i> Matriz Pendiente</span>
+                                    }
+
+                                    @if (guiavOk)
+                                    {
+                                        <span style="font-size: 10px; font-weight: 700; color: var(--atilson-dark);"><i class="bi bi-file-earmark-text-fill me-1"></i> Guía Visado Emitida</span>
+                                    }
+
+                                    @if (extOk)
+                                    {
+                                        <span style="font-size: 10px; font-weight: 700; color: #d97706;"><i class="bi bi-clock-history me-1"></i> Requiere Extensión</span>
+                                    }
+                                </div>
+                            </td>
+
+                            <td class="text-end pe-4 align-middle actions-cell">
+                                <div class="dropdown mt-1">
+                                    <a href="#" class="btn-action-dot" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></a>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="font-size: 13px;">
+                                        <li><a class="dropdown-item py-2 fw-bold text-dark" asp-page="./Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square me-2 text-muted"></i> Edición Completa ERP</a></li>
+                                        <li><a class="dropdown-item py-2 fw-bold text-success" asp-page="./Archivos" asp-route-id="@item.Id"><i class="bi bi-folder2-open me-2"></i> Gestor Documental (Bóveda)</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item py-2" asp-page="./ReservaPdf" asp-route-id="@item.Id" target="_blank"><i class="bi bi-file-earmark-pdf me-2" style="color: var(--atilson-dark);"></i> PDF Reserva Original</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+
+                            <!-- Plantilla Oculta -->
+                            <template class="documental-template d-none"></template>
+                        </tr>
+
+                        @if (item.Unidadestecnicas != null && item.Unidadestecnicas.Any())
+                        {
+                            @foreach (var u in item.Unidadestecnicas)
+                            {
+                                <tr class="row-sub op-row" onclick="abrirModalDocumental(this, event)" data-id="@item.Id"
+                                    data-booking="@item.NumeroBooking"
+                                    data-cliente="@nombreCortoCliente"
+                                    data-servicio="@nombreServicio"
+                                    data-ncntr="@u.NroContenedor"
+                                    data-tcntr="@FormatearTipoPuro(u.TipoContenedor, u.IdTipoCarga)"
+                                    data-commodity="@item.Commodity"
+                                    data-agencia="@doc?.AgenciaAduana"
+                                    data-dus="@doc?.DusDin"
+                                    data-estadodoc="@estadoDoc"
+                                    data-matriz="@(matrizOk ? "1" : "0")"
+                                    data-guia="@(guiavOk ? "1" : "0")"
+                                    data-ext="@(extOk ? "1" : "0")">
+
+                                    <td>
+                                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-light">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="bi bi-arrow-return-right tree-icon"></i>
+                                                <span class="booking-txt text-muted" style="font-size: 13px;">@item.NumeroBooking</span>
+                                            </div>
+                                            <span class="badge-mov @(esExpo ? "mov-expo" : "mov-impo")" style="margin-top:2px;">@(esExpo ? "EXPO" : "IMPO")</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2 bg-light border border-light rounded px-2 py-1" style="width: fit-content; margin-left: 24px;">
+                                            <span style="font-size: 10px; font-weight: 700; color: #64748b;"><i class="bi bi-box me-1"></i> @FormatearTipoPuro(u.TipoContenedor, u.IdTipoCarga)</span>
+                                            @if (!string.IsNullOrWhiteSpace(u.NroContenedor))
+                                            {
+                                                <span style="font-size: 11px; font-weight: 800; color: var(--atilson-dark);">@u.NroContenedor</span>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <td class="align-middle opacity-75">
+                                        <span class="data-primary text-muted d-block text-truncate" style="max-width: 140px;" title="@nombreCortoCliente">@nombreCortoCliente</span>
+                                    </td>
+                                    <td class="align-middle opacity-75">
+                                        <span class="data-secondary text-muted d-block text-truncate" style="max-width: 140px;" title="@razonSocial">@razonSocial</span>
+                                    </td>
+
+                                    <td class="align-middle opacity-75">
+                                        <div class="data-group">
+                                            <span class="data-primary text-wrap text-uppercase text-muted" style="max-width: 180px;"><i class="bi bi-bank me-1"></i> @(string.IsNullOrWhiteSpace(doc?.AgenciaAduana) ? "Sin Agencia Asignada" : doc.AgenciaAduana)</span>
+                                            <span class="data-secondary fw-bold mt-1">DUS/DIN: <span class="@(string.IsNullOrWhiteSpace(doc?.DusDin) ? "text-danger" : "text-muted border border-secondary border-opacity-25 px-1 rounded bg-light")">@(string.IsNullOrWhiteSpace(doc?.DusDin) ? "Pendiente" : doc.DusDin.ToUpper())</span></span>
+                                        </div>
+                                    </td>
+
+                                    <td class="align-middle opacity-75">
+                                        <div class="mb-1 mt-1">
+                                            @if (estadoDoc == "APROBADO")
+                                            {
+                                                <div class="doc-status ok"><i class="bi bi-check-circle-fill"></i> LEGALIZADO</div>
+                                            }
+                                            else if (estadoDoc == "EN_PROCESO")
+                                            {
+                                                <div class="doc-status warning"><i class="bi bi-arrow-repeat"></i> EN TRÁMITE</div>
+                                            }
+                                            else
+                                            {
+                                                <div class="doc-status pending"><i class="bi bi-shield-exclamation"></i> PENDIENTE</div>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <td class="align-middle opacity-75">
+                                        <div class="d-flex flex-column gap-1 mt-1">
+                                            @if (matrizOk)
+                                            {
+                                                <span style="font-size: 10px; font-weight: 700; color: #059669;"><i class="bi bi-check-circle-fill me-1"></i> V°B° Matriz Enviado</span>
+                                            }
+                                            else
+                                            {
+                                                <span style="font-size: 10px; font-weight: 700; color: #dc2626;"><i class="bi bi-x-circle me-1"></i> Matriz Pendiente</span>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <td class="text-end pe-4 align-middle actions-cell opacity-75">
+                                        <div class="dropdown mt-1">
+                                            <a href="#" class="btn-action-dot" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></a>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="font-size: 13px;">
+                                                <li><a class="dropdown-item py-2 fw-bold text-dark" asp-page="./Edit" asp-route-id="@item.Id"><i class="bi bi-pencil-square me-2 text-muted"></i> Edición Completa ERP</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+
+                                    <template class="documental-template d-none">
+                                        <!-- Esto forzará la misma lógica desde la fila secundaria -->
+                                    </template>
+                                </tr>
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="bi bi-file-earmark-check text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <p class="text-muted fw-bold mt-3 mb-0" style="font-size: 14px;">No hay trámites documentales activos bajo estos filtros.</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MEGA MODAL UNIFICADO PARA DOCUMENTAL -->
+<div class="modal fade modal-minimal" id="modalEditDocumental" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-mega-wide">
+        <div class="modal-content border-0" style="position: relative;">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" style="position: absolute; right: 20px; top: 20px; z-index: 1055; background-color: #fff; border-radius: 50%; padding: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);"></button>
+
+            <form method="post" asp-page-handler="UpdateDocumental">
+                <input type="hidden" name="id" id="mod_IdOperacion" />
+
+                <div class="modal-body" id="mod_DynamicBody">
+                    <!-- El contenido del modal se inyecta por JS para mantenerlo limpio -->
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function abrirModalDocumental(trElement, event) {
+        if (event.target.closest('.actions-cell')) return;
+
+        const d = trElement.dataset;
+        document.getElementById('mod_IdOperacion').value = d.id;
+
+        // Generación de la plantilla HTML dinámica con los datos
+        let htmlForm = `
+        <div class="atilson-banner mb-3">
+        <div class="fw-bold text-uppercase" style="font-size: 13px; letter-spacing: 1px;">
+        <i class="bi bi-file-earmark-check-fill me-2"></i> GESTIÓN ADUANERA | BKG: ${d.booking}
+        </div>
+        </div>
+
+        <div class="row g-3">
+        <div class="col-lg-12">
+        <div class="form-section shadow-sm h-100" style="padding: 25px;">
+        <div class="section-title-sm mb-3">
+        <span><i class="bi bi-bank me-1"></i> Entidades y Estado Aduanal</span>
+        </div>
+        <div class="row g-2">
+        <div class="col-md-4">
+        <label class="erp-label">Agencia de Aduana</label>
+        <input type="text" name="ModAgencia" class="form-control erp-input text-uppercase" value="${d.agencia !== 'undefined' ? d.agencia : ''}" placeholder="Ej: Agencia Browne" />
+        </div>
+        <div class="col-md-4">
+        <label class="erp-label text-primary">DUS / DIN N°</label>
+        <input type="text" name="ModDus" class="form-control erp-input text-uppercase border-primary" value="${d.dus !== 'undefined' ? d.dus : ''}" placeholder="N° Documento" />
+        </div>
+        <div class="col-md-4">
+        <label class="erp-label text-danger">Estado Trámite Aduanal</label>
+        <select name="ModEstadoDoc" class="form-select erp-input fw-bold bg-success bg-opacity-10 text-dark">
+        <option value="PENDIENTE" ${d.estadodoc === 'PENDIENTE' ? 'selected' : ''}>Pendiente</option>
+        <option value="EN_PROCESO" ${d.estadodoc === 'EN_PROCESO' ? 'selected' : ''}>En Proceso / Trámite</option>
+        <option value="APROBADO" ${d.estadodoc === 'APROBADO' ? 'selected' : ''}>Aprobado / Legalizado</option>
+        </select>
+        </div>
+
+        <div class="col-md-12"><hr class="border-light m-0 my-3"></div>
+        <h6 class="erp-label text-dark mb-1"><i class="bi bi-ui-checks me-1"></i> Control Interno Documental</h6>
+
+        <div class="col-md-4">
+        <div class="form-check form-switch mt-2 p-3 bg-light rounded border">
+        <input class="form-check-input" type="checkbox" name="ModMatriz" value="true" ${d.matriz === '1' ? 'checked' : ''} style="transform: scale(1.3); cursor: pointer; margin-left:-1.5em;">
+        <label class="form-check-label fw-bold text-success ms-3" style="font-size: 11px;">MATRIZ PRESENTADA / V°B°</label>
+        </div>
+        </div>
+        <div class="col-md-4">
+        <div class="form-check form-switch mt-2 p-3 bg-light rounded border">
+        <input class="form-check-input" type="checkbox" name="ModVisado" value="true" ${d.guia === '1' ? 'checked' : ''} style="transform: scale(1.3); cursor: pointer; margin-left:-1.5em;">
+        <label class="form-check-label fw-bold ms-3" style="font-size: 11px; color: var(--atilson-dark);">SOLICITUD GUÍA DE VISADO</label>
+        </div>
+        </div>
+        <div class="col-md-4">
+        <div class="form-check form-switch mt-2 p-3 bg-light rounded border">
+        <input class="form-check-input" type="checkbox" name="ModExtension" value="true" ${d.ext === '1' ? 'checked' : ''} style="transform: scale(1.3); cursor: pointer; margin-left:-1.5em;">
+        <label class="form-check-label fw-bold text-danger ms-3" style="font-size: 11px;">EXTENSIÓN DOCUMENTAL</label>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+
+        <div class="mt-4 pt-2 text-end d-flex justify-content-between align-items-center border-top border-light">
+        <span class="text-muted" style="font-size: 11px;"><i class="bi bi-info-circle me-1"></i> Para subir archivos (Print Matriz, Guías), ingrese a la <b style="color:var(--atilson-dark);">Gestor Documental (Bóveda)</b> desde los 3 puntitos.</span>
+        <div>
+        <button type="button" class="btn btn-light border fw-bold text-muted me-2 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-dark fw-bold px-4 btn-sm shadow-sm"><i class="bi bi-save me-1"></i> Guardar Gestión</button>
+        </div>
+        </div>
+        `;
+
+        document.getElementById('mod_DynamicBody').innerHTML = htmlForm;
+        var myModal = new bootstrap.Modal(document.getElementById('modalEditDocumental'));
+        myModal.show();
+        }
+
+        // BUSCADOR EN TIEMPO REAL
+        document.getElementById('liveSearchInput').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll('.op-row');
+
+        rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        if(text.indexOf(filter) > -1) {
+        row.style.display = '';
+        } else {
+        row.style.display = 'none';
+        }
+        });
+        });
+    </script>
+}

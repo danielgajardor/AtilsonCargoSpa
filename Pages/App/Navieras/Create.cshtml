@@ -1,0 +1,94 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.App.Navieras.CreateModel
+@{
+    ViewData["Title"] = "Nueva Naviera";
+}
+
+<style>
+    :root {
+        --txt-main: #0f172a;    
+        --txt-muted: #64748b;   
+        --border-soft: #e2e8f0; 
+        --bg-main: #ffffff;     
+        --bg-soft: #f8fafc;     
+        --atilson-dark: #2c1b4d;
+    }
+
+    body { background-color: #f1f5f9; }
+
+    .module-card { background: var(--bg-main); border: 1px solid var(--border-soft); border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); margin-bottom: 25px; overflow: hidden; }
+    .module-header { background-color: var(--bg-soft); padding: 16px 25px; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; gap: 10px; }
+    .module-header h6 { font-size: 13px; font-weight: 800; color: var(--txt-main); text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
+    .module-body { padding: 30px; }
+
+    .form-group-custom { margin-bottom: 1.5rem; }
+    .input-label { font-size: 10px; font-weight: 800; color: var(--txt-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    .input-label.required::after { content: " *"; color: #e11d48; font-size: 12px; }
+
+    .input-modern { font-size: 13px; font-weight: 500; color: var(--txt-main); background-color: transparent; border: none; border-bottom: 1px solid #cbd5e1; border-radius: 0; padding: 8px 0; transition: all 0.3s ease; width: 100%; }
+    .input-modern:focus { outline: none; border-bottom-color: var(--atilson-dark); box-shadow: 0 1px 0 0 var(--atilson-dark); }
+    .input-modern::placeholder { color: #94a3b8; font-weight: 400; }
+
+    /* Estilo especial para el selector de color */
+    .color-picker-custom { height: 40px; padding: 0 !important; cursor: pointer; border: 1px solid var(--border-soft); border-radius: 6px; overflow: hidden; }
+    .color-picker-custom::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-picker-custom::-webkit-color-swatch { border: none; }
+
+    .btn-submit-pro { background: linear-gradient(135deg, var(--atilson-dark) 0%, #1a102e 100%); color: white; border: none; border-radius: 6px; padding: 14px 30px; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 6px rgba(44, 27, 77, 0.2); transition: all 0.2s ease; }
+    .btn-submit-pro:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(44, 27, 77, 0.3); color: white; }
+</style>
+
+<div class="container-fluid py-4" style="max-width: 800px;">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 800; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">Registrar Naviera</h1>
+            <p class="text-muted small m-0 fw-medium">Ingrese la línea marítima para disponibilizarla en el cotizador.</p>
+        </div>
+        <a asp-page="Index" class="btn btn-white border bg-white shadow-sm text-muted fw-bold px-4" style="font-size: 11px; letter-spacing: 0.5px;">CANCELAR Y VOLVER</a>
+    </div>
+
+    <form method="post">
+        
+        <div class="module-card" style="border-top: 4px solid var(--atilson-dark);">
+            <div class="module-header">
+                <i class="bi bi-water text-muted fs-5"></i>
+                <h6>1. Configuración de la Compañía</h6>
+            </div>
+            <div class="module-body">
+                <div class="row gx-5">
+                    <div class="col-md-8 form-group-custom">
+                        <label class="input-label required">Nombre de la Naviera o Servicio</label>
+                        <input asp-for="Naviera.NombreNaviera" class="input-modern" placeholder="Ej: MSC, Maersk, Hapag-Lloyd..." required />
+                    </div>
+                    <div class="col-md-4 form-group-custom">
+                        <label class="input-label">Color Distintivo (Marca)</label>
+                        <input type="color" asp-for="Naviera.ColorRepresentativo" class="input-modern color-picker-custom w-100" title="Seleccione el color corporativo" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-card" style="border-top: 4px solid #3b82f6;">
+            <div class="module-header bg-white">
+                <i class="bi bi-link-45deg text-primary fs-5"></i>
+                <h6>2. Integración de Seguimiento</h6>
+            </div>
+            <div class="module-body bg-light bg-opacity-25">
+                <div class="row gx-5 mb-0">
+                    <div class="col-md-12 form-group-custom mb-0">
+                        <label class="input-label">URL de Tracking Oficial (B/L o Contenedor)</label>
+                        <input asp-for="Naviera.LinkTracking" class="input-modern" placeholder="https://www.maersk.com/tracking/" />
+                        <div class="form-text text-muted mt-2" style="font-size: 11px;"><i class="bi bi-info-circle me-1"></i> Este enlace se utilizará como acceso rápido en los paneles de control de los operadores.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 mb-5 text-end">
+            <button type="submit" class="btn-submit-pro">
+                <i class="bi bi-hdd-fill me-2"></i> Guardar Naviera
+            </button>
+        </div>
+    </form>
+</div>

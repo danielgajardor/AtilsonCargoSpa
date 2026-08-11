@@ -1,0 +1,1413 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.IndexModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atilson Cargo - Digital Freight Forwarder</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+            :root {
+                /* PALETA CORPORATIVA ATILSON PURA */
+                --atilson-purple: #6d2d9e;
+                --atilson-purple-light: #9b51e0;
+                --atilson-purple-dark: #3b1459;
+                --bg-light: #ffffff;
+                --bg-soft: #f8fafc;
+                --bg-input: #f1f5f9;
+                --bg-dark: #0f172a;
+                --bg-deep: #020617;
+                --text-dark: #0f172a;
+                --text-muted: #64748b;
+                --text-light: #f8fafc;
+                --border-soft: #e2e8f0;
+            }
+
+            body {
+                font-family: 'Inter', sans-serif;
+                background-color: var(--bg-light);
+                color: var(--text-dark);
+                overflow-x: hidden;
+                scroll-behavior: smooth;
+            }
+
+            /* ========================================================= */
+            /* TOP BAR ELEGANTE (LUMINOSA Y SERIA CON TICKER)            */
+            /* ========================================================= */
+            .top-bar {
+                background-color: var(--bg-deep);
+                color: var(--text-muted);
+                font-size: 11px;
+                font-weight: 700;
+                padding: 10px 0;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                position: relative;
+                z-index: 1001;
+            }
+
+            .social-links a {
+                color: var(--text-muted);
+                font-size: 14px;
+                margin-right: 15px;
+                transition: color 0.3s;
+            }
+
+                .social-links a:hover {
+                    color: var(--atilson-purple-light);
+                }
+
+            .contact-top-links a {
+                color: var(--text-muted);
+                text-decoration: none;
+                margin-left: 20px;
+                transition: color 0.3s;
+            }
+
+                .contact-top-links a:hover {
+                    color: #ffffff;
+                }
+
+            .contact-top-links i {
+                color: var(--atilson-purple-light);
+                margin-right: 6px;
+                font-size: 13px;
+            }
+
+            .ticker-divider {
+                width: 1px;
+                height: 14px;
+                background-color: rgba(255,255,255,0.15);
+                margin: 0 15px;
+            }
+
+            .news-ticker-text {
+                font-weight: 500;
+                transition: opacity 0.4s ease;
+                text-decoration: none;
+            }
+
+                .news-ticker-text:hover {
+                    color: var(--atilson-purple-light) !important;
+                }
+
+            /* ========================================================= */
+            /* NAVBAR GLASSMORPHISM                                      */
+            /* ========================================================= */
+            .navbar-atilson {
+                position: absolute;
+                width: 100%;
+                top: 40px;
+                z-index: 1000;
+                padding: 20px 0;
+                transition: all 0.4s ease;
+                background: transparent;
+            }
+
+                .navbar-atilson.scrolled {
+                    position: fixed;
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    padding: 12px 0;
+                    top: 0;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+                    border-bottom: 1px solid var(--border-soft);
+                }
+
+            .navbar-logo {
+                max-height: 45px;
+                filter: brightness(0) invert(1);
+                transition: all 0.3s ease;
+            }
+
+            .navbar-atilson.scrolled .navbar-logo {
+                filter: none;
+            }
+
+            .navbar-logo:hover {
+                transform: scale(1.02);
+            }
+
+            .nav-link {
+                color: #ffffff !important;
+                font-weight: 700;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin: 0 15px;
+                transition: all 0.3s;
+            }
+
+            .navbar-atilson.scrolled .nav-link {
+                color: var(--text-dark) !important;
+            }
+
+                .nav-link:hover, .navbar-atilson.scrolled .nav-link:hover {
+                    color: var(--atilson-purple) !important;
+                }
+
+            .btn-portal {
+                background-color: var(--atilson-purple);
+                color: white !important;
+                font-weight: 800;
+                font-size: 12px;
+                padding: 10px 24px;
+                border-radius: 50px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                border: none;
+                box-shadow: 0 4px 15px rgba(109, 45, 158, 0.3);
+            }
+
+                .btn-portal:hover {
+                    background-color: var(--atilson-purple-dark);
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(109, 45, 158, 0.4);
+                }
+
+            /* ========================================================= */
+            /* HERO CARRUSEL Y WIDGET FIJO                               */
+            /* ========================================================= */
+            .hero-section {
+                position: relative;
+                height: 100vh;
+                min-height: 750px;
+            }
+
+            .hero-carousel, .carousel-inner, .carousel-item {
+                height: 100%;
+                width: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+
+            .carousel-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .carousel-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(109, 45, 158, 0.65) 100%);
+                z-index: 1;
+            }
+
+            .carousel-caption-custom {
+                position: absolute;
+                top: 40%;
+                transform: translateY(-50%);
+                left: 8%;
+                z-index: 2;
+                text-align: left;
+                max-width: 650px;
+            }
+
+            .hero-tag {
+                background: var(--atilson-purple);
+                color: #ffffff;
+                padding: 6px 15px;
+                border-radius: 20px;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                display: inline-block;
+                margin-bottom: 20px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            }
+
+            .hero-title {
+                font-size: 64px;
+                font-weight: 900;
+                line-height: 1.1;
+                letter-spacing: -2px;
+                margin-bottom: 20px;
+                color: #ffffff;
+                text-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            }
+
+                .hero-title span {
+                    color: #d8b4fe;
+                }
+
+            .hero-subtitle {
+                font-size: 18px;
+                font-weight: 400;
+                color: #f1f5f9;
+                line-height: 1.6;
+                margin-bottom: 40px;
+                text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            }
+
+            /* WIDGET FIJO SOBRE EL CARRUSEL */
+            .static-tracking-container {
+                position: absolute;
+                bottom: 20%;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 5;
+                width: 100%;
+                max-width: 650px;
+                padding: 0 20px;
+            }
+
+            .tracking-widget {
+                background: #ffffff;
+                padding: 8px;
+                border-radius: 12px;
+                display: flex;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+                width: 100%;
+            }
+
+            .tracking-input {
+                background: transparent;
+                border: none;
+                color: var(--text-dark);
+                padding: 15px 20px;
+                width: 100%;
+                outline: none;
+                font-weight: 600;
+                font-size: 15px;
+            }
+
+                .tracking-input::placeholder {
+                    color: var(--text-muted);
+                    font-weight: 400;
+                }
+
+            .tracking-btn {
+                background: var(--atilson-purple);
+                color: white;
+                border: none;
+                padding: 0 35px;
+                border-radius: 8px;
+                font-weight: 800;
+                text-transform: uppercase;
+                font-size: 13px;
+                transition: all 0.3s;
+            }
+
+                .tracking-btn:hover {
+                    background: var(--atilson-purple-dark);
+                }
+
+            /* ========================================================= */
+            /* BARRA E-SERVICES (BLANCA IMPECABLE)                       */
+            /* ========================================================= */
+            .e-services-bar {
+                background: #ffffff;
+                border-bottom: 1px solid var(--border-soft);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+                position: relative;
+                z-index: 10;
+                margin-top: -5px;
+            }
+
+            .service-tab {
+                padding: 25px 20px;
+                text-align: center;
+                color: var(--text-dark);
+                text-decoration: none;
+                font-weight: 800;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                transition: all 0.3s;
+                border-right: 1px solid var(--border-soft);
+                display: block;
+            }
+
+                .service-tab:first-child {
+                    border-left: 1px solid var(--border-soft);
+                }
+
+                .service-tab:hover {
+                    color: var(--atilson-purple);
+                    background: var(--bg-soft);
+                }
+
+                .service-tab i {
+                    display: block;
+                    font-size: 28px;
+                    margin-bottom: 8px;
+                    color: var(--atilson-purple);
+                    transition: transform 0.3s;
+                }
+
+                .service-tab:hover i {
+                    transform: translateY(-3px);
+                }
+
+            /* ========================================================= */
+            /* SECCIONES (SERVICIOS)                                     */
+            /* ========================================================= */
+            .section-padding {
+                padding: 100px 0;
+            }
+
+            .section-header {
+                text-align: center;
+                margin-bottom: 70px;
+            }
+
+            .section-tag {
+                color: var(--atilson-purple);
+                font-size: 11px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            .section-title {
+                font-size: 42px;
+                font-weight: 900;
+                letter-spacing: -1.5px;
+                margin-bottom: 15px;
+                color: var(--text-dark);
+            }
+
+            .service-card {
+                background: #ffffff;
+                border: 1px solid var(--border-soft);
+                border-radius: 16px;
+                padding: 45px 35px;
+                transition: all 0.4s ease;
+                height: 100%;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            }
+
+                .service-card::before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 4px;
+                    background: var(--atilson-purple);
+                    transform: scaleX(0);
+                    transform-origin: left;
+                    transition: transform 0.4s ease;
+                }
+
+                .service-card:hover {
+                    transform: translateY(-10px);
+                    box-shadow: 0 20px 40px rgba(109, 45, 158, 0.1);
+                    border-color: var(--atilson-purple-light);
+                }
+
+                    .service-card:hover::before {
+                        transform: scaleX(1);
+                    }
+
+            .service-icon {
+                font-size: 45px;
+                color: var(--atilson-purple);
+                margin-bottom: 25px;
+                display: inline-block;
+                transition: transform 0.3s;
+            }
+
+            .service-card:hover .service-icon {
+                transform: scale(1.05);
+            }
+
+            .service-card h3 {
+                font-size: 20px;
+                font-weight: 800;
+                margin-bottom: 15px;
+                color: var(--text-dark);
+            }
+
+            .service-card p {
+                font-size: 14px;
+                color: var(--text-muted);
+                line-height: 1.7;
+                margin: 0;
+            }
+
+            /* ========================================================= */
+            /* MARKET & NEWS (FONDO GRIS SUAVE)                          */
+            /* ========================================================= */
+            .news-section {
+                background-color: var(--bg-soft);
+                border-top: 1px solid var(--border-soft);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .news-slider-wrapper {
+                position: relative;
+                width: 100%;
+                padding: 20px 0;
+                overflow: hidden;
+            }
+
+            .news-slider-track {
+                display: flex;
+                gap: 24px;
+                transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+                will-change: transform;
+            }
+
+            .slider-btn {
+                position: absolute;
+                top: 45%;
+                transform: translateY(-50%);
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: #ffffff;
+                border: 1px solid var(--border-soft);
+                color: var(--atilson-purple);
+                font-size: 22px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+                z-index: 10;
+                transition: all 0.3s ease;
+            }
+
+                .slider-btn:hover {
+                    background: var(--atilson-purple);
+                    color: #fff;
+                    transform: translateY(-50%) scale(1.1);
+                    box-shadow: 0 10px 25px rgba(109, 45, 158, 0.3);
+                }
+
+            .slider-btn-prev {
+                left: 15px;
+            }
+
+            .slider-btn-next {
+                right: 15px;
+            }
+
+            .news-card {
+                min-width: 380px;
+                max-width: 380px;
+                flex: 0 0 auto;
+                background: #ffffff;
+                border: 1px solid var(--border-soft);
+                border-radius: 16px;
+                height: 100%;
+                transition: all 0.4s ease;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 10px 20px rgba(15, 23, 42, 0.03);
+            }
+
+                .news-card:hover {
+                    transform: translateY(-8px);
+                    box-shadow: 0 20px 40px rgba(109, 45, 158, 0.15);
+                    border-color: var(--atilson-purple-light);
+                }
+
+            .img-wrapper {
+                overflow: hidden;
+                border-top-left-radius: 16px;
+                border-top-right-radius: 16px;
+                height: 220px;
+                background-color: var(--border-soft);
+            }
+
+            .news-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.6s ease;
+            }
+
+            .news-card:hover .news-img {
+                transform: scale(1.08);
+            }
+
+            .news-content {
+                padding: 30px;
+                display: flex;
+                flex-direction: column;
+                flex-grow: 1;
+                background: #fff;
+                border-bottom-left-radius: 16px;
+                border-bottom-right-radius: 16px;
+            }
+
+            .news-date {
+                font-size: 11px;
+                color: var(--atilson-purple);
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 12px;
+            }
+
+            .news-title {
+                font-size: 18px;
+                font-weight: 800;
+                margin-bottom: 12px;
+                line-height: 1.4;
+                color: var(--text-dark);
+            }
+
+            .news-desc {
+                font-size: 13px;
+                color: var(--text-muted);
+                line-height: 1.6;
+                margin-bottom: 20px;
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .news-link {
+                margin-top: auto;
+                font-size: 12px;
+                font-weight: 800;
+                color: var(--atilson-purple);
+                text-decoration: none;
+                text-transform: uppercase;
+                display: inline-flex;
+                align-items: center;
+                transition: all 0.2s;
+            }
+
+                .news-link i {
+                    margin-left: 8px;
+                    transition: margin 0.2s;
+                }
+
+                .news-link:hover {
+                    color: var(--atilson-purple-dark);
+                }
+
+                    .news-link:hover i {
+                        margin-left: 15px;
+                    }
+
+            @@media (max-width: 768px) {
+                .news-card {
+                    min-width: 300px;
+                    max-width: 300px;
+                }
+
+                .slider-btn {
+                    display: none;
+                }
+
+                .news-slider-wrapper {
+                    overflow-x: auto;
+                    scroll-snap-type: x mandatory;
+                    padding: 10px 20px;
+                }
+
+                .news-slider-track {
+                    scroll-snap-align: start;
+                    transition: none;
+                }
+
+                .hero-title {
+                    font-size: 42px;
+                }
+
+                .static-tracking-container {
+                    bottom: 10%;
+                }
+            }
+
+            /* ========================================================= */
+            /* RED GLOBAL (CONTRASTE OSCURO)                             */
+            /* ========================================================= */
+            .global-section {
+                padding: 120px 0;
+                background-color: var(--bg-dark);
+                position: relative;
+                color: white;
+                overflow: hidden;
+                border-top: 1px solid rgba(255,255,255,0.02);
+            }
+
+            .map-container {
+                width: 100%;
+                height: 100%;
+                background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                opacity: 0.05;
+                filter: invert(1);
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 0;
+            }
+
+            .global-content {
+                position: relative;
+                z-index: 1;
+            }
+
+                .global-content .section-title {
+                    color: #ffffff;
+                }
+
+            /* ========================================================= */
+            /* CONTACTO (FORMULARIO ALTO CONTRASTE)                      */
+            /* ========================================================= */
+            .contact-section {
+                background-color: var(--bg-light);
+                border-top: 1px solid var(--border-soft);
+            }
+
+            .contact-card {
+                background: #ffffff;
+                padding: 50px;
+                border-radius: 20px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+                border: 1px solid var(--border-soft);
+            }
+
+            .contact-icon-box {
+                width: 50px;
+                height: 50px;
+                border-radius: 12px;
+                background: rgba(109, 45, 158, 0.1);
+                color: var(--atilson-purple);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 22px;
+            }
+
+            .form-control-custom {
+                background: var(--bg-input);
+                border: 1px solid var(--border-soft);
+                color: var(--text-dark);
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: 500;
+                font-size: 14px;
+                transition: all 0.3s;
+            }
+
+                .form-control-custom:focus {
+                    border-color: var(--atilson-purple);
+                    box-shadow: 0 0 0 3px rgba(109, 45, 158, 0.15);
+                    background: #ffffff;
+                    outline: none;
+                }
+
+                .form-control-custom::placeholder {
+                    color: var(--text-muted);
+                }
+
+            .btn-submit {
+                background: var(--atilson-purple);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-weight: 800;
+                padding: 15px;
+                width: 100%;
+                transition: all 0.3s;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+                .btn-submit:hover {
+                    background: var(--atilson-purple-dark);
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 20px rgba(109, 45, 158, 0.3);
+                }
+
+            /* ========================================================= */
+            /* FOOTER CORPORATIVO                                        */
+            /* ========================================================= */
+            .footer-area {
+                background-color: var(--bg-deep);
+                padding: 80px 0 30px;
+                border-top: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .footer-logo {
+                max-height: 45px;
+                filter: brightness(0) invert(1);
+                margin-bottom: 25px;
+                opacity: 0.9;
+            }
+
+            .footer-title {
+                color: #fff;
+                font-size: 14px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 25px;
+            }
+
+            .footer-text {
+                color: #cbd5e1;
+                font-size: 13px;
+                line-height: 1.8;
+                opacity: 0.9;
+            }
+
+            .footer-link {
+                color: #cbd5e1;
+                text-decoration: none;
+                display: block;
+                margin-bottom: 12px;
+                font-size: 13px;
+                transition: all 0.3s;
+                opacity: 0.9;
+            }
+
+                .footer-link:hover {
+                    color: #fff;
+                    padding-left: 5px;
+                    opacity: 1;
+                }
+
+            .footer-icon {
+                color: var(--atilson-purple-light);
+                margin-right: 8px;
+                font-size: 14px;
+            }
+
+            /* BOTÓN WHATSAPP IA (SERIO) */
+            .wapp-float {
+                position: fixed;
+                width: 60px;
+                height: 60px;
+                bottom: 40px;
+                right: 40px;
+                background-color: #25d366;
+                color: #fff;
+                border-radius: 50px;
+                text-align: center;
+                font-size: 30px;
+                box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+                z-index: 9999;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                animation: pulse-wapp 2s infinite;
+            }
+
+                .wapp-float:hover {
+                    background-color: #128c7e;
+                    color: #fff;
+                    transform: scale(1.1);
+                }
+
+            .wapp-tooltip {
+                position: absolute;
+                right: 75px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: white;
+                color: var(--text-dark);
+                padding: 10px 18px;
+                border-radius: 8px;
+                font-size: 12px;
+                font-weight: 800;
+                white-space: nowrap;
+                letter-spacing: 0.5px;
+                box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+                opacity: 0;
+                pointer-events: none;
+                transition: all 0.3s ease;
+                border: 1px solid var(--border-soft);
+            }
+
+                .wapp-tooltip::after {
+                    content: '';
+                    position: absolute;
+                    right: -6px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    border-width: 6px 0 6px 6px;
+                    border-style: solid;
+                    border-color: transparent transparent transparent white;
+                }
+
+            .wapp-float:hover .wapp-tooltip {
+                opacity: 1;
+                right: 80px;
+            }
+
+            @@keyframes pulse-wapp {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5);
+                }
+
+                70% {
+                    box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+                }
+
+                100% {
+                    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+                }
+            }
+
+            .reveal {
+                opacity: 0;
+                transform: translateY(30px);
+                transition: all 0.8s ease-out;
+            }
+
+                .reveal.active {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar d-none d-lg-block">
+        <div class="container d-flex justify-content-between align-items-center">
+
+            <div class="social-links d-flex align-items-center">
+                <span class="me-3" style="color: #64748b;">Redes:</span>
+                <a href="https://www.linkedin.com/company/atilson-cargo/?originalSubdomain=cl" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                <a href="#" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>
+                <a href="#" target="_blank" title="Facebook"><i class="bi bi-facebook"></i></a>
+            </div>
+
+            <div class="d-flex align-items-center flex-grow-1 justify-content-center mx-3" style="font-size: 11px;">
+                <div class="d-flex align-items-center" title="Tipo de Cambio Banco Central">
+                    <span class="text-muted me-2"><i class="bi bi-graph-up-arrow"></i></span>
+                    <span style="color: var(--atilson-purple-light);" class="me-1">UF:</span> <span id="top-uf" class="text-white me-3">...</span>
+                    <span style="color: var(--atilson-purple-light);" class="me-1">USD:</span> <span id="top-usd" class="text-white me-3">...</span>
+                    <span style="color: var(--atilson-purple-light);" class="me-1">EUR:</span> <span id="top-eur" class="text-white">...</span>
+                </div>
+
+                <div class="ticker-divider"></div>
+
+                <div class="d-flex align-items-center text-truncate" style="max-width: 400px;" title="Última Noticia">
+                    <i class="bi bi-newspaper text-muted me-2"></i>
+                    <a href="#noticias" id="top-news-ticker" class="text-white news-ticker-text text-truncate">Sincronizando feed en vivo...</a>
+                </div>
+            </div>
+
+            <div class="contact-top-links d-flex align-items-center">
+                <a href="mailto:contacto@atilson.com"><i class="bi bi-envelope-fill"></i> contacto@atilson.com</a>
+                <a href="tel:+56900000000"><i class="bi bi-telephone-fill"></i> +56 9 0000 0000</a>
+            </div>
+
+        </div>
+    </div>
+
+    <nav class="navbar-atilson" id="navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="#" class="navbar-brand">
+                <img src="~/img/Atilson.png" alt="Atilson Cargo" class="navbar-logo" id="logo-img" asp-append-version="true" />
+            </a>
+            <div class="d-none d-lg-flex align-items-center">
+                <a href="#servicios" class="nav-link">Servicios</a>
+                <a href="#noticias" class="nav-link">Market Insights</a>
+                <a href="#global" class="nav-link">Red Global</a>
+                <a href="#contacto" class="nav-link">Contacto</a>
+            </div>
+            <a href="/Login" class="btn-portal"><i class="bi bi-shield-lock me-2"></i> Portal ERP</a>
+        </div>
+    </nav>
+
+    <!-- SECCIÓN HERO -->
+    <section class="hero-section">
+
+        <!-- Carrusel que rota títulos e imágenes -->
+        <div id="heroCarousel" class="carousel slide carousel-fade hero-carousel" data-bs-ride="carousel" data-bs-pause="false">
+            <div class="carousel-inner h-100">
+                <div class="carousel-item active h-100" data-bs-interval="5000">
+                    <img src="https://images.unsplash.com/photo-1494412651409-8963ce7935a7?auto=format&fit=crop&w=1920&q=80" class="carousel-image" alt="Global Logistics">
+                    <div class="carousel-overlay"></div>
+                    <div class="container h-100">
+                        <div class="carousel-caption-custom">
+                            <span class="hero-tag">Digital Freight Forwarder</span>
+                            <h1 class="hero-title">El futuro de la <span>logística global</span> en tus manos.</h1>
+                            <p class="hero-subtitle">Especialistas en comercio internacional. Visibilidad, tecnología y control absoluto sobre tus embarques marítimos y terrestres.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item h-100" data-bs-interval="5000">
+                    <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80" class="carousel-image" alt="Transporte Terrestre">
+                    <div class="carousel-overlay"></div>
+                    <div class="container h-100">
+                        <div class="carousel-caption-custom">
+                            <span class="hero-tag">Logística Terrestre</span>
+                            <h1 class="hero-title">Del puerto a tu puerta, <span>sin escalas.</span></h1>
+                            <p class="hero-subtitle">Nuestra red de transportistas certificados garantiza que tu carga llegue a tiempo, monitoreada por GPS en cada kilómetro de la ruta.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item h-100" data-bs-interval="5000">
+                    <!-- Imagen corregida para que cargue perfectamente -->
+                    <img src="https://images.unsplash.com/photo-1616156027751-fc9a850fdc9b?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="carousel-image" alt="Tecnología ERP">
+                    <div class="carousel-overlay"></div>
+                    <div class="container h-100">
+                        <div class="carousel-caption-custom">
+                            <span class="hero-tag">Ecosistema Tecnológico</span>
+                            <h1 class="hero-title">Datos precisos, <span>decisiones exactas.</span></h1>
+                            <p class="hero-subtitle">Nuestros clientes operan sobre una plataforma ERP exclusiva. Trazabilidad 24/7, matrices documentales en línea y control financiero total.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
+        </div>
+
+        <!-- Widget FIJO, fuera del carrusel, para que no parpadee al cambiar la foto -->
+        <div class="static-tracking-container">
+            <div class="tracking-widget">
+                <input type="text" class="tracking-input" placeholder="Ingresa tu N° de Booking o BL para rastrear tu carga...">
+                <button class="tracking-btn">Rastrear</button>
+            </div>
+        </div>
+
+    </section>
+
+    <div class="e-services-bar d-none d-md-block">
+        <div class="container">
+            <div class="row g-0">
+                <a href="#contacto" class="col-3 service-tab reveal active">
+                    <i class="bi bi-calculator"></i> Cotizar Online
+                </a>
+                <a href="#servicios" class="col-3 service-tab reveal active" style="transition-delay: 0.1s;">
+                    <i class="bi bi-calendar3"></i> Nuestros Servicios
+                </a>
+                <a href="#noticias" class="col-3 service-tab reveal active" style="transition-delay: 0.2s;">
+                    <i class="bi bi-newspaper"></i> Noticias del Sector
+                </a>
+                <a href="/Login" class="col-3 service-tab reveal active" style="transition-delay: 0.3s;">
+                    <i class="bi bi-pc-display"></i> Acceso Portal Privado
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <section class="section-padding" id="servicios">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">Nuestra Experiencia</span>
+                <h2 class="section-title">Soluciones Logísticas Integrales</h2>
+                <p class="text-muted mx-auto" style="max-width: 600px;">Operamos en todos los modos de transporte bajo una única plataforma de gestión, brindando control total a tu cadena de suministro.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="service-card reveal">
+                        <i class="bi bi-water service-icon"></i>
+                        <h3>Flete Marítimo</h3>
+                        <p>Alianzas con las principales navieras globales. Manejo experto y dedicado de carga Dry y contenedores Reefer.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="service-card reveal" style="transition-delay: 0.1s;">
+                        <i class="bi bi-truck service-icon"></i>
+                        <h3>Logística Terrestre</h3>
+                        <p>Coordinación exacta desde depósitos a plantas. Control de stacking y late arrival completamente monitoreado.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="service-card reveal" style="transition-delay: 0.2s;">
+                        <i class="bi bi-shield-check service-icon"></i>
+                        <h3>Aduanas & Seguros</h3>
+                        <p>Tramitación ágil de documentación, DUS/DIN, matrices y pólizas de seguro para proteger tu patrimonio.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="service-card reveal" style="transition-delay: 0.3s;">
+                        <i class="bi bi-cpu service-icon"></i>
+                        <h3>Tecnología ERP</h3>
+                        <p>Acceso a nuestro portal de clientes para trazabilidad 24/7 de tus operaciones, hitos documentales y costos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding news-section" id="noticias">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-end mb-5 reveal">
+                <div>
+                    <span class="section-tag">Market Insights</span>
+                    <h2 class="section-title mb-0">Actualidad Marítima</h2>
+                </div>
+                <div class="d-none d-md-block">
+                    <a href="https://www.mundomaritimo.cl" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-4 py-2" style="font-size: 11px; font-weight: 800; letter-spacing: 1px;">PORTAL MUNDO MARÍTIMO <i class="bi bi-arrow-up-right ms-1"></i></a>
+                </div>
+            </div>
+
+            <div class="news-slider-wrapper reveal">
+                <button class="slider-btn slider-btn-prev" id="btn-prev-news"><i class="bi bi-chevron-left"></i></button>
+
+                <div class="news-slider-track" id="news-track">
+                    <div class="col-12 text-center py-5 w-100" id="news-loading">
+                        <div class="spinner-border" style="color: var(--atilson-purple); margin-bottom: 15px;" role="status"></div>
+                        <p class="text-muted small fw-bold text-uppercase" style="letter-spacing: 1px;">Sincronizando feed en vivo...</p>
+                    </div>
+                </div>
+
+                <button class="slider-btn slider-btn-next" id="btn-next-news"><i class="bi bi-chevron-right"></i></button>
+            </div>
+
+            <p class="text-center text-muted small mt-4 d-md-none"><i class="bi bi-arrows-expand"></i> Desliza para ver más</p>
+        </div>
+    </section>
+
+    <section class="global-section" id="global">
+        <div class="map-container"></div>
+        <div class="container global-content text-center reveal stats-box">
+            <i class="bi bi-globe-americas mb-4" style="font-size: 50px; color: var(--atilson-accent);"></i>
+            <h2 class="section-title text-white">Conectando Origen y Destino</h2>
+            <p class="mx-auto" style="max-width: 600px; font-size: 16px; line-height: 1.8; color: rgba(255,255,255,0.8);">
+                Desde San Antonio a Yantian, desde Valparaíso a Rotterdam. Nuestra red operativa no tiene fronteras. Manejamos transbordos y rutas directas con la precisión de un reloj suizo.
+            </p>
+            <div class="mt-5 d-flex justify-content-center gap-4 flex-wrap">
+                <div class="text-center">
+                    <h4 style="font-weight: 900; font-size: 42px; color: white;">+<span class="counter" data-target="50">0</span></h4>
+                    <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: var(--atilson-accent);">PUERTOS ACTIVOS</span>
+                </div>
+                <div class="d-none d-md-block" style="width: 1px; background: rgba(255,255,255,0.2);"></div>
+                <div class="text-center">
+                    <h4 style="font-weight: 900; font-size: 42px; color: white;"><span class="counter" data-target="24">0</span>/7</h4>
+                    <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: var(--atilson-accent);">MONITOREO CONTINUO</span>
+                </div>
+                <div class="d-none d-md-block" style="width: 1px; background: rgba(255,255,255,0.2);"></div>
+                <div class="text-center">
+                    <h4 style="font-weight: 900; font-size: 42px; color: white;"><span class="counter" data-target="100">0</span>%</h4>
+                    <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: var(--atilson-accent);">DIGITALIZADOS</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding contact-section" id="contacto">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-5 reveal">
+                    <span class="section-tag">Hablemos Hoy</span>
+                    <h2 class="section-title">¿Listo para optimizar tu logística?</h2>
+                    <p class="text-muted mb-5">Comunícate con nuestros expertos. Evaluaremos tus rutas actuales y te mostraremos cómo la tecnología de Atilson puede reducir tus costos operativos.</p>
+
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="contact-icon-box me-4"><i class="bi bi-geo-alt"></i></div>
+                        <div>
+                            <h6 class="mb-1 fw-bold text-dark">Oficina Central</h6>
+                            <span class="text-muted" style="font-size: 13px;">A Prat 814 Of. 503, Valparaíso, V Región</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="contact-icon-box me-4"><i class="bi bi-envelope"></i></div>
+                        <div>
+                            <h6 class="mb-1 fw-bold text-dark">Correo Comercial</h6>
+                            <span class="text-muted" style="font-size: 13px;">contacto@atilson.com</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 offset-lg-1 reveal" style="transition-delay: 0.2s;">
+                    <div class="contact-card">
+                        <h4 class="fw-bold mb-4 text-dark">Envíanos un mensaje</h4>
+                        <form>
+                            <div class="row g-3">
+                                <div class="col-md-6"><input type="text" class="form-control form-control-custom" placeholder="Nombre completo"></div>
+                                <div class="col-md-6"><input type="text" class="form-control form-control-custom" placeholder="Empresa"></div>
+                                <div class="col-12"><input type="email" class="form-control form-control-custom" placeholder="Correo corporativo"></div>
+                                <div class="col-12"><textarea class="form-control form-control-custom" rows="4" placeholder="¿En qué te podemos ayudar?"></textarea></div>
+                                <div class="col-12 mt-4">
+                                    <button type="button" class="btn-submit">Enviar Mensaje <i class="bi bi-send ms-2"></i></button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer-area">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4 pe-lg-5">
+                    <img src="~/img/Atilson.png" alt="Atilson Cargo" class="footer-logo" asp-append-version="true" />
+                    <p class="footer-text">Digital Freight Forwarder. Conectando origen y destino con tecnología, transparencia y eficiencia operativa.</p>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="footer-title">Plataforma</h5>
+                    <a href="/Login" class="footer-link fw-bold text-white"><i class="bi bi-shield-lock footer-icon"></i> Portal ERP</a>
+                    <a href="#" class="footer-link">Tracking Público</a>
+                    <a href="#" class="footer-link">Cotizador Online</a>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h5 class="footer-title">Servicios</h5>
+                    <a href="#servicios" class="footer-link">Flete Marítimo</a>
+                    <a href="#servicios" class="footer-link">Logística Terrestre</a>
+                    <a href="#servicios" class="footer-link">Agenciamiento Aduanero</a>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h5 class="footer-title">Contacto</h5>
+                    <p class="footer-link mb-1"><i class="bi bi-geo-alt footer-icon"></i> A Prat 814 Of. 503, Valparaíso</p>
+                    <p class="footer-link mb-1"><i class="bi bi-envelope footer-icon"></i> contacto@atilson.com</p>
+                    <a href="https://www.linkedin.com/company/atilson-cargo/?originalSubdomain=cl" target="_blank" class="footer-link mt-3" title="LinkedIn"><i class="bi bi-linkedin footer-icon"></i> LinkedIn Oficial</a>
+                </div>
+            </div>
+            <div class="text-center pt-4 border-top border-secondary border-opacity-25" style="color: #64748b; font-size: 12px;">
+                <p class="mb-0">© @DateTime.Now.Year Atilson Cargo SpA. Todos los derechos reservados. | Software ERP Interno</p>
+            </div>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/56900000000" class="wapp-float" target="_blank" title="Contactar por WhatsApp">
+        <i class="bi bi-whatsapp"></i>
+        <span class="wapp-tooltip">Asistencia Operativa 24/7</span>
+    </a>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+        // 1. SCROLL NAVBAR FIX
+        window.addEventListener('scroll', function() {
+        const navbar = document.getElementById('navbar');
+        const logo = document.getElementById('logo-img');
+
+        if (window.scrollY > 40) {
+        navbar.classList.add('scrolled');
+        if(logo) logo.style.filter = "none";
+        } else {
+        navbar.classList.remove('scrolled');
+        if(logo) logo.style.filter = "brightness(0) invert(1)";
+        }
+        });
+
+        // 2. ANIMACIÓN REVEAL Y CONTADORES
+        function animateValue(obj, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.innerHTML = Math.floor(progress * (end - start) + start);
+        if (progress < 1) window.requestAnimationFrame(step);
+        else obj.innerHTML = end;
+        };
+        window.requestAnimationFrame(step);
+        }
+
+        function reveal() {
+        var reveals = document.querySelectorAll(".reveal");
+        for (var i = 0; i < reveals.length; i++) {
+        var windowHeight = window.innerHeight;
+        var elementTop = reveals[i].getBoundingClientRect().top;
+        if (elementTop < windowHeight - 50) {
+        if (!reveals[i].classList.contains("active")) {
+        reveals[i].classList.add("active");
+        if (reveals[i].classList.contains("stats-box")) {
+        let counters = reveals[i].querySelectorAll(".counter");
+        counters.forEach(c => animateValue(c, 0, parseInt(c.getAttribute("data-target")), 2000));
+        }
+        }
+        }
+        }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal();
+
+        // ========================================================
+        // 3. API FINANCIERA (AHORA CON UF INCLUIDA)
+        // ========================================================
+        fetch('https://mindicador.cl/api')
+        .then(response => response.json())
+        .then(data => {
+        const formatNum = (num) => new Intl.NumberFormat('es-CL').format(num);
+        document.getElementById('top-uf').innerText = '$' + formatNum(data.uf.valor);
+        document.getElementById('top-usd').innerText = '$' + formatNum(data.dolar.valor);
+        document.getElementById('top-eur').innerText = '$' + formatNum(data.euro.valor);
+        })
+        .catch(error => {
+        console.error("Error cargando indicadores:", error);
+        document.getElementById('top-uf').innerText = 'N/D';
+        document.getElementById('top-usd').innerText = 'N/D';
+        document.getElementById('top-eur').innerText = 'N/D';
+        });
+
+        // ========================================================
+        // 4. API NOTICIAS (MUNDO MARÍTIMO) CON SLIDER Y TICKER
+        // ========================================================
+        const newsTrack = document.getElementById('news-track');
+        const topTicker = document.getElementById('top-news-ticker');
+        const rssUrl = 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.mundomaritimo.cl%2Fnoticias%2Ffeed';
+
+        const fallbackImages = [
+        'https://images.unsplash.com/photo-1551281442-f8c5b96791b8?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1586528116311-ad8ed7c83a50?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1494412651409-8963ce7935a7?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1577705998148-ebad79550ee6?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=800&q=80'
+        ];
+
+        fetch(rssUrl)
+        .then(res => res.json())
+        .then(data => {
+        if (data.status === 'ok' && data.items.length > 0) {
+        renderNews(data.items.slice(0, 9));
+        startTopTicker(data.items.slice(0, 5));
+        } else {
+        throw new Error("No items");
+        }
+        })
+        .catch(error => {
+        console.error('Error RSS, usando Fallback:', error);
+        const defaultNews = [
+        { title: "Atilson Cargo presenta su ecosistema ERP.", pubDate: "Hoy", description: "Lanzamiento oficial de la plataforma para potenciar el comercio exterior.", link: "#", imgIndex: 0 },
+        { title: "Impacto tecnológico en fletes marítimos.", pubDate: "Ayer", description: "Cómo la IA y la automatización están reduciendo costos operativos globales.", link: "#", imgIndex: 1 },
+        { title: "Trazabilidad 24/7 en la cadena de frío.", pubDate: "Hace 3 días", description: "Control total de temperatura para resguardar la fruta de exportación.", link: "#", imgIndex: 3 },
+        { title: "Nuevas regulaciones aduaneras 2026.", pubDate: "Hace 1 semana", description: "La digitalización documental y su rol en la agilidad portuaria.", link: "#", imgIndex: 4 }
+        ];
+        renderFallbackNews(defaultNews);
+        startTopTicker(defaultNews);
+        });
+
+        function startTopTicker(articles) {
+        if(!topTicker || articles.length === 0) return;
+        let tickerIndex = 0;
+        topTicker.innerText = articles[0].title;
+        topTicker.href = articles[0].link;
+
+        setInterval(() => {
+        topTicker.style.opacity = 0;
+        setTimeout(() => {
+        tickerIndex = (tickerIndex + 1) % articles.length;
+        topTicker.innerText = articles[tickerIndex].title;
+        topTicker.href = articles[tickerIndex].link;
+        topTicker.style.opacity = 1;
+        }, 400);
+        }, 6000);
+        }
+
+        function renderNews(articles) {
+        newsTrack.innerHTML = '';
+
+        articles.forEach((article, index) => {
+        let dateStr = article.pubDate.substring(0, 10);
+
+        let imgUrl = "";
+        if (article.thumbnail && article.thumbnail !== "") {
+        imgUrl = article.thumbnail;
+        } else if (article.enclosure && article.enclosure.link) {
+        imgUrl = article.enclosure.link;
+        } else {
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = article.description || article.content;
+        let imgTag = tempDiv.querySelector('img');
+        if (imgTag && imgTag.src) { imgUrl = imgTag.src; }
+        else { imgUrl = fallbackImages[index % fallbackImages.length]; }
+        }
+
+        let tempText = document.createElement('div');
+        tempText.innerHTML = article.description || "";
+        let cleanDesc = tempText.textContent || tempText.innerText || "";
+        let shortDesc = cleanDesc.length > 120 ? cleanDesc.substring(0, 120) + "..." : cleanDesc;
+
+        const html = `
+        <div class="news-card">
+        <div class="img-wrapper">
+        <img src="${imgUrl}" alt="Noticia Logística" class="news-img" onerror="this.src='${fallbackImages[index % fallbackImages.length]}'">
+        </div>
+        <div class="news-content">
+        <span class="news-date"><i class="bi bi-calendar3"></i> ${dateStr}</span>
+        <h3 class="news-title">${article.title}</h3>
+        <p class="news-desc">${shortDesc}</p>
+        <a href="${article.link}" target="_blank" class="news-link">LEER ARTÍCULO <i class="bi bi-arrow-right"></i></a>
+        </div>
+        </div>`;
+        newsTrack.insertAdjacentHTML('beforeend', html);
+        });
+        initSlider();
+        }
+
+        function renderFallbackNews(articles) {
+        newsTrack.innerHTML = '';
+        articles.forEach(article => {
+        const html = `
+        <div class="news-card">
+        <div class="img-wrapper">
+        <img src="${fallbackImages[article.imgIndex]}" alt="Noticia Logística" class="news-img">
+        </div>
+        <div class="news-content">
+        <span class="news-date"><i class="bi bi-calendar3"></i> ${article.pubDate}</span>
+        <h3 class="news-title">${article.title}</h3>
+        <p class="news-desc">${article.description}</p>
+        <a href="${article.link}" class="news-link">MÁS INFORMACIÓN <i class="bi bi-arrow-right"></i></a>
+        </div>
+        </div>`;
+        newsTrack.insertAdjacentHTML('beforeend', html);
+        });
+        initSlider();
+        }
+
+        function initSlider() {
+        const btnNextNews = document.getElementById('btn-next-news');
+        const btnPrevNews = document.getElementById('btn-prev-news');
+
+        let currentScrollPosition = 0;
+        const cardWidth = 380 + 24;
+
+        if (btnNextNews && btnPrevNews && newsTrack) {
+        btnNextNews.addEventListener('click', () => {
+        const maxScroll = newsTrack.scrollWidth - newsTrack.parentElement.clientWidth;
+        if (currentScrollPosition < maxScroll) {
+        currentScrollPosition += cardWidth;
+        if (currentScrollPosition > maxScroll) currentScrollPosition = maxScroll;
+        newsTrack.style.transform = `translateX(-${currentScrollPosition}px)`;
+        }
+        });
+
+        btnPrevNews.addEventListener('click', () => {
+        if (currentScrollPosition > 0) {
+        currentScrollPosition -= cardWidth;
+        if (currentScrollPosition < 0) currentScrollPosition = 0;
+        newsTrack.style.transform = `translateX(-${currentScrollPosition}px)`;
+        }
+        });
+        }
+        }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1583 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Operaciones.EditModel
+@{
+    ViewData["Title"] = "Editar Operación";
+    
+    var terr = Model.Operacione.OperacionesTerrestres?.FirstOrDefault();
+    var doc = Model.Operacione.OperacionesDocumentales?.FirstOrDefault();
+    var tipoTransbordo = string.IsNullOrWhiteSpace(Model.Operacione.Transbordo) ? "DIRECTO" : "TRANSBORDO";
+    var puertoTransbordo = Model.Operacione.Transbordo;
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* VARIABLES CORPORATIVAS */
+    :root { 
+        --atilson-dark: #1e293b; 
+        --atilson-primary: #3b82f6;
+        --txt-main: #0f172a; 
+        --txt-muted: #64748b; 
+        --border-soft: #cbd5e1; 
+        --bg-main: #ffffff; 
+        --bg-soft: #f8fafc;
+        --bg-body: #f1f5f9;
+    }
+    
+    body { background-color: var(--bg-body); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+
+    /* TIPOGRAFÍA E INPUTS */
+    .erp-label { font-size: 10px; font-weight: 800; color: var(--txt-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    .erp-input { 
+        font-size: 13px; 
+        border: 1px solid var(--border-soft); 
+        border-radius: 6px; 
+        background-color: var(--bg-soft); 
+        padding: 10px 14px; 
+        transition: all 0.2s ease; 
+        width: 100%; 
+        color: var(--txt-main); 
+        font-weight: 500; 
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+    }
+    .erp-input:focus { 
+        background-color: var(--bg-main); 
+        border-color: var(--atilson-dark); 
+        box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1); 
+        outline: none; 
+    }
+    .erp-input.is-invalid { border-color: #ef4444; background-color: #fef2f2; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
+    
+    /* WIZARD CONTAINER */
+    .wizard-container { 
+        border: 1px solid #e2e8f0; 
+        border-radius: 12px; 
+        background: var(--bg-main); 
+        overflow: hidden; 
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025); 
+    }
+    
+    /* WIZARD TABS */
+    .wizard-header { background-color: var(--bg-main); border-bottom: 1px solid #e2e8f0; padding: 0 20px; }
+    .nav-wizard { display: flex; list-style: none; margin: 0; padding: 0; overflow-x: auto; }
+    .nav-wizard .nav-item { flex: 1; text-align: center; }
+    .nav-wizard .nav-link { 
+        position: relative; 
+        display: block; 
+        padding: 20px 10px; 
+        font-size: 11px; 
+        font-weight: 800; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+        color: #94a3b8; 
+        text-decoration: none; 
+        border: none; 
+        background: transparent; 
+        transition: all 0.3s ease; 
+    }
+    .nav-wizard .nav-link i { font-size: 16px; margin-right: 8px; vertical-align: middle; }
+    .nav-wizard .nav-link:hover { color: var(--txt-muted); }
+    
+    /* PESTAÑA ACTIVA */
+    .nav-wizard .nav-link.active { color: var(--atilson-dark); }
+    .nav-wizard .nav-link.active::after { 
+        content: ''; 
+        position: absolute; 
+        bottom: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 3px; 
+        background-color: var(--atilson-dark); 
+        border-radius: 3px 3px 0 0;
+    }
+
+    /* PANELES Y ANIMACIÓN SUAVE */
+    .tab-content { padding: 40px 50px; background-color: #fafbfd; min-height: 400px; }
+    .tab-pane { display: none; }
+    .tab-pane.active { 
+        display: block; 
+        animation: fadeInStep 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    }
+
+    @@keyframes fadeInStep {
+        0% { opacity: 0; transform: translateY(15px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CONTENEDORES INTERNOS (CARDS) */
+    .section-title { font-size: 12px; font-weight: 800; color: var(--atilson-dark); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 8px; }
+    
+    .contenedor-item { 
+        background: var(--bg-main); 
+        padding: 24px; 
+        border: 1px solid #e2e8f0; 
+        border-radius: 10px; 
+        margin-bottom: 20px; 
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        transition: all 0.3s ease;
+    }
+    .contenedor-item:hover { border-color: #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    
+    .btn-add-dashed { 
+        border: 2px dashed #cbd5e1; 
+        background: transparent; 
+        color: var(--txt-muted); 
+        font-weight: 700; 
+        padding: 12px 20px; 
+        border-radius: 8px; 
+        width: 100%; 
+        text-align: center; 
+        transition: all 0.2s; 
+    }
+    .btn-add-dashed:hover { border-color: var(--atilson-dark); color: var(--atilson-dark); background: #f8fafc; }
+
+    /* PANELES CONDICIONALES (REEFER, EVIDENCIA) */
+    .panel-reefer { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-top: 15px; }
+    .div-evidencia { background-color: #fef2f2; border: 1px dashed #fca5a5; padding: 20px; border-radius: 8px; margin-top: 15px; }
+
+    /* MODULOS ESPECÍFICOS EDIT */
+    .workflow-select { background-color: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; font-weight: 800; }
+    .eta-update-box { background-color: #fff7ed; border: 1px solid #ffedd5; padding: 15px; border-radius: 8px; }
+    .etd-update-box { background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; }
+    .eta-history-item { font-size: 11px; padding: 5px 0; border-bottom: 1px solid #ffedd5; color: #9a3412; }
+    .etd-history-item { font-size: 11px; padding: 5px 0; border-bottom: 1px solid #bbf7d0; color: #166534; }
+
+    /* WIZARD FOOTER Y BOTONES */
+    .wizard-footer { padding: 20px 50px; background-color: var(--bg-main); border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+    .btn-step { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 28px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; cursor: pointer; border: none; }
+    .btn-prev { background: #f1f5f9; color: var(--txt-muted); }
+    .btn-prev:hover { background: #e2e8f0; color: var(--txt-main); }
+    .btn-next { background: var(--atilson-dark); color: #ffffff; box-shadow: 0 4px 6px -1px rgba(30, 41, 59, 0.2); }
+    .btn-next:hover { background: #0f172a; transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(30, 41, 59, 0.3); }
+    .btn-finish { background: #10b981; color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2); }
+    .btn-finish:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(16, 185, 129, 0.3); }
+
+    /* MODALES */
+    .modal-resumen .modal-content { border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
+    .modal-resumen .modal-header { background-color: var(--bg-main); border-bottom: 1px solid #e2e8f0; padding: 24px 30px; }
+    .modal-resumen .modal-body { padding: 30px; background-color: #fafbfd; }
+    .resumen-bloque { background: var(--bg-main); border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .res-label { font-size: 10px; font-weight: 800; color: var(--txt-muted); text-transform: uppercase; display: block; margin-bottom: 4px; }
+    .res-val { font-size: 13px; font-weight: 700; color: var(--txt-main); margin: 0; }
+</style>
+
+<div class="container-fluid py-4" style="max-width: 1300px;">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 900; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">EDICIÓN DE OPERACIÓN</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Gestión de Ciclo de Vida: <strong class="text-primary">@Model.Operacione.NumeroBooking</strong></p>
+        </div>
+        <a asp-page="./Index" class="btn btn-step btn-prev shadow-sm"><i class="bi bi-x-lg"></i> CANCELAR EDICIÓN</a>
+    </div>
+
+    @if (Model.Operacione.LockFinanzas)
+    {
+        <div class="alert alert-danger shadow-sm border-2 border-danger d-flex align-items-center justify-content-between p-3 mb-4" style="border-radius: 10px; background-color: #fef2f2;">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-lock-fill text-danger" style="font-size: 2rem;"></i>
+                <div>
+                    <h6 class="fw-bold text-danger m-0" style="font-size: 14px; text-transform: uppercase;">🔒 OPERACIÓN BLOQUEADA POR FINANZAS</h6>
+                    <p class="text-muted m-0" style="font-size: 12px;">Los costos y facturas de este Booking ya fueron cerrados. Los campos logísticos están en modo de solo lectura.</p>
+                </div>
+            </div>
+            @if (User.IsInRole("Admin") || User.IsInRole("Jefatura") || User.Identity?.Name == "Cristian")
+            {
+                <span class="badge bg-warning text-dark border p-2"><i class="bi bi-key-fill"></i> Modo Jefatura: Edición Habilitada</span>
+            }
+            else
+            {
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                    document.querySelectorAll('form input, form select, form textarea, form button[type="submit"]').forEach(el => {
+                    if (el.type !== 'hidden' && !el.classList.contains('btn-close') && !el.classList.contains('btn-link')) {
+                    el.setAttribute('disabled', 'disabled');
+                    el.style.backgroundColor = '#e2e8f0';
+                    el.style.cursor = 'not-allowed';
+                    }
+                    });
+                    });
+                </script>
+            }
+        </div>
+    }
+
+    <form method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Operacione.Id" />
+
+        <div class="wizard-container">
+            
+            <div class="wizard-header">
+                <ul class="nav-wizard" id="wizardTabs" role="tablist">
+                    <li class="nav-item">
+                        <button type="button" class="nav-link active" id="tab-general" data-target="step-general">
+                            <i class="bi bi-ui-checks-grid"></i> Generales y Carga
+                        </button>
+                    </li>
+                    <li class="nav-item" id="nav-item-terrestre" style="display:none;">
+                        <button type="button" class="nav-link" id="tab-terrestre" data-target="step-terrestre">
+                            <i class="bi bi-truck"></i> Transporte y Tiempos
+                        </button>
+                    </li>
+                    <li class="nav-item" id="nav-item-maritimo" style="display:none;">
+                        <button type="button" class="nav-link" id="tab-maritimo" data-target="step-maritimo">
+                            <i class="bi bi-water"></i> Marítimo y LAR
+                        </button>
+                    </li>
+                    <li class="nav-item" id="nav-item-documental" style="display:none;">
+                        <button type="button" class="nav-link" id="tab-documental" data-target="step-documental">
+                            <i class="bi bi-file-earmark-check"></i> Documental
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link text-danger" id="tab-incidencias" data-target="step-incidencias">
+                            <i class="bi bi-exclamation-triangle-fill"></i> Extracostos
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tab-content">
+                
+                <div class="tab-pane active" id="step-general">
+                    <h5 class="section-title"><i class="bi bi-info-circle"></i> Información Base e Identificadores</h5>
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-3">
+                            <label class="erp-label">Booking / Referencia N° <span class="text-danger">*</span></label>
+                            <input asp-for="Operacione.NumeroBooking" class="form-control erp-input text-uppercase req-general" id="inpBooking" />
+                        </div>
+                        <div class="col-md-5">
+                            <label class="erp-label">Cliente Asociado <span class="text-danger">*</span></label>
+                            <select asp-for="Operacione.IdCliente" class="form-select erp-input req-general" id="inpCliente" asp-items="ViewBag.IdCliente"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Tipo Movimiento</label>
+                            <select asp-for="Operacione.IdTipoMovimiento" class="form-select erp-input" id="inpMovimiento" asp-items="ViewBag.IdTipoMovimiento">
+                                <option value="">-- Opcional --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="erp-label">Servicio Logístico <span class="text-danger">*</span></label>
+                            <select asp-for="Operacione.IdTipoServicio" class="form-select erp-input fw-bold req-general" id="ddlServicio" style="border-left: 3px solid var(--atilson-primary);">
+                                <option value="">-- Seleccionar Servicio --</option>
+                                <optgroup label="Exportación">
+                                    <option value="1">Expo Integral (Marítimo + Terrestre + Doc)</option>
+                                    <option value="2">Expo Marítimo + Terrestre</option>
+                                    <option value="3">Expo Marítimo + Documental</option>
+                                    <option value="4">Expo Terrestre + Documental</option>
+                                    <option value="5">Expo Marítimo</option>
+                                    <option value="6">Expo Terrestre</option>
+                                    <option value="7">Expo Documental</option>
+                                </optgroup>
+                                <optgroup label="Importación">
+                                    <option value="8">Impo Integral (Marítimo + Terrestre + Doc)</option>
+                                    <option value="9">Impo Marítimo + Terrestre</option>
+                                    <option value="10">Impo Marítimo + Documental</option>
+                                    <option value="11">Impo Terrestre + Documental</option>
+                                    <option value="12">Impo Marítimo</option>
+                                    <option value="13">Impo Terrestre</option>
+                                    <option value="14">Impo Documental</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Condición de Pago <span class="text-danger">*</span></label>
+                            <select asp-for="Operacione.CondicionPago" class="form-select erp-input req-general" id="inpPago">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="1">Prepaid</option>
+                                <option value="2">Full Prepaid</option>
+                                <option value="3">Collect</option>
+                                <option value="4">Full Collect</option>
+                                <option value="5">Elsewhere</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="erp-label text-primary"><i class="bi bi-clock-history"></i> Estado Operativo (Workflow Oficial)</label>
+                            <select asp-for="Operacione.EstadoWorkflow" class="form-select erp-input workflow-select">
+                                <option value="Solicitado">1. Solicitado (A la naviera)</option>
+                                <option value="Confirmado">2. Confirmado (Por la naviera)</option>
+                                <option value="Envio a Cliente">3. Envío a Cliente (Confirmación)</option>
+                                <option value="En Ruta Planta">4. En Ruta Planta</option>
+                                <option value="Salida de Planta">5. Salida de Planta</option>
+                                <option value="En Ruta a Puerto">6. En Ruta a Puerto</option>
+                                <option value="En Puerto">7. En Puerto</option>
+                                <option value="Entregado a Stacking">8. Entregado a Stacking</option>
+                                <option value="Embarcado">9. Embarcado</option>
+                                <option value="Zarpe">10. Zarpe (Estatus enviado a cliente)</option>
+                                <option value="Proximo Arribo">11. Próximo Arribo (-5 días ETA)</option>
+                                <option value="Arribado">12. Arribado (En destino)</option>
+                                <option value="Contenedor Retirado">13. Contenedor Retirado</option>
+                                <option value="Cancelado">X. Cancelado / Retrasado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                        <h5 class="section-title border-0 m-0 p-0"><i class="bi bi-boxes"></i> Declaración de Unidades y Carga</h5>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" name="ContenedorIngresado" value="true" id="chkIngresoPuerto" @(Model.Operacione.ContenedorIngresado ? "checked" : "") style="transform: scale(1.3); cursor:pointer;">
+                            <label class="form-check-label fw-bold ms-2 text-success" for="chkIngresoPuerto" style="font-size: 11px;">CARGA INGRESADA A PUERTO (IN)</label>
+                        </div>
+                    </div>
+
+                    <div id="contenedores-container">
+                        <div class="contenedor-item position-relative">
+                            <h6 class="erp-label mb-3" style="color: var(--atilson-dark); font-size: 11px;">UNIDAD 1 (Principal)</h6>
+                            <div class="row g-3 mb-2">
+                                <div class="col-md-2">
+                                    <label class="erp-label">Tipo Carga <span class="text-danger req-maritimo-asterisk" style="display:none;">*</span></label>
+                                    <select asp-for="Operacione.IdTipoCarga" class="form-select erp-input fw-bold req-carga select-tipo-carga" id="inpCarga">
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="1">DRY</option>
+                                        <option value="2">REEFER</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 div-condicion-reefer" style="display: none;">
+                                    <label class="erp-label text-info">Condición Reefer</label>
+                                    <select name="CondicionReefer" class="form-select erp-input select-condicion-reefer" data-val-pre="@Model.Operacione.CondicionReefer">
+                                        <option value="FRESH" selected="@(Model.Operacione.CondicionReefer == "FRESH" ? "selected" : null)">Fresh (Fresco)</option>
+                                        <option value="FROZEN" selected="@(Model.Operacione.CondicionReefer == "FROZEN" ? "selected" : null)">Frozen (Congelado)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="erp-label">Tipo Unidad <span class="text-danger">*</span></label>
+                                    <select asp-for="Operacione.TipoContenedor" class="form-select erp-input select-unidad req-general" data-val-pre="@Model.Operacione.TipoContenedor">
+                                        <option value="">Seleccione Carga Primero</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="erp-label">N° Contenedor</label>
+                                    <input asp-for="Operacione.NumeroContenedor" class="form-control erp-input text-uppercase input-contenedor" placeholder="S/N..." />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="erp-label">Sello Naviera</label>
+                                    <input asp-for="Operacione.SelloNaviera" class="form-control erp-input text-uppercase input-sello" placeholder="S/N..." />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="erp-label">Commodity <span class="text-danger">*</span></label>
+                                    <input asp-for="Operacione.Commodity" class="form-control erp-input text-uppercase req-general" placeholder="Ej: Vinos..." />
+                                </div>
+                                
+                                <div class="col-md-12 mt-3 div-evidencia" style="display: none;">
+                                    <label class="erp-label text-danger fw-bold"><i class="bi bi-camera-fill"></i> Respaldo Físico (EIR, Guía o Foto)</label>
+                                    <input type="file" name="EvidenciaPrincipal" class="form-control erp-input input-evidencia" accept=".pdf, .jpg, .jpeg, .png" style="background-color: #fff;" />
+                                    <input type="hidden" class="has-evidence-flag" value="@(string.IsNullOrEmpty(Model.Operacione.EvidenciaContenedor) ? "false" : "true")" />
+                                    @if(!string.IsNullOrEmpty(Model.Operacione.EvidenciaContenedor)) {
+                                        <div class="mt-2"><a href="@Model.Operacione.EvidenciaContenedor" target="_blank" class="badge bg-success text-decoration-none px-2 py-1"><i class="bi bi-check-circle"></i> Evidencia Guardada. Subir otro reemplaza el actual.</a></div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="panel-reefer" style="display: none;">
+                                <h6 class="erp-label text-success mb-3"><i class="bi bi-snow"></i> Seteo Técnico Reefer</h6>
+                                <div class="row g-2">
+                                    <div class="col-md-2">
+                                        <label class="erp-label">Temp (°C)</label>
+                                        <input type="text" class="form-control erp-input" name="TempSeteada" value="@Model.Operacione.Temperatura" placeholder="Ej: 2.5" />
+                                    </div>
+                                    <div class="col-md-10 row g-2 m-0 div-opciones-fresh">
+                                        <div class="col-md-3">
+                                            <label class="erp-label">Atmósfera</label>
+                                            <select class="form-select erp-input select-atmosfera" name="TipoAtmosfera">
+                                                <option value="CONV" selected="@(Model.Operacione.Atmosfera == "CONV" ? "selected" : null)">Sin atmósfera</option>
+                                                <option value="AC" selected="@(Model.Operacione.Atmosfera == "AC" ? "selected" : null)">Controlada</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-9 row g-2 m-0 div-convencional">
+                                            <div class="col-md-4">
+                                                <label class="erp-label">Ventilación</label>
+                                                <input type="text" class="form-control erp-input" name="Ventilacion" value="@Model.Operacione.Ventilacion" placeholder="Ej: 15" />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="erp-label">Humedad (%)</label>
+                                                <input type="number" class="form-control erp-input" name="Humedad" value="@Model.Operacione.Humedad" placeholder="Ej: 80" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9 row g-2 m-0 div-ac" style="display: none;">
+                                            <div class="col-md-4">
+                                                <label class="erp-label">Marca AC</label>
+                                                <select class="form-select erp-input" name="MarcaAc">
+                                                    <option value="Extrafresh" selected="@(Model.Operacione.MarcaAc == "Extrafresh" ? "selected" : null)">Extrafresh</option>
+                                                    <option value="Extrafresh+" selected="@(Model.Operacione.MarcaAc == "Extrafresh+" ? "selected" : null)">Extrafresh +</option>
+                                                    <option value="Liventus" selected="@(Model.Operacione.MarcaAc == "Liventus" ? "selected" : null)">Liventus</option>
+                                                    <option value="Daikin" selected="@(Model.Operacione.MarcaAc == "Daikin" ? "selected" : null)">Daikin</option>
+                                                    <option value="Starcool" selected="@(Model.Operacione.MarcaAc == "Starcool" ? "selected" : null)">Starcool</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4"><label class="erp-label text-danger">O2 (%)</label><input type="text" class="form-control erp-input" name="NivelO2" value="@Model.Operacione.O2" placeholder="Ej: 5.0" /></div>
+                                            <div class="col-md-4"><label class="erp-label text-danger">CO2 (%)</label><input type="text" class="form-control erp-input" name="NivelCO2" value="@Model.Operacione.Co2" placeholder="Ej: 10.0" /></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if(Model.Operacione.Unidadestecnicas != null && Model.Operacione.Unidadestecnicas.Any())
+                        {
+                            int index = 2;
+                            foreach(var u in Model.Operacione.Unidadestecnicas)
+                            {
+                                <div class="contenedor-item position-relative">
+                                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3 btn-eliminar-contenedor" title="Eliminar"></button>
+                                    <h6 class="erp-label mb-3" style="color: var(--atilson-dark); font-size: 11px;">UNIDAD @index (Adicional)</h6>
+                                    
+                                    <div class="row g-3 mb-2">
+                                        <div class="col-md-2">
+                                            <label class="erp-label">Tipo Carga</label>
+                                            <select name="ContenedoresExtra[@index].IdTipoCarga" class="form-select erp-input fw-bold select-tipo-carga">
+                                                <option value="">-- Seleccionar --</option>
+                                                <option value="1" selected="@(u.IdTipoCarga == 1 ? "selected" : null)">DRY</option>
+                                                <option value="2" selected="@(u.IdTipoCarga == 2 ? "selected" : null)">REEFER</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2 div-condicion-reefer" style="display: none;">
+                                            <label class="erp-label text-info">Cond. Reefer</label>
+                                            <select name="ContenedoresExtra[@index].CondicionReefer" class="form-select erp-input select-condicion-reefer" data-val-pre="@u.CondicionReefer">
+                                                <option value="FRESH" selected="@(u.CondicionReefer == "FRESH" ? "selected" : null)">Fresh</option>
+                                                <option value="FROZEN" selected="@(u.CondicionReefer == "FROZEN" ? "selected" : null)">Frozen</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="erp-label">Tipo Unidad <span class="text-danger">*</span></label>
+                                            <select name="ContenedoresExtra[@index].TipoContenedor" class="form-select erp-input select-unidad req-general" data-val-pre="@u.TipoContenedor">
+                                                <option value="">Seleccione Carga</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="erp-label">N° Contenedor</label>
+                                            <input name="ContenedoresExtra[@index].NumeroContenedor" class="form-control erp-input text-uppercase input-contenedor" value="@u.NroContenedor" placeholder="S/N..." />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="erp-label">Sello Naviera</label>
+                                            <input name="ContenedoresExtra[@index].SelloNaviera" class="form-control erp-input text-uppercase input-sello" value="@u.SelloNaviera" placeholder="S/N..." />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="erp-label">Commodity <span class="text-danger">*</span></label>
+                                            <input name="ContenedoresExtra[@index].Commodity" class="form-control erp-input text-uppercase req-general" value="@u.Commodity" placeholder="Ej: Vinos..." />
+                                        </div>
+
+                                        <div class="col-md-12 mt-3 div-evidencia" style="display: none;">
+                                            <label class="erp-label text-danger fw-bold"><i class="bi bi-paperclip"></i> Respaldo Físico (EIR o Foto)</label>
+                                            <input type="file" name="EvidenciaExtra_@index" class="form-control erp-input input-evidencia" accept=".pdf, .jpg, .jpeg, .png" style="background-color: #fff;" />
+                                            <input type="hidden" name="ContenedoresExtra[@index].EvidenciaAntigua" value="@u.EvidenciaContenedor" />
+                                            <input type="hidden" class="has-evidence-flag" value="@(string.IsNullOrEmpty(u.EvidenciaContenedor) ? "false" : "true")" />
+                                            @if(!string.IsNullOrEmpty(u.EvidenciaContenedor)) { 
+                                                <div class="mt-2"><a href="@u.EvidenciaContenedor" target="_blank" class="badge bg-success text-decoration-none px-2 py-1"><i class="bi bi-check-circle"></i> Evidencia Guardada</a></div> 
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="panel-reefer" style="display: none;">
+                                        <h6 class="erp-label mb-3" style="color: var(--atilson-dark);"><i class="bi bi-snow"></i> Seteo Técnico Reefer</h6>
+                                        <div class="row g-2">
+                                            <div class="col-md-2">
+                                                <label class="erp-label">Temp (°C)</label>
+                                                <input type="text" class="form-control erp-input" name="ContenedoresExtra[@index].TempSeteada" value="@u.Temperatura" placeholder="Ej: 5.0" />
+                                            </div>
+                                            <div class="col-md-10 row g-2 m-0 div-opciones-fresh">
+                                                <div class="col-md-3">
+                                                    <label class="erp-label">Atmósfera</label>
+                                                    <select class="form-select erp-input select-atmosfera" name="ContenedoresExtra[@index].TipoAtmosfera">
+                                                        <option value="CONV" selected="@(u.TipoAtmosfera == "CONV" ? "selected" : null)">Sin atmósfera</option>
+                                                        <option value="AC" selected="@(u.TipoAtmosfera == "AC" ? "selected" : null)">Controlada</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-9 row g-2 m-0 div-convencional">
+                                                    <div class="col-md-4"><label class="erp-label">Ventilación</label><input type="text" class="form-control erp-input" name="ContenedoresExtra[@index].Ventilacion" value="@u.Ventilacion" placeholder="Ej: 15" /></div>
+                                                    <div class="col-md-4"><label class="erp-label">Humedad (%)</label><input type="number" class="form-control erp-input" name="ContenedoresExtra[@index].Humedad" value="@u.Humedad" placeholder="Ej: 80" /></div>
+                                                </div>
+                                                <div class="col-md-9 row g-2 m-0 div-ac" style="display: none;">
+                                                    <div class="col-md-4">
+                                                        <label class="erp-label">Marca AC</label>
+                                                        <select class="form-select erp-input" name="ContenedoresExtra[@index].MarcaAc">
+                                                            <option value="Extrafresh" selected="@(u.MarcaAc == "Extrafresh" ? "selected" : null)">Extrafresh</option>
+                                                            <option value="Extrafresh+" selected="@(u.MarcaAc == "Extrafresh+" ? "selected" : null)">Extrafresh +</option>
+                                                            <option value="Liventus" selected="@(u.MarcaAc == "Liventus" ? "selected" : null)">Liventus</option>
+                                                            <option value="Daikin" selected="@(u.MarcaAc == "Daikin" ? "selected" : null)">Daikin</option>
+                                                            <option value="Starcool" selected="@(u.MarcaAc == "Starcool" ? "selected" : null)">Starcool</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4"><label class="erp-label text-danger">O2 (%)</label><input type="text" class="form-control erp-input" name="ContenedoresExtra[@index].NivelO2" value="@u.NivelO2" placeholder="Ej: 5.0" /></div>
+                                                    <div class="col-md-4"><label class="erp-label text-danger">CO2 (%)</label><input type="text" class="form-control erp-input" name="ContenedoresExtra[@index].NivelCO2" value="@u.NivelCo2" placeholder="Ej: 10.0" /></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                index++;
+                            }
+                        }
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="button" id="btnAgregarContenedor" class="btn-add-dashed">
+                            <i class="bi bi-plus-lg me-1"></i> Añadir Unidad Adicional (Contenedor)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="step-terrestre">
+                    <h5 class="section-title"><i class="bi bi-truck"></i> Datos del Servicio de Transporte</h5>
+                    
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <label class="erp-label">Empresa de Transporte</label>
+                            <input type="text" class="form-control erp-input text-uppercase" id="inpTransEmpresa" name="TransEmpresa" value="@terr?.EmpresaTransporte" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">RUT Transporte</label>
+                            <input type="text" class="form-control erp-input" name="TransRut" value="@terr?.RutTransporte" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Correo Operaciones Transporte</label>
+                            <input type="email" class="form-control erp-input" name="TransCorreo" value="@terr?.CorreoTransporte" />
+                        </div>
+                        <div class="col-md-12"><hr class="m-0 border-soft"></div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Nombre del Conductor</label>
+                            <input type="text" class="form-control erp-input text-uppercase" name="TransConductor" value="@terr?.NombreConductor" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Teléfono Conductor</label>
+                            <input type="text" class="form-control erp-input" name="TransTelefono" value="@terr?.TelefonoConductor" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Patente (Camión / Carro)</label>
+                            <input type="text" class="form-control erp-input text-uppercase" name="TransPatente" id="inpPatente" value="@terr?.Patente" pattern="^[A-Za-z0-9]{6}/[A-Za-z0-9]{6}$" title="Formato: XXXXXX/YYYYYY" />
+                        </div>
+                    </div>
+
+                    <h5 class="section-title mt-5"><i class="bi bi-geo"></i> Origen y Destino de Carga</h5>
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <label class="erp-label">Depósito de Retiro (Vacío)</label>
+                            <input type="text" class="form-control erp-input text-uppercase" id="inpTransDeposito" name="TransDeposito" value="@terr?.DepositoRetiro" placeholder="Ej: MEDLOG San Antonio" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Planta (Carga/Consolidación)</label>
+                            <input type="text" class="form-control erp-input text-uppercase" id="inpTransPlanta" name="TransPlanta" value="@terr?.PlantaCarga" placeholder="Ej: Planta Sur" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Zona de Embarque</label>
+                            <input type="text" class="form-control erp-input text-uppercase" id="inpTransZona" name="TransZonaEmbarque" value="@terr?.ZonaEmbarque" placeholder="Ej: V Región" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="erp-label">Fecha y Hora Presentación</label>
+                            <input type="datetime-local" class="form-control erp-input" id="inpTransFecha" name="TransFechaCarga" value="@(terr?.FechaCarga?.ToString("yyyy-MM-ddTHH:mm"))" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="erp-label">Tipo Unidad Transporte</label>
+                            <input type="text" class="form-control erp-input text-uppercase" name="TransTipoUnidad" value="@terr?.TipoUnidadTransporte" placeholder="Ej: Rampa Genset" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="erp-label text-primary">Link GPS / Tracking</label>
+                            <input type="url" class="form-control erp-input" name="TransTracking" value="@terr?.LinkTracking" />
+                        </div>
+                    </div>
+
+                    <h5 class="section-title mt-5"><i class="bi bi-stopwatch"></i> Control de Tiempos y Sobreestadías</h5>
+                    <div class="row g-3 bg-white p-4 rounded border shadow-sm align-items-center">
+                        <div class="col-md-5 border-end">
+                            <label class="erp-label text-primary text-center"><i class="bi bi-building"></i> EN PLANTA</label>
+                            <div class="row g-2 mt-2">
+                                <div class="col-6"><label class="erp-label" style="font-size:8px;">H. LLEGADA</label><input type="datetime-local" class="form-control erp-input calc-tiempo" id="inpLlegadaPlanta" name="TransLlegadaPlanta" value="@(terr?.LlegadaPlanta?.ToString("yyyy-MM-ddTHH:mm"))" /></div>
+                                <div class="col-6"><label class="erp-label" style="font-size:8px;">H. SALIDA</label><input type="datetime-local" class="form-control erp-input calc-tiempo" id="inpSalidaPlanta" name="TransSalidaPlanta" value="@(terr?.SalidaPlanta?.ToString("yyyy-MM-ddTHH:mm"))" /></div>
+                            </div>
+                            <div class="mt-3 text-center p-3 rounded" id="badgePlanta" style="background-color: var(--bg-soft); transition: all 0.3s;">
+                                <span class="d-block text-muted" style="font-size:9px; font-weight:800;">TIEMPO TOTAL ESPERA PLANTA</span>
+                                <span class="fs-5 fw-bold text-dark" id="txtTiempoPlanta">0h 0m</span>
+                            </div>
+                        </div>
+                        <div class="col-md-5 border-end">
+                            <label class="erp-label text-primary text-center"><i class="bi bi-water"></i> EN PUERTO</label>
+                            <div class="row g-2 mt-2">
+                                <div class="col-6"><label class="erp-label" style="font-size:8px;">H. LLEGADA</label><input type="datetime-local" class="form-control erp-input calc-tiempo" id="inpLlegadaPuerto" name="TransLlegadaPuerto" value="@(terr?.LlegadaPuerto?.ToString("yyyy-MM-ddTHH:mm"))" /></div>
+                                <div class="col-6"><label class="erp-label" style="font-size:8px;">H. SALIDA</label><input type="datetime-local" class="form-control erp-input calc-tiempo" id="inpSalidaPuerto" name="TransSalidaPuerto" value="@(terr?.SalidaPuerto?.ToString("yyyy-MM-ddTHH:mm"))" /></div>
+                            </div>
+                            <div class="mt-3 text-center p-3 rounded" id="badgePuerto" style="background-color: var(--bg-soft); transition: all 0.3s;">
+                                <span class="d-block text-muted" style="font-size:9px; font-weight:800;">TIEMPO TOTAL ESPERA PUERTO</span>
+                                <span class="fs-5 fw-bold text-dark" id="txtTiempoPuerto">0h 0m</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <div class="form-check form-switch d-inline-block text-start mt-2">
+                                <input class="form-check-input" type="checkbox" id="chkEscaner" name="SorteoEscaner" value="true" @(terr?.SorteoEscaner == true ? "checked" : "") style="transform: scale(1.4); cursor: pointer;">
+                                <label class="form-check-label fw-bold text-danger ms-2 mt-1" for="chkEscaner" style="font-size:11px;">SELECCIÓN<br>ESCÁNER</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="step-maritimo">
+                    <h5 class="section-title"><i class="bi bi-water"></i> Asignación Naviera</h5>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <label class="erp-label">Línea Naviera <span class="text-danger req-maritimo-asterisk" style="display:none;">*</span></label>
+                            <select asp-for="Operacione.IdNaviera" class="form-select erp-input req-naviera" id="inpNaviera" asp-items="ViewBag.IdNaviera">
+                                <option value="">-- Seleccionar Naviera --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Nave / Vessel</label>
+                            <input asp-for="Operacione.Nave" class="form-control erp-input text-uppercase" id="inpNave" placeholder="Ej: MSC SANTIAGO" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="erp-label">Tipo de Viaje</label>
+                            <select class="form-select erp-input" id="selectTransbordo">
+                                <option value="DIRECTO" selected="@(tipoTransbordo == "DIRECTO" ? "selected" : null)">Directo</option>
+                                <option value="TRANSBORDO" selected="@(tipoTransbordo == "TRANSBORDO" ? "selected" : null)">Transbordo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2" id="divPuertoTransbordo" style="display: @(tipoTransbordo == "TRANSBORDO" ? "block" : "none");">
+                            <label class="erp-label">Pto. Transbordo</label>
+                            <input asp-for="Operacione.Transbordo" class="form-control erp-input text-uppercase" value="@puertoTransbordo" placeholder="Ej: CALLAO" />
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <label class="erp-label">POL (Puerto Origen)</label>
+                            <select asp-for="Operacione.IdPuertoOrigen" class="form-select erp-input" id="inpPol" asp-items="ViewBag.IdPuertoOrigen">
+                                <option value="">-- Seleccionar --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">POD (Puerto Destino)</label>
+                            <select asp-for="Operacione.IdPuertoDestino" class="form-select erp-input" id="inpPod" asp-items="ViewBag.IdPuertoDestino">
+                                <option value="">-- Seleccionar --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Terminal Portuario</label>
+                            <select class="form-select erp-input text-uppercase" id="selTerminal" style="display: none;"></select>
+                            <input asp-for="Operacione.TerminalPortuario" class="form-control erp-input text-uppercase" id="inpTerminal" placeholder="Terminal / Puerto..." />
+                        </div>
+                    </div>
+
+                    <h5 class="section-title"><i class="bi bi-calendar-range"></i> Fechas e Itinerarios Clave</h5>
+                    <div class="row g-4 mb-5 align-items-stretch">
+                        
+                        <div class="col-md-4">
+                            <div class="etd-update-box h-100">
+                                <label class="erp-label text-success"><i class="bi bi-clock-history"></i> Actualización de ETD (Zarpe)</label>
+                                <div class="d-flex gap-2 mb-3">
+                                    <input asp-for="Operacione.EtdPol" type="date" class="form-control erp-input border-success text-dark fw-bold" id="currentEtd" />
+                                    <button type="button" class="btn btn-success btn-sm fw-bold px-3 shadow-sm" onclick="registrarCambioEtd()"><i class="bi bi-arrow-repeat"></i> LOG UPDATE</button>
+                                </div>
+                                <div id="etdHistoryContainer">
+                                    <span class="fw-bold d-block mb-1 text-muted" style="font-size: 10px; text-transform: uppercase;">Historial de Cambios (Máx 3):</span>
+                                    <div class="etd-history-item text-muted"><i>Sin cambios (Fecha Original)</i></div>
+                                </div>
+                                <input type="hidden" name="HistorialEtdVal" id="hiddenEtdHistory" />
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="eta-update-box h-100">
+                                <label class="erp-label text-warning"><i class="bi bi-clock-history"></i> Actualización de ETA (Arribo)</label>
+                                <div class="d-flex gap-2 mb-3">
+                                    <input asp-for="Operacione.EtaPod" type="date" class="form-control erp-input border-warning text-dark fw-bold" id="currentEta" />
+                                    <button type="button" class="btn btn-warning btn-sm fw-bold px-3 shadow-sm" onclick="registrarCambioEta()"><i class="bi bi-arrow-repeat"></i> LOG UPDATE</button>
+                                </div>
+                                <div id="etaHistoryContainer">
+                                    <span class="fw-bold d-block mb-1 text-muted" style="font-size: 10px; text-transform: uppercase;">Historial de Cambios (Máx 3):</span>
+                                    <div class="eta-history-item text-muted"><i>Sin cambios (Fecha Original)</i></div>
+                                </div>
+                                <input type="hidden" name="HistorialEtaVal" id="hiddenEtaHistory" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="p-4 border rounded bg-white h-100 shadow-sm">
+                                <label class="erp-label text-dark"><i class="bi bi-calendar-check"></i> Plazos de Stacking</label>
+                                <div class="row g-3 mt-1">
+                                    <div class="col-12"><label class="erp-label" style="font-size:8px;">Apertura (In)</label><input asp-for="Operacione.FechaStacking" type="datetime-local" class="form-control erp-input" /></div>
+                                    <div class="col-12"><label class="erp-label text-danger" style="font-size:8px;">Cierre Original (Out)</label><input asp-for="Operacione.CutOffMatriz" type="datetime-local" class="form-control erp-input border-danger text-danger fw-bold" /></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 align-items-center bg-white p-4 rounded border shadow-sm">
+                        <div class="col-md-4">
+                            <label class="erp-label text-warning">Gestión Late Arrival (LAR)</label>
+                            <select asp-for="Operacione.EstadoLar" class="form-select erp-input fw-bold bg-warning bg-opacity-10 text-dark border-warning" id="inpEstadoLar">
+                                <option value="">No Solicitado</option>
+                                <option value="SOLICITADO LAR">Solicitado LAR</option>
+                                <option value="AUTORIZADO LAR">Autorizado LAR</option>
+                                <option value="INGRESADO CON LAR">Ingresado con LAR</option>
+                                <option value="SOLICITADO ELAR">Solicitado ELAR</option>
+                                <option value="AUTORIZADO ELAR">Autorizado ELAR</option>
+                                <option value="INGRESADO CON ELAR">Ingresado con ELAR</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 div-fecha-lar" style="display: @(Model.Operacione.EstadoLar != null && (Model.Operacione.EstadoLar.Contains("AUTORIZADO") || Model.Operacione.EstadoLar.Contains("INGRESADO")) ? "block" : "none");">
+                            <label class="erp-label text-success">Nuevo Stacking Out (Por LAR)</label>
+                            <input type="datetime-local" asp-for="Operacione.LateArrival" class="form-control erp-input border-success" />
+                        </div>
+                        <div class="col-md-4 div-evidencia-lar" style="display: @(Model.Operacione.EstadoLar != null && (Model.Operacione.EstadoLar.Contains("AUTORIZADO") || Model.Operacione.EstadoLar.Contains("INGRESADO")) ? "block" : "none");">
+                            <label class="erp-label text-danger">Respaldo Naviera (Obligatorio)</label>
+                            <input type="file" name="EvidenciaLar" id="fileLar" class="form-control erp-input" accept=".pdf, .jpg, .png" />
+                            @if(!string.IsNullOrEmpty(Model.Operacione.EvidenciaLar)) {
+                                <a href="@Model.Operacione.EvidenciaLar" target="_blank" class="badge bg-success mt-2 text-decoration-none px-2 py-1"><i class="bi bi-check-circle"></i> Respaldo Guardado</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="step-documental">
+                    
+                    <h5 class="section-title"><i class="bi bi-building"></i> Aduana y Despachos</h5>
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <label class="erp-label">Agencia de Aduana</label>
+                            <input type="text" class="form-control erp-input text-uppercase" name="DocAgencia" value="@doc?.AgenciaAduana" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">N° DUS / DIN</label>
+                            <input type="text" class="form-control erp-input text-uppercase" name="DocDus" value="@doc?.DusDin" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="erp-label">Estado del Trámite</label>
+                            <select class="form-select erp-input" name="DocEstado">
+                                <option value="PENDIENTE" selected="@(doc?.EstadoDocumental == "PENDIENTE" ? "selected" : null)">Pendiente</option>
+                                <option value="EN_PROCESO" selected="@(doc?.EstadoDocumental == "EN_PROCESO" ? "selected" : null)">En Proceso</option>
+                                <option value="APROBADO" selected="@(doc?.EstadoDocumental == "APROBADO" ? "selected" : null)">Aprobado / Legalizado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h5 class="section-title"><i class="bi bi-ui-checks"></i> Control de Matriz y Visados</h5>
+                    
+                    <div id="alertaPrepaid" class="alert alert-primary py-2 px-3 mb-4 d-none" style="font-size: 12px; border-left: 4px solid #0ea5e9;">
+                        <i class="bi bi-info-circle-fill me-2"></i> <strong>Carga PREPAID:</strong> Atilson debe confeccionar y presentar la matriz a la naviera.
+                    </div>
+                    <div id="alertaCollect" class="alert alert-warning py-2 px-3 mb-4 d-none" style="font-size: 12px; border-left: 4px solid #f59e0b;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Carga COLLECT:</strong> El cliente/agencia presenta la matriz. Se debe solicitar confirmación.
+                    </div>
+
+                    <div class="row g-4 align-items-center bg-white p-4 rounded border shadow-sm mb-5">
+                        <div class="col-md-4 border-end">
+                            <div class="form-check form-switch mt-1">
+                                <input class="form-check-input" type="checkbox" id="chkMatriz" name="MatrizPresentada" value="true" @(doc?.MatrizPresentada == true ? "checked" : "") style="transform: scale(1.4); cursor: pointer;">
+                                <label class="form-check-label fw-bold text-success ms-2" for="chkMatriz" style="font-size: 11px;">MATRIZ PRESENTADA</label>
+                            </div>
+                        </div>
+                        <div class="col-md-8" id="divEvidenciaMatriz" style="display: @(doc?.MatrizPresentada == true ? "block" : "none");">
+                            <label class="erp-label text-danger">Print de Pantalla / Confirmación (Obligatorio)</label>
+                            <input type="file" name="EvidenciaMatriz" id="fileMatriz" class="form-control erp-input p-1" accept=".pdf, .jpg, .png" />
+                            @if(!string.IsNullOrEmpty(doc?.EvidenciaMatriz)) { 
+                                <div class="mt-2"><a href="@doc.EvidenciaMatriz" target="_blank" class="badge bg-success text-decoration-none px-2 py-1"><i class="bi bi-check-circle"></i> Ver Print Guardado. Subir otro lo reemplaza.</a></div> 
+                            }
+                        </div>
+                    </div>
+
+                    <div class="row g-4 align-items-center bg-white p-4 rounded border shadow-sm">
+                        <div class="col-md-4 border-end">
+                            <div class="form-check form-switch mt-1">
+                                <input class="form-check-input" type="checkbox" id="chkGuiaVisado" name="GuiaVisado" value="true" @(doc?.GuiaVisado == true ? "checked" : "") style="transform: scale(1.3); cursor: pointer;">
+                                <label class="form-check-label fw-bold ms-2" style="font-size: 11px; color: var(--txt-main);" for="chkGuiaVisado">GUÍA VISADA EN PUERTO</label>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-check mt-1">
+                                <input class="form-check-input" type="checkbox" id="chkExtension" name="ExtensionDocumental" value="true" @(doc?.ExtensionDocumental == true ? "checked" : "")>
+                                <label class="form-check-label fw-bold text-danger ms-2" for="chkExtension" style="font-size: 11px;">REQUIERE EXTENSIÓN DOCUMENTAL (CUT-OFF)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="step-incidencias">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="section-title border-0 m-0 p-0"><i class="bi bi-exclamation-triangle-fill text-danger me-1"></i> Control de Extracostos Financieros</h5>
+                        <button type="button" class="btn btn-danger btn-sm fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAddCosto">
+                            <i class="bi bi-plus-circle me-1"></i> Reportar Nuevo Extracosto
+                        </button>
+                    </div>
+
+                    <div class="bg-white p-4 border rounded shadow-sm">
+                        @if(Model.Operacione.ExtracostosOperacions != null && Model.Operacione.ExtracostosOperacions.Any()) {
+                            <table class="table table-sm table-bordered m-0">
+                                <thead class="table-light text-muted" style="font-size: 10px; text-transform: uppercase;">
+                                    <tr>
+                                        <th>Fecha de Reporte</th>
+                                        <th>Tipo de Incidencia</th>
+                                        <th>Motivo / Detalles Justificativos</th>
+                                        <th class="text-center">Respaldo</th>
+                                        <th class="text-end">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size: 12px; font-weight: 500;">
+                                    @foreach(var costo in Model.Operacione.ExtracostosOperacions.OrderByDescending(c => c.FechaCreacion)) {
+                                        <tr>
+                                            <td class="align-middle">@costo.FechaCreacion.ToString("dd/MM/yy HH:mm")</td>
+                                            <td class="align-middle text-danger fw-bold">@costo.TipoCosto</td>
+                                            <td class="align-middle text-muted">@(string.IsNullOrEmpty(costo.Motivo) ? "-" : costo.Motivo)</td>
+                                            <td class="align-middle text-center">
+                                                <a href="@costo.Evidencia" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 10px;"><i class="bi bi-file-earmark-check"></i> Ver Respaldo</a>
+                                            </td>
+                                            <td class="align-middle text-end">
+                                                <button type="submit" form="delForm_@costo.Id" class="btn btn-sm text-danger p-0 m-0" onclick="return confirm('¿Eliminar este reporte de incidencia?');"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        } else {
+                            <div class="text-center py-5">
+                                <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-3 mb-0 fw-bold fs-5">Operación Limpia.</p>
+                                <p class="small text-muted mb-0">No se han reportado multas, demoras ni extracostos a facturar.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="wizard-footer">
+                <button type="button" class="btn btn-step btn-prev" id="btnPrev" style="visibility: hidden;">
+                    <i class="bi bi-arrow-left"></i> Anterior
+                </button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-step btn-next" id="btnNext">
+                        Siguiente <i class="bi bi-arrow-right"></i>
+                    </button>
+                    <button type="button" class="btn btn-step btn-finish" id="btnResumen" style="display: none;">
+                        <i class="bi bi-check2-all"></i> Finalizar y Guardar
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </form>
+</div>
+
+@if(Model.Operacione.ExtracostosOperacions != null) {
+    @foreach(var costo in Model.Operacione.ExtracostosOperacions) {
+        <form id="delForm_@costo.Id" method="post" asp-page-handler="DeleteCosto" asp-route-idCosto="@costo.Id" asp-route-idOp="@Model.Operacione.Id" style="display:none;"></form>
+    }
+}
+
+<div class="modal fade" id="modalAddCosto" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-danger">
+      <div class="modal-header bg-danger text-white border-0">
+        <h5 class="modal-title" style="font-size: 15px;"><i class="bi bi-exclamation-triangle-fill me-2"></i> Reportar Extracosto a Finanzas</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" asp-page-handler="AddCosto" asp-route-id="@Model.Operacione.Id" enctype="multipart/form-data">
+          <div class="modal-body bg-white p-4">
+              <div class="mb-4">
+                  <label class="erp-label text-danger">Categoría de la Incidencia</label>
+                  <select name="NuevoCosto.TipoCosto" class="form-select erp-input fw-bold border-danger" required>
+                      <option value="">Seleccione Categoría...</option>
+                      <optgroup label="Transporte Terrestre">
+                          <option value="Falso Flete">Falso Flete</option>
+                          <option value="Sobreestadía Planta/Puerto">Sobreestadía Planta/Puerto</option>
+                      </optgroup>
+                      <optgroup label="Marítimo">
+                          <option value="Late Arrival (LAR)">Late Arrival (LAR)</option>
+                          <option value="Extra Late Arrival (ELAR)">Extra Late Arrival (ELAR)</option>
+                          <option value="Uso Días Demurrage">Uso Días Demurrage</option>
+                          <option value="Uso Días Detention">Uso Días Detention</option>
+                          <option value="Días de Plug (Reefer)">Días de Plug (Reefer)</option>
+                          <option value="Gate Out / Gate In">Gate Out / Gate In</option>
+                          <option value="Cancelación / Roleo Reserva">Cancelación / Roleo Reserva</option>
+                      </optgroup>
+                      <optgroup label="Documental y Aduana">
+                          <option value="Escáner de Aduana">Escáner de Aduana</option>
+                          <option value="Corrección de BL">Corrección de BL</option>
+                          <option value="Matriz Fuera de Plazo">Matriz Fuera de Plazo</option>
+                          <option value="Corrección de Certificados">Corrección de Certificados</option>
+                      </optgroup>
+                      <optgroup label="Otros">
+                          <option value="Seguro de Carga">Seguro de Carga</option>
+                          <option value="Servicio Adicional">Otro Servicio Adicional</option>
+                      </optgroup>
+                  </select>
+              </div>
+              <div class="mb-4">
+                  <label class="erp-label">Motivo o Explicación del Suceso</label>
+                  <textarea name="NuevoCosto.Motivo" class="form-control erp-input" rows="3" placeholder="Ej: Camión esperó 4 horas en planta. Se anexa la guía firmada con la hora de salida..." required></textarea>
+              </div>
+              <div class="mb-2">
+                  <label class="erp-label text-danger"><i class="bi bi-paperclip"></i> Evidencia (Obligatorio)</label>
+                  <input type="file" name="NuevoCosto.Evidencia" class="form-control erp-input border-danger" accept=".pdf, .jpg, .jpeg, .png" required />
+                  <div class="form-text mt-1" style="font-size: 10px;">* Suba el EIR, correo de aprobación, guía de despacho o respaldo que justifique este extracosto.</div>
+              </div>
+          </div>
+          <div class="modal-footer" style="background-color: #fef2f2;">
+              <button type="button" class="btn btn-light border text-muted fw-bold" data-bs-dismiss="modal" style="font-size: 11px;">CANCELAR</button>
+              <button type="submit" class="btn btn-danger fw-bold px-4 shadow-sm" style="font-size: 11px;">ENVIAR REPORTE</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade modal-resumen" id="modalConfirmacion" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header d-flex justify-content-between align-items-center">
+        <h4 class="modal-title fw-black m-0 text-dark" style="font-size: 18px;"><i class="bi bi-shield-check text-success me-2"></i> Verificación Final</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+          <p class="text-muted small mb-4">Revisa que los datos estructurales sean correctos antes de guardar en la base de datos.</p>
+          
+          <div class="resumen-bloque">
+              <div class="row g-4">
+                  <div class="col-md-4">
+                      <span class="res-label">Booking N°</span>
+                      <p class="res-val text-primary fs-5" id="resBooking"></p>
+                  </div>
+                  <div class="col-md-8">
+                      <span class="res-label">Cliente Responsable</span>
+                      <p class="res-val" id="resCliente"></p>
+                  </div>
+                  <div class="col-md-4">
+                      <span class="res-label">Servicio</span>
+                      <p class="res-val" id="resServicio"></p>
+                  </div>
+                  <div class="col-md-4">
+                      <span class="res-label">Movimiento</span>
+                      <p class="res-val" id="resMov"></p>
+                  </div>
+                  <div class="col-md-4">
+                      <span class="res-label">Término de Pago</span>
+                      <p class="res-val" id="resPago"></p>
+                  </div>
+              </div>
+          </div>
+
+          <div class="resumen-bloque" id="resBloqueCarga">
+              <span class="res-label text-dark mb-3 border-bottom pb-2">Desglose de Unidades</span>
+              <p class="res-val" id="resUnidades" style="font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.6;"></p>
+          </div>
+
+      </div>
+      <div class="modal-footer" style="background-color: var(--bg-soft); border-top: 1px solid #e2e8f0;">
+          <button type="button" class="btn btn-light border fw-bold text-muted px-4" data-bs-dismiss="modal" style="font-size: 12px;">Volver a Editar</button>
+          <button type="button" class="btn btn-dark fw-bold px-4 shadow-sm" id="btnConfirmarSubmit" style="font-size: 12px; background-color: var(--atilson-dark);">
+              <i class="bi bi-database-check me-2"></i> ACTUALIZAR OPERACIÓN
+          </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button type="submit" id="realSubmitBtn" form="frmOperacion" style="display: none;"></button>
+
+@section Scripts {
+    
+    @if (TempData["ErrorBooking"] != null)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                Swal.fire({
+                    title: '¡Operación Denegada!',
+                    text: '@TempData["ErrorBooking"]',
+                    icon: 'error',
+                    confirmButtonColor: 'var(--atilson-dark)',
+                    confirmButtonText: 'Entendido'
+                });
+            });
+        </script>
+    }
+
+    <script>
+        function calcularDif(inicioStr, finStr) {
+            if(!inicioStr || !finStr) return { text: "0h 0m", hours: 0, isExtra: false };
+            let d1 = new Date(inicioStr); let d2 = new Date(finStr);
+            let diffMs = d2 - d1;
+            if(diffMs < 0) return { text: "Error de fechas", hours: 0, isExtra: false };
+            let diffMins = Math.floor(diffMs / 60000);
+            let h = Math.floor(diffMins / 60); let m = diffMins % 60;
+            return { text: `${h}h ${m}m`, hours: h + (m/60), isExtra: h >= 2 }; 
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            
+            // --- MOTOR DEL WIZARD ---
+            const ddlServicio = document.getElementById('ddlServicio');
+            const tabs = document.querySelectorAll('.nav-link');
+            const panes = document.querySelectorAll('.tab-pane');
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+            const btnResumen = document.getElementById('btnResumen');
+            
+            let activeTabs = []; 
+            let currentIndex = 0;
+
+            function updateWizardNav() {
+                tabs.forEach(t => t.classList.remove('active'));
+                panes.forEach(p => p.classList.remove('active'));
+
+                if (activeTabs.length > 0) {
+                    const currentTabId = activeTabs[currentIndex];
+                    const currentTab = document.getElementById(currentTabId);
+                    const currentPaneId = currentTab.getAttribute('data-target');
+                    const currentPane = document.getElementById(currentPaneId);
+
+                    currentTab.classList.add('active');
+                    currentPane.classList.add('active');
+                }
+
+                btnPrev.style.visibility = currentIndex > 0 ? 'visible' : 'hidden';
+                
+                if (currentIndex === activeTabs.length - 1) {
+                    btnNext.style.display = 'none';
+                    btnResumen.style.display = 'inline-flex';
+                } else {
+                    btnNext.style.display = 'inline-flex';
+                    btnResumen.style.display = 'none';
+                }
+            }
+
+            function actualizarModulos() {
+                if (!ddlServicio) return;
+                
+                const valTexto = ddlServicio.options[ddlServicio.selectedIndex]?.text.toUpperCase() || '';
+                const valNum = ddlServicio.value;
+
+                const liTer = document.getElementById('nav-item-terrestre');
+                const liMar = document.getElementById('nav-item-maritimo');
+                const liDoc = document.getElementById('nav-item-documental');
+
+                activeTabs = ['tab-general']; 
+                
+                if (!valNum) {
+                    liTer.style.display = 'none';
+                    liMar.style.display = 'none';
+                    liDoc.style.display = 'none';
+                } else {
+                    let esMaritimo = valTexto.includes('MARÍTIMO') || valTexto.includes('INTEGRAL') || valTexto.includes('MAR.');
+                    let esTerrestre = valTexto.includes('TERRESTRE') || valTexto.includes('INTEGRAL') || valTexto.includes('TERR.');
+                    let esDocumental = valTexto.includes('DOC') || valTexto.includes('INTEGRAL');
+
+                    liTer.style.display = esTerrestre ? 'block' : 'none';
+                    liMar.style.display = esMaritimo ? 'block' : 'none';
+                    liDoc.style.display = esDocumental ? 'block' : 'none';
+
+                    // Respetando el orden de Edit
+                    if (esMaritimo) activeTabs.push('tab-maritimo');
+                    if (esTerrestre) activeTabs.push('tab-terrestre');
+                    if (esDocumental) activeTabs.push('tab-documental');
+
+                    const astMaritimo = document.querySelector('.req-maritimo-asterisk');
+                    document.querySelectorAll('.req-naviera, .req-carga').forEach(el => {
+                        if(esMaritimo) { 
+                            el.classList.add('req-activa'); 
+                            if(astMaritimo) astMaritimo.style.display = 'inline';
+                        } 
+                        else { 
+                            el.classList.remove('req-activa'); 
+                            if(astMaritimo) astMaritimo.style.display = 'none';
+                        }
+                    });
+                }
+                
+                activeTabs.push('tab-incidencias');
+                if(currentIndex >= activeTabs.length) currentIndex = activeTabs.length - 1;
+                
+                updateWizardNav();
+            }
+
+            if (ddlServicio) {
+                ddlServicio.addEventListener('change', actualizarModulos);
+                actualizarModulos();
+            }
+
+            btnNext.addEventListener('click', () => {
+                if (currentIndex < activeTabs.length - 1) {
+                    currentIndex++;
+                    updateWizardNav();
+                }
+            });
+
+            btnPrev.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateWizardNav();
+                }
+            });
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const id = this.id;
+                    const index = activeTabs.indexOf(id);
+                    if (index !== -1) {
+                        currentIndex = index;
+                        updateWizardNav();
+                    }
+                });
+            });
+
+            // --- AUTOCOMPLETADO DE TERMINALES SEGÚN POL ---
+            const inpPol = document.getElementById('inpPol');
+            const inpTerminal = document.getElementById('inpTerminal');
+            const selTerminal = document.getElementById('selTerminal');
+
+            if (inpPol && inpTerminal && selTerminal) {
+                inpPol.addEventListener('change', function() {
+                    const polText = this.options[this.selectedIndex]?.text.toUpperCase() || '';
+                    
+                    if (polText.includes('SAN ANTONIO')) {
+                        inpTerminal.style.display = 'none';
+                        selTerminal.style.display = 'block';
+                        selTerminal.innerHTML = '<option value="">-- Seleccionar Terminal --</option><option value="STI">STI</option><option value="DP WORLD">DP WORLD</option><option value="PUERTO CENTRAL">PUERTO CENTRAL</option><option value="OTRO">OTRO...</option>';
+                        inpTerminal.value = ''; 
+                    } else if (polText.includes('VALPARAISO') || polText.includes('VALPARAÍSO')) {
+                        selTerminal.style.display = 'none';
+                        inpTerminal.style.display = 'block';
+                        inpTerminal.value = 'TPS';
+                    } else if (polText.includes('SAN VICENTE')) {
+                        selTerminal.style.display = 'none';
+                        inpTerminal.style.display = 'block';
+                        inpTerminal.value = 'SVTI';
+                    } else {
+                        selTerminal.style.display = 'none';
+                        inpTerminal.style.display = 'block';
+                        inpTerminal.value = '';
+                    }
+                });
+
+                selTerminal.addEventListener('change', function() {
+                    if (this.value === 'OTRO') {
+                        selTerminal.style.display = 'none';
+                        inpTerminal.style.display = 'block';
+                        inpTerminal.value = '';
+                        inpTerminal.focus();
+                    } else {
+                        inpTerminal.value = this.value;
+                    }
+                });
+            }
+
+            // --- LÓGICA DE TRANSBORDO ---
+            const selectTransbordo = document.getElementById('selectTransbordo');
+            if (selectTransbordo) {
+                selectTransbordo.addEventListener('change', function() {
+                    const divPuertoTransbordo = document.getElementById('divPuertoTransbordo');
+                    const inputTransbordo = document.getElementById('Operacione_Transbordo');
+                    if (this.value === 'TRANSBORDO') {
+                        if(divPuertoTransbordo) divPuertoTransbordo.style.display = 'block';
+                    } else {
+                        if(divPuertoTransbordo) divPuertoTransbordo.style.display = 'none';
+                        if(inputTransbordo) inputTransbordo.value = '';
+                    }
+                });
+            }
+
+            // --- LÓGICA CARGA Y REEFER ---
+            function actualizarCarga(container) {
+                if (!container) return;
+                const ddlTipoCarga = container.querySelector('.select-tipo-carga');
+                const ddlCondicionReefer = container.querySelector('.select-condicion-reefer');
+                const divCondicionReefer = container.querySelector('.div-condicion-reefer');
+                const ddlUnidad = container.querySelector('.select-unidad');
+                const panelReefer = container.querySelector('.panel-reefer');
+                const divOpcionesFresh = container.querySelector('.div-opciones-fresh');
+                const selectAtmosfera = container.querySelector('.select-atmosfera');
+                const divConvencional = container.querySelector('.div-convencional');
+                const divAC = container.querySelector('.div-ac');
+
+                const val = ddlTipoCarga?.options[ddlTipoCarga.selectedIndex]?.text.toUpperCase() || '';
+                const pre = ddlUnidad?.getAttribute('data-val-pre') || '';
+                
+                if (val.includes('DRY')) {
+                    if (divCondicionReefer) divCondicionReefer.style.display = 'none';
+                    if (panelReefer) panelReefer.style.display = 'none';
+                    if (ddlUnidad) ddlUnidad.innerHTML = `
+                        <option value="20' DRY STD" ${pre==="20' DRY STD"?"selected":""}>20' DRY STD</option>
+                        <option value="40' DRY STD" ${pre==="40' DRY STD"?"selected":""}>40' DRY STD</option>
+                        <option value="40' DRY HC" ${pre==="40' DRY HC"?"selected":""}>40' DRY HC</option>
+                        <option value="PALLETS" ${pre==="PALLETS"?"selected":""}>Carga Suelta / Pallets</option>
+                    `;
+                } 
+                else if (val.includes('REEFER')) {
+                    if (divCondicionReefer) divCondicionReefer.style.display = 'block';
+                    if (panelReefer) panelReefer.style.display = 'block';
+                    
+                    if (ddlCondicionReefer && ddlCondicionReefer.value === 'FROZEN') {
+                        if(ddlUnidad) ddlUnidad.innerHTML = '<option value="40\' REEFER" selected>40\' REEFER</option>';
+                        if(divOpcionesFresh) divOpcionesFresh.style.display = 'none'; 
+                    } else {
+                        if(ddlUnidad) ddlUnidad.innerHTML = `<option value="20' REEFER" ${pre==="20' REEFER"?"selected":""}>20' REEFER</option><option value="40' REEFER" ${pre==="40' REEFER"?"selected":""}>40' REEFER</option>`;
+                        if(divOpcionesFresh) divOpcionesFresh.style.display = 'flex';
+                        
+                        if (selectAtmosfera && selectAtmosfera.value === 'AC') {
+                            if(divConvencional) divConvencional.style.display = 'none'; 
+                            if(divAC) divAC.style.display = 'flex';
+                        } else {
+                            if(divConvencional) divConvencional.style.display = 'flex'; 
+                            if(divAC) divAC.style.display = 'none';
+                        }
+                    }
+                } else {
+                    if(divCondicionReefer) divCondicionReefer.style.display = 'none'; 
+                    if(panelReefer) panelReefer.style.display = 'none';
+                    if(ddlUnidad) ddlUnidad.innerHTML = '<option value="">Seleccione Carga Primero</option>';
+                }
+            }
+
+            const contenedorContainer = document.getElementById('contenedores-container');
+            if (contenedorContainer) {
+                contenedorContainer.addEventListener('change', function(e) {
+                    if (e.target.classList.contains('select-tipo-carga') || e.target.classList.contains('select-condicion-reefer') || e.target.classList.contains('select-atmosfera')) {
+                        actualizarCarga(e.target.closest('.contenedor-item'));
+                    }
+                });
+            }
+
+            // --- AÑADIR CONTENEDORES EXTRA ---
+            let contadorContenedores = document.querySelectorAll('.contenedor-item').length;
+            const btnAgregar = document.getElementById('btnAgregarContenedor');
+            if (btnAgregar) {
+                btnAgregar.addEventListener('click', function() {
+                    contadorContenedores++;
+                    const container = document.getElementById('contenedores-container');
+                    const html = `
+                    <div class="contenedor-item position-relative">
+                        <button type="button" class="btn-close position-absolute top-0 end-0 m-3 btn-eliminar-contenedor" title="Eliminar"></button>
+                        <h6 class="erp-label mb-3" style="color: var(--atilson-dark); font-size: 11px;">UNIDAD ${contadorContenedores} (Adicional)</h6>
+                        <div class="row g-3">
+                            <div class="col-md-2">
+                                <label class="erp-label">Tipo Carga <span class="text-danger req-maritimo-asterisk" style="display:none;">*</span></label>
+                                <select name="ContenedoresExtra[${contadorContenedores}].IdTipoCarga" class="form-select erp-input fw-bold req-carga select-tipo-carga">
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="1">DRY</option>
+                                    <option value="2">REEFER</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 div-condicion-reefer" style="display: none;">
+                                <label class="erp-label">Condición Reefer</label>
+                                <select name="ContenedoresExtra[${contadorContenedores}].CondicionReefer" class="form-select erp-input select-condicion-reefer">
+                                    <option value="FRESH">Fresh</option>
+                                    <option value="FROZEN">Frozen</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="erp-label">Tipo Unidad <span class="text-danger">*</span></label>
+                                <select name="ContenedoresExtra[${contadorContenedores}].TipoContenedor" class="form-select erp-input select-unidad req-general">
+                                    <option value="">Carga Primero</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="erp-label">N° Contenedor</label>
+                                <input name="ContenedoresExtra[${contadorContenedores}].NumeroContenedor" class="form-control erp-input text-uppercase input-contenedor" placeholder="S/N..." />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="erp-label">Commodity <span class="text-danger">*</span></label>
+                                <input name="ContenedoresExtra[${contadorContenedores}].Commodity" class="form-control erp-input text-uppercase req-general" placeholder="Ej: Vino..." />
+                            </div>
+                            
+                            <div class="col-md-12 mt-3 div-evidencia" style="display: none;">
+                                <label class="erp-label text-danger fw-bold"><i class="bi bi-paperclip"></i> Respaldo Físico (EIR o Foto)</label>
+                                <input type="file" name="EvidenciaExtra_${contadorContenedores}" class="form-control erp-input input-evidencia" accept=".pdf, .jpg, .jpeg, .png" style="background-color: #fff;" />
+                            </div>
+                        </div>
+                        <div class="panel-reefer" style="display: none;">
+                            <h6 class="erp-label mb-3" style="color: var(--atilson-dark);"><i class="bi bi-snow"></i> Parámetros Reefer</h6>
+                            <div class="row g-3">
+                                <div class="col-md-2"><label class="erp-label">Temp (°C)</label><input type="number" step="0.1" class="form-control erp-input" name="ContenedoresExtra[${contadorContenedores}].TempSeteada" placeholder="0.0" /></div>
+                                <div class="col-md-10 row g-3 m-0 div-opciones-fresh">
+                                    <div class="col-md-3"><label class="erp-label">Atmósfera</label><select class="form-select erp-input select-atmosfera" name="ContenedoresExtra[${contadorContenedores}].TipoAtmosfera"><option value="CONV">Sin atmósfera</option><option value="AC">Controlada</option></select></div>
+                                    <div class="col-md-9 row g-3 m-0 div-convencional"><div class="col-md-4"><label class="erp-label">Ventilación</label><input type="text" class="form-control erp-input" name="ContenedoresExtra[${contadorContenedores}].Ventilacion" placeholder="15" /></div><div class="col-md-4"><label class="erp-label">Humedad (%)</label><input type="number" class="form-control erp-input" name="ContenedoresExtra[${contadorContenedores}].Humedad" placeholder="80" /></div></div>
+                                    <div class="col-md-9 row g-3 m-0 div-ac" style="display: none;"><div class="col-md-4"><label class="erp-label">Marca AC</label><select class="form-select erp-input" name="ContenedoresExtra[${contadorContenedores}].MarcaAc"><option value="Extrafresh">Extrafresh</option><option value="Liventus">Liventus</option><option value="Starcool">Starcool</option></select></div><div class="col-md-4"><label class="erp-label text-danger">O2 (%)</label><input type="text" class="form-control erp-input" name="ContenedoresExtra[${contadorContenedores}].NivelO2" placeholder="5" /></div><div class="col-md-4"><label class="erp-label text-danger">CO2 (%)</label><input type="text" class="form-control erp-input" name="ContenedoresExtra[${contadorContenedores}].NivelCO2" placeholder="10" /></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                    container.insertAdjacentHTML('beforeend', html);
+                    const newCont = container.lastElementChild;
+                    
+                    // Aseguramos que la regla de asteriscos (naviera requerida) aplique al nuevo si es que estamos en modo marítimo
+                    const isMar = document.getElementById('tab-maritimo').classList.contains('active') || document.getElementById('nav-item-maritimo').style.display === 'block';
+                    if (isMar) {
+                        newCont.querySelectorAll('.req-carga').forEach(el => el.classList.add('req-activa'));
+                        const ast = newCont.querySelector('.req-maritimo-asterisk');
+                        if (ast) ast.style.display = 'inline';
+                    }
+
+                    newCont.querySelectorAll('.input-contenedor').forEach(i => i.addEventListener('input', function() { validarEvidencia(this); }));
+                });
+            }
+
+            if (contenedorContainer) {
+                contenedorContainer.addEventListener('click', function(e) {
+                    if(e.target.classList.contains('btn-eliminar-contenedor')) { 
+                        e.target.closest('.contenedor-item').remove(); 
+                    }
+                });
+            }
+
+            // Disparar lógica de carga inicial para los contenedores que ya vienen de la BD
+            document.querySelectorAll('.contenedor-item').forEach(item => actualizarCarga(item));
+
+            // LÓGICA EVIDENCIA CONTENEDOR (EIR)
+            function validarEvidencia(inp) {
+                const b = inp.closest('.contenedor-item');
+                const c = b.querySelector('.input-contenedor'); 
+                const d = b.querySelector('.div-evidencia'); 
+                const f = b.querySelector('.input-evidencia');
+                const h = b.querySelector('.has-evidence-flag')?.value === 'true';
+
+                if (c && c.value.trim() !== '') {
+                    if(d) d.style.display = 'block';
+                    if (!h && f) f.setAttribute('required', 'required'); 
+                } else {
+                    if(d) d.style.display = 'none'; 
+                    if(f) f.removeAttribute('required');
+                }
+            }
+            document.querySelectorAll('.input-contenedor').forEach(i => { i.addEventListener('input', function() { validarEvidencia(this); }); });
+            document.querySelectorAll('.input-contenedor').forEach(i => { validarEvidencia(i); }); // Disparo inicial
+
+
+            // --- LÓGICA DE TIEMPOS ---
+            function actualizarTiempos() {
+                let inPlanta = document.getElementById('inpLlegadaPlanta')?.value;
+                let outPlanta = document.getElementById('inpSalidaPlanta')?.value;
+                if(inPlanta && outPlanta) {
+                    let pData = calcularDif(inPlanta, outPlanta);
+                    let txtPlanta = document.getElementById('txtTiempoPlanta');
+                    let bPlanta = document.getElementById('badgePlanta');
+                    if (txtPlanta) txtPlanta.innerText = pData.text;
+                    if (bPlanta) bPlanta.style.backgroundColor = pData.isExtra ? '#fee2e2' : 'var(--bg-soft)';
+                    if (txtPlanta) txtPlanta.style.color = pData.isExtra ? '#dc2626' : 'var(--txt-main)';
+                }
+
+                let inPuerto = document.getElementById('inpLlegadaPuerto')?.value;
+                let outPuerto = document.getElementById('inpSalidaPuerto')?.value;
+                if(inPuerto && outPuerto) {
+                    let puData = calcularDif(inPuerto, outPuerto);
+                    let txtPuerto = document.getElementById('txtTiempoPuerto');
+                    let bPuerto = document.getElementById('badgePuerto');
+                    if (txtPuerto) txtPuerto.innerText = puData.text;
+                    if (bPuerto) bPuerto.style.backgroundColor = puData.isExtra ? '#fee2e2' : 'var(--bg-soft)';
+                    if (txtPuerto) txtPuerto.style.color = puData.isExtra ? '#dc2626' : 'var(--txt-main)';
+                }
+            }
+            document.querySelectorAll('.calc-tiempo').forEach(i => i.addEventListener('input', actualizarTiempos));
+            actualizarTiempos();
+
+            // --- LÓGICA MATRIZ Y PREPAID/COLLECT ---
+            const inpPago = document.getElementById('inpPago');
+            function evaluarCondicionPago() {
+                if(!inpPago) return;
+                const p = inpPago.value;
+                const aPrepaid = document.getElementById('alertaPrepaid');
+                const aCollect = document.getElementById('alertaCollect');
+                if (p === "1" || p === "2") { 
+                    if(aPrepaid) aPrepaid.classList.remove('d-none'); if(aCollect) aCollect.classList.add('d-none');
+                } else if (p === "3" || p === "4" || p === "5") { 
+                    if(aCollect) aCollect.classList.remove('d-none'); if(aPrepaid) aPrepaid.classList.add('d-none');
+                } else {
+                    if(aPrepaid) aPrepaid.classList.add('d-none'); if(aCollect) aCollect.classList.add('d-none');
+                }
+            }
+            if(inpPago) { inpPago.addEventListener('change', evaluarCondicionPago); evaluarCondicionPago(); }
+
+            const chkMatriz = document.getElementById('chkMatriz');
+            if(chkMatriz) {
+                chkMatriz.addEventListener('change', function() {
+                    const div = document.getElementById('divEvidenciaMatriz'); 
+                    const file = document.getElementById('fileMatriz');
+                    if (this.checked) {
+                        if(div) div.style.display = 'block';
+                        if (file && !document.querySelector('a[href^="/uploads/evidencias"][href*="Matriz"]')) { file.setAttribute('required', 'required'); }
+                    } else {
+                        if(div) div.style.display = 'none'; if(file) file.removeAttribute('required');
+                    }
+                });
+            }
+
+            // --- LÓGICA LAR ---
+            const inpEstadoLar = document.getElementById('inpEstadoLar');
+            function toggleLar() {
+                const divFechaLar = document.querySelector('.div-fecha-lar');
+                const divEvidenciaLar = document.querySelector('.div-evidencia-lar');
+                const fileLar = document.getElementById('fileLar');
+                if (inpEstadoLar && (inpEstadoLar.value.includes("AUTORIZADO") || inpEstadoLar.value.includes("INGRESADO"))) {
+                    if(divFechaLar) divFechaLar.style.display = 'block'; 
+                    if(divEvidenciaLar) divEvidenciaLar.style.display = 'block';
+                    if (fileLar && !document.querySelector('a[href^="/uploads/evidencias"][href*="LAR"]')) { fileLar.setAttribute('required', 'required'); }
+                } else {
+                    if(divFechaLar) divFechaLar.style.display = 'none'; 
+                    if(divEvidenciaLar) divEvidenciaLar.style.display = 'none';
+                    if(fileLar) fileLar.removeAttribute('required');
+                }
+            }
+            if (inpEstadoLar) { inpEstadoLar.addEventListener('change', toggleLar); toggleLar(); }
+
+
+            // --- VALIDACIONES, SWEETALERT Y RESUMEN FINAL ---
+            btnResumen.addEventListener('click', function() {
+                let errores = [];
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+                // Campos estáticos requeridos
+                const reqGen = document.querySelectorAll('.req-general');
+                reqGen.forEach(el => {
+                    if(!el.value) { el.classList.add('is-invalid'); errores.push(el.previousElementSibling.innerText.replace('*','').trim()); }
+                });
+
+                // Campos dinámicos requeridos (Solo si aplica)
+                const reqDyn = document.querySelectorAll('.req-activa');
+                reqDyn.forEach(el => {
+                    if(!el.value) { el.classList.add('is-invalid'); errores.push(el.previousElementSibling.innerText.replace('*','').trim()); }
+                });
+
+                if (errores.length > 0) {
+                    Swal.fire({
+                        title: 'Faltan Datos Obligatorios',
+                        html: '<p class="text-muted small">Por favor complete los siguientes campos (marcados en rojo):</p><ul class="text-start mb-0" style="font-size:13px; font-weight:600; color:#ef4444;"><li>' + errores.join('</li><li>') + '</li></ul>',
+                        icon: 'warning',
+                        confirmButtonColor: 'var(--atilson-dark)',
+                        confirmButtonText: 'Revisar Formulario'
+                    });
+                } else {
+                    // Si todo está OK, llenamos el modal de resumen
+                    document.getElementById('resBooking').innerText = document.getElementById('inpBooking').value.toUpperCase();
+                    
+                    const cbCli = document.getElementById('inpCliente');
+                    document.getElementById('resCliente').innerText = cbCli.options[cbCli.selectedIndex]?.text || "S/N";
+                    
+                    const cbServ = document.getElementById('ddlServicio');
+                    document.getElementById('resServicio').innerText = cbServ.options[cbServ.selectedIndex]?.text || "S/N";
+                    
+                    const cbMov = document.getElementById('inpMovimiento');
+                    document.getElementById('resMov').innerText = cbMov.value ? cbMov.options[cbMov.selectedIndex].text : "N/A";
+                    
+                    const cbPago = document.getElementById('inpPago');
+                    document.getElementById('resPago').innerText = cbPago.options[cbPago.selectedIndex]?.text || "S/N";
+
+                    // Resumen Contenedores
+                    let unidadesHTML = "";
+                    document.querySelectorAll('.contenedor-item').forEach((item, index) => {
+                        const tCarga = item.querySelector('.select-tipo-carga');
+                        const tUni = item.querySelector('.select-unidad');
+                        const comm = item.querySelector('#inpCommodity') || item.querySelector('input[name*="Commodity"]');
+                        
+                        let tipoTxt = tCarga.value ? tCarga.options[tCarga.selectedIndex].text : "-";
+                        let uniTxt = tUni.value || "-";
+                        let commTxt = comm.value.toUpperCase() || "GENERAL";
+                        
+                        unidadesHTML += `> UNIDAD ${index+1}: [${tipoTxt}] ${uniTxt} | ${commTxt}<br/>`;
+                    });
+                    document.getElementById('resUnidades').innerHTML = unidadesHTML;
+
+                    // Mostramos Modal de Resumen
+                    var modalConfirmacion = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
+                    modalConfirmacion.show();
+                }
+            });
+
+            // Enviar formulario al confirmar en el modal
+            document.getElementById('btnConfirmarSubmit').addEventListener('click', function() {
+                // Deshabilitar botón para evitar doble envío
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> PROCESANDO...';
+                this.style.pointerEvents = 'none';
+                document.getElementById('realSubmitBtn').click();
+            });
+
+        });
+
+        // --- SISTEMA DE LOGS DE ETA / ETD (HISTORIAL) ---
+        let updatesCountEta = @(Model.Operacione.EtaPod.HasValue ? 1 : 0);
+        let updatesCountEtd = @(Model.Operacione.EtdPol.HasValue ? 1 : 0);
+        
+        window.registrarCambioEta = function() {
+            if(updatesCountEta >= 3) {
+                Swal.fire('Límite Alcanzado', 'Solo se permiten 3 actualizaciones de ETA en el historial.', 'warning');
+                return;
+            }
+            const nuevaFecha = document.getElementById('currentEta').value;
+            if(!nuevaFecha) {
+                Swal.fire('Atención', 'Seleccione una nueva fecha de ETA primero.', 'info');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Motivo del Cambio de ETA',
+                input: 'text',
+                inputPlaceholder: 'Ej: Roleo de carga, congestión en puerto...',
+                showCancelButton: true,
+                confirmButtonText: 'Registrar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    updatesCountEta++;
+                    const container = document.getElementById('etaHistoryContainer');
+                    if(updatesCountEta === 1 || container.innerText.includes('Sin cambios')) {
+                        container.innerHTML = '<span class="fw-bold d-block mb-1 text-muted" style="font-size: 10px; text-transform: uppercase;">Historial de Cambios (Máx 3):</span>';
+                    }
+                    
+                    const f = new Date();
+                    const hoy = f.toLocaleDateString() + ' ' + f.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    const htmlLog = `<div class="text-danger fw-bold border-bottom border-warning pb-1 mb-1 mt-1" style="font-size:10px;">
+                        <i class="bi bi-arrow-right-short"></i> Nuevo ETA: ${nuevaFecha} | Motivo: ${result.value} <br><span class="text-muted fw-normal">Registrado el: ${hoy}</span>
+                    </div>`;
+                    
+                    container.insertAdjacentHTML('beforeend', htmlLog);
+                    
+                    // Guarda el HTML generado en el input oculto para enviarlo al backend
+                    const hiddenInput = document.getElementById('hiddenEtaHistory');
+                    if(hiddenInput) hiddenInput.value += htmlLog;
+                    
+                    Swal.fire('Registrado', 'El cambio de ETA se guardará al confirmar la edición de la operación.', 'success');
+                }
+            });
+        }
+
+        window.registrarCambioEtd = function() {
+            if(updatesCountEtd >= 3) {
+                Swal.fire('Límite Alcanzado', 'Solo se permiten 3 actualizaciones de ETD en el historial.', 'warning');
+                return;
+            }
+            const nuevaFecha = document.getElementById('currentEtd').value;
+            if(!nuevaFecha) {
+                Swal.fire('Atención', 'Seleccione una nueva fecha de ETD primero.', 'info');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Motivo del Cambio de ETD',
+                input: 'text',
+                inputPlaceholder: 'Ej: Retraso en zarpe, clima, rolleo...',
+                showCancelButton: true,
+                confirmButtonText: 'Registrar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    updatesCountEtd++;
+                    const container = document.getElementById('etdHistoryContainer');
+                    if(updatesCountEtd === 1 || container.innerText.includes('Sin cambios')) {
+                        container.innerHTML = '<span class="fw-bold d-block mb-1 text-muted" style="font-size: 10px; text-transform: uppercase;">Historial de Cambios (Máx 3):</span>';
+                    }
+                    
+                    const f = new Date();
+                    const hoy = f.toLocaleDateString() + ' ' + f.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    const htmlLog = `<div class="etd-history-item fw-bold border-bottom border-success pb-1 mb-1 mt-1" style="font-size:10px;">
+                        <i class="bi bi-arrow-right-short"></i> Nuevo ETD: ${nuevaFecha} | Motivo: ${result.value} <br><span class="text-muted fw-normal">Registrado el: ${hoy}</span>
+                    </div>`;
+                    
+                    container.insertAdjacentHTML('beforeend', htmlLog);
+                    
+                    const hiddenInput = document.getElementById('hiddenEtdHistory');
+                    if(hiddenInput) hiddenInput.value += htmlLog;
+                    
+                    Swal.fire('Registrado', 'El cambio de ETD se guardará al confirmar la edición de la operación.', 'success');
+                }
+            });
+        }
+    </script>
+}

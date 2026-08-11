@@ -1,0 +1,97 @@
+﻿@page "{id:int}"
+@model AtilsonCargoSpa.Pages.Operaciones.ProformaPdfModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>PROFORMA @Model.Operacion.NumeroBooking</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; padding: 40px; background-color: white; }
+        .header-box { border-bottom: 2px solid #2c1b4d; padding-bottom: 20px; margin-bottom: 30px; }
+        .label-gray { color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .data-text { font-size: 14px; font-weight: 700; color: #0f172a; }
+        .table-proforma th { background-color: #f8fafc; color: #475569; font-size: 10px; text-transform: uppercase; }
+        .total-box { background-color: #f1f5f9; border-radius: 8px; padding: 20px; margin-top: 30px; }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="header-box d-flex justify-content-between align-items-center">
+        <div>
+            <img src="~/img/Atilson.png" style="max-height: 60px;" />
+            <div class="mt-2" style="font-size: 10px; color: #64748b;">ATILSON CARGO SPA | www.atilson.com</div>
+        </div>
+        <div class="text-end">
+            <h2 class="fw-black m-0" style="color: #2c1b4d;">PROFORMA DE GASTOS</h2>
+            <div class="data-text">REF: @Model.Operacion.NumeroBooking</div>
+            <div class="text-muted small">Fecha: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-6">
+            <div class="label-gray">CLIENTE / FACTURAR A:</div>
+            <div class="data-text">@Model.Operacion.IdClienteNavigation?.RazonSocial</div>
+            <div class="text-muted small">RUT: @Model.Operacion.IdClienteNavigation?.Rut</div>
+        </div>
+        <div class="col-6 text-end">
+            <div class="label-gray">DETALLES DEL EMBARQUE:</div>
+            <div class="data-text">NAVE: @Model.Operacion.Nave</div>
+            <div class="text-muted small">EQUIPO: 1x @Model.Operacion.TipoContenedor</div>
+        </div>
+    </div>
+
+    <table class="table table-proforma">
+        <thead>
+            <tr>
+                <th>DESCRIPCIÓN DEL CONCEPTO</th>
+                <th class="text-center">CANTIDAD</th>
+                <th class="text-end">VALOR NETO</th>
+                <th class="text-end">TOTAL</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(Model.Finanzas != null) {
+                if(Model.Finanzas.VentaMaritimo > 0) {
+                    <tr><td>SERVICIO FLETE MARÍTIMO</td><td class="text-center">1</td><td class="text-end">USD @Model.Finanzas.VentaMaritimo?.ToString("N2")</td><td class="text-end">USD @Model.Finanzas.VentaMaritimo?.ToString("N2")</td></tr>
+                }
+                if(Model.Finanzas.VentaTerrestre > 0) {
+                    <tr><td>SERVICIO TRANSPORTE TERRESTRE</td><td class="text-center">1</td><td class="text-end">USD @Model.Finanzas.VentaTerrestre?.ToString("N2")</td><td class="text-end">USD @Model.Finanzas.VentaTerrestre?.ToString("N2")</td></tr>
+                }
+                if(Model.Finanzas.VentaDocumental > 0) {
+                    <tr><td>SERVICIOS DOCUMENTALES Y AGENCIA</td><td class="text-center">1</td><td class="text-end">USD @Model.Finanzas.VentaDocumental?.ToString("N2")</td><td class="text-end">USD @Model.Finanzas.VentaDocumental?.ToString("N2")</td></tr>
+                }
+            }
+
+            @foreach(var extra in Model.Operacion.ExtracostosOperacions) {
+                <tr>
+                    <td class="text-danger fw-bold">EXTR@extra.TipoCosto.ToUpper() (@extra.Motivo)</td>
+                    <td class="text-center">1</td>
+                    <td class="text-end">@extra.Moneda @extra.Monto.ToString("N2")</td>
+                    <td class="text-end">@extra.Moneda @extra.Monto.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="row justify-content-end">
+        <div class="col-4">
+            <div class="total-box">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="label-gray">TOTAL USD:</span>
+                    <span class="data-text" style="font-size: 20px;">$ @Model.TotalVentaUSD.ToString("N2")</span>
+                </div>
+                @if(Model.TotalVentaCLP > 0) {
+                    <div class="d-flex justify-content-between">
+                        <span class="label-gray">TOTAL CLP:</span>
+                        <span class="data-text" style="color: #dc2626;">$ @Model.TotalVentaCLP.ToString("N0")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</body>
+</html>

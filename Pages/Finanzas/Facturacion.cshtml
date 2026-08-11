@@ -1,0 +1,929 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Finanzas.FacturacionModel
+@using AtilsonCargoSpa.Models
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
+
+@{
+    ViewData["Title"] = "Facturación y Recaudación (AR)";
+}
+
+<style>
+    /* ATILSON FINTECH DESIGN SYSTEM */
+    :root {
+        --atilson-dark: #0f172a;
+        --txt-main: #1e293b;
+        --txt-muted: #64748b;
+        --bg-main: #ffffff;
+        --bg-soft: #f8fafc;
+        --border-soft: #e2e8f0;
+        --color-venta: #0284c7;
+        --color-parcial: #8b5cf6;
+        --color-costo: #dc2626;
+        --color-profit: #10b981;
+        --color-warn: #f59e0b;
+    }
+
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Inter', system-ui, sans-serif;
+        color: var(--txt-main);
+    }
+
+    /* NAVEGACIÓN SUPERIOR */
+    .workspace-nav {
+        background: var(--bg-main);
+        padding: 5px;
+        border-radius: 8px;
+        border: 1px solid var(--border-soft);
+        display: inline-flex;
+        gap: 2px;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .ws-btn {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 8px 18px;
+        border-radius: 6px;
+        color: var(--txt-muted);
+        text-decoration: none;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        letter-spacing: 0.5px;
+    }
+
+        .ws-btn:hover {
+            background: var(--bg-soft);
+            color: var(--txt-main);
+        }
+
+        .ws-btn.active {
+            background: var(--atilson-dark);
+            color: #ffffff;
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.15);
+        }
+
+        .ws-btn i {
+            font-size: 14px;
+            margin-right: 6px;
+        }
+
+    /* KPI CARDS GLOBALES */
+    .kpi-card {
+        border-radius: 12px;
+        padding: 20px 24px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #ffffff;
+    }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+    .kpi-bg-icon {
+        position: absolute;
+        right: -15px;
+        bottom: -20px;
+        font-size: 90px;
+        color: rgba(255, 255, 255, 0.08);
+        transform: rotate(-15deg);
+        pointer-events: none;
+        transition: all 0.4s ease;
+    }
+
+    .kpi-card:hover .kpi-bg-icon {
+        transform: rotate(0deg) scale(1.1);
+        color: rgba(255, 255, 255, 0.15);
+    }
+
+    .kpi-title {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        opacity: 0.9;
+    }
+
+    .kpi-value {
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: -1px;
+        z-index: 1;
+        line-height: 1.1;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+    }
+
+    .kpi-desc {
+        font-size: 10px;
+        font-weight: 600;
+        margin-top: 8px;
+        z-index: 1;
+        opacity: 0.8;
+    }
+
+    /* TABS DEL KANBAN */
+    .kanban-tabs {
+        display: flex;
+        gap: 6px;
+        border-bottom: 2px solid var(--border-soft);
+        margin-bottom: 16px;
+        padding-left: 5px;
+        flex-wrap: wrap;
+    }
+
+    .kanban-btn {
+        border: none;
+        background: transparent;
+        padding: 10px 18px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--txt-muted);
+        border-radius: 8px 8px 0 0;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .kanban-btn:hover {
+            background: #e2e8f0;
+            color: var(--atilson-dark);
+        }
+
+        .kanban-btn.active {
+            background: white;
+            color: var(--atilson-dark);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-soft);
+            border-bottom: 2px solid white;
+            margin-bottom: -2px;
+        }
+
+    /* TABLA PRINCIPAL */
+    .fin-table-wrapper {
+        background: var(--bg-main);
+        border-radius: 10px;
+        border: 1px solid var(--border-soft);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        overflow: hidden;
+    }
+
+    .table-exec {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-bottom: 0;
+    }
+
+        .table-exec th {
+            background-color: var(--bg-soft);
+            color: var(--txt-muted);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-soft);
+            white-space: nowrap;
+        }
+
+        .table-exec td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--txt-main);
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table-exec tbody tr.row-main:hover td {
+            background-color: #f8fafc;
+        }
+
+    .btn-toggle-row {
+        background: transparent;
+        border: 1px solid var(--border-soft);
+        border-radius: 6px;
+        color: var(--txt-muted);
+        cursor: pointer;
+        padding: 4px 8px;
+        transition: all 0.15s;
+        font-size: 12px;
+    }
+
+        .btn-toggle-row:hover {
+            background: var(--bg-soft);
+            color: var(--atilson-dark);
+        }
+
+        .btn-toggle-row.collapsed i::before {
+            content: "\F285";
+        }
+
+        .btn-toggle-row:not(.collapsed) i::before {
+            content: "\F286";
+        }
+
+    /* BADGES DE ESTADO KANBAN */
+    .col-badge {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 50px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .col-abierta {
+        background: #e0f2fe;
+        color: #0284c7;
+        border: 1px solid #bae6fd;
+    }
+
+    .col-parcial {
+        background: #ede9fe;
+        color: #8b5cf6;
+        border: 1px solid #ddd6fe;
+    }
+
+    .col-atrasada {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .col-pagada {
+        background: #d1fae5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+
+    .col-disputa {
+        background: #fef3c7;
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
+
+    .monto-tecnico {
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .btn-action-dot {
+        color: #94a3b8;
+        font-size: 18px;
+        padding: 4px 8px;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+        .btn-action-dot:hover {
+            background-color: #e2e8f0;
+            color: var(--atilson-dark);
+        }
+
+    /* ACORDEÓN INTERNO FACTURACIÓN */
+    .row-detail {
+        background-color: #f8fafc;
+        border-bottom: 1px solid var(--border-soft);
+        box-shadow: inset 0 3px 6px -3px rgba(0,0,0,0.05);
+    }
+
+    .status-badge {
+        width: 100px;
+        display: inline-block;
+        text-align: center;
+        padding: 5px 0 !important;
+        font-size: 9px;
+        letter-spacing: 0.5px;
+    }
+
+    .action-cell {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 140px;
+        margin: 0 auto;
+    }
+
+    .action-text {
+        width: 100px;
+        text-align: right;
+    }
+
+    .action-icon {
+        width: 32px;
+        text-align: center;
+        display: flex;
+        justify-content: flex-end;
+    }
+</style>
+
+<div class="container-fluid py-4" style="padding-left: 30px; padding-right: 30px; max-width: 1650px;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom flex-wrap gap-3">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 900; color: var(--atilson-dark); margin: 0; letter-spacing: -0.5px;">FACTURACIÓN Y COBRANZAS (AR)</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Tablero Kanban estratégico para emisión de facturas, control de morosidad y recaudación.</p>
+        </div>
+    </div>
+
+    <div class="workspace-nav">
+        <a asp-page="/Finanzas/Index" class="ws-btn"><i class="bi bi-graph-up-arrow"></i> Rentabilidad Operativa</a>
+        <a asp-page="/Finanzas/OrdenesCompra" class="ws-btn"><i class="bi bi-receipt"></i> Órdenes de Compra (Costo)</a>
+        <a asp-page="/Finanzas/Facturacion" class="ws-btn active"><i class="bi bi-file-earmark-spreadsheet"></i> Facturación (Ingreso)</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-5 g-3 mb-4">
+        <div class="col">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border-color: rgba(2, 132, 199, 0.2);">
+                <i class="bi bi-folder2-open kpi-bg-icon"></i>
+                <div class="kpi-title"><i class="bi bi-circle-fill text-white" style="font-size: 8px;"></i> Abiertas</div>
+                <div class="kpi-value">@Model.CantidadAbiertas <span style="font-size:14px; font-weight:500;">BKG's</span></div>
+                <div class="kpi-desc">Listas para facturar al cliente.</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); border-color: rgba(139, 92, 246, 0.2);">
+                <i class="bi bi-pie-chart-fill kpi-bg-icon"></i>
+                <div class="kpi-title"><i class="bi bi-circle-fill text-white" style="font-size: 8px;"></i> Pago Parcial</div>
+                <div class="kpi-value">@Model.CantidadParciales <span style="font-size:14px; font-weight:500;">BKG's</span></div>
+                <div class="kpi-desc">Operaciones con saldo pendiente.</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); border-color: rgba(220, 38, 38, 0.2);">
+                <i class="bi bi-exclamation-triangle-fill kpi-bg-icon"></i>
+                <div class="kpi-title"><i class="bi bi-circle-fill text-white" style="font-size: 8px;"></i> Atrasadas</div>
+                <div class="kpi-value">@Model.CantidadAtrasadas <span style="font-size:14px; font-weight:500;">BKG's</span></div>
+                <div class="kpi-desc">&gt;15 días sin cobro. Atención.</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); border-color: rgba(16, 185, 129, 0.2);">
+                <i class="bi bi-check-circle-fill kpi-bg-icon"></i>
+                <div class="kpi-title"><i class="bi bi-circle-fill text-white" style="font-size: 8px;"></i> Pagadas</div>
+                <div class="kpi-value">@Model.CantidadPagadas <span style="font-size:14px; font-weight:500;">BKG's</span></div>
+                <div class="kpi-desc">Recaudación 100% completada.</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="kpi-card" style="background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); border-color: rgba(245, 158, 11, 0.2);">
+                <i class="bi bi-shield-exclamation kpi-bg-icon"></i>
+                <div class="kpi-title"><i class="bi bi-circle-fill text-white" style="font-size: 8px;"></i> Disputadas</div>
+                <div class="kpi-value">@Model.CantidadDisputadas <span style="font-size:14px; font-weight:500;">BKG's</span></div>
+                <div class="kpi-desc">Retenidas por reclamo operativo.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="kanban-tabs">
+        <button class="kanban-btn @(Model.FilterColumna == "ALL" ? "active" : "")" onclick="filtrarKanban('ALL')"><i class="bi bi-grid-fill"></i> Todo el Tablero</button>
+        <button class="kanban-btn @(Model.FilterColumna == "ABIERTAS" ? "active" : "")" onclick="filtrarKanban('ABIERTAS')" style="color: var(--color-venta);"><i class="bi bi-folder2-open"></i> Abiertas</button>
+        <button class="kanban-btn @(Model.FilterColumna == "PARCIALES" ? "active" : "")" onclick="filtrarKanban('PARCIALES')" style="color: var(--color-parcial);"><i class="bi bi-pie-chart-fill"></i> Pagos Parciales</button>
+        <button class="kanban-btn @(Model.FilterColumna == "ATRASADAS" ? "active" : "")" onclick="filtrarKanban('ATRASADAS')" style="color: var(--color-costo);"><i class="bi bi-exclamation-circle-fill"></i> Atrasadas</button>
+        <button class="kanban-btn @(Model.FilterColumna == "PAGADAS" ? "active" : "")" onclick="filtrarKanban('PAGADAS')" style="color: var(--color-profit);"><i class="bi bi-check-circle-fill"></i> Pagadas</button>
+        <button class="kanban-btn @(Model.FilterColumna == "DISPUTADAS" ? "active" : "")" onclick="filtrarKanban('DISPUTADAS')" style="color: var(--color-warn);"><i class="bi bi-shield-exclamation"></i> Disputadas</button>
+    </div>
+
+    <div class="fin-table-wrapper">
+        <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center bg-white flex-wrap gap-2">
+            <h6 class="m-0 fw-bold text-dark" style="font-size: 13px;"><i class="bi bi-list-columns-reverse me-2 text-primary"></i> LISTADO ESTRATÉGICO DE RECAUDACIÓN</h6>
+            <form method="get" class="input-group input-group-sm" style="width: 320px;">
+                <input type="hidden" name="FilterColumna" id="inputFilterColumna" value="@Model.FilterColumna" />
+                <input type="text" asp-for="SearchString" class="form-control bg-light border-end-0 fw-bold" placeholder="Buscar por Booking, Cliente o N° Factura..." />
+                <button type="submit" class="input-group-text bg-light text-muted border-start-0" title="Buscar"><i class="bi bi-search"></i></button>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-exec">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;" class="ps-4"></th>
+                        <th>Booking / Referencia</th>
+                        <th>Cliente Mandante</th>
+                        <th class="text-end">Total Facturado</th>
+                        <th class="text-end">Saldo Pendiente</th>
+                        <th class="text-center">Estado Kanban</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.OperacionesFacturacion != null && Model.OperacionesFacturacion.Any())
+                    {
+                        DateTime hoyDt = DateTime.Now;
+
+                        @foreach (var o in Model.OperacionesFacturacion)
+                        {
+                            var txIngresos = o.TransaccionesFinancieras?.Where(t => t.TipoMovimiento == "INGRESO").ToList() ?? new List<TransaccionesFinanciera>();
+                            var txEmitidas = txIngresos.Where(t => t.EstadoFila == "FACTURADO" || t.EstadoFila == "CONCILIADO" || t.EstadoFila == "PAGADO").ToList();
+
+                            decimal factUSD = txEmitidas.Where(t => t.Moneda == "USD").Sum(t => t.MontoNeto);
+                            decimal factCLP = txEmitidas.Where(t => t.Moneda == "CLP").Sum(t => t.MontoNeto);
+
+                            decimal pagadoUSD = txEmitidas.Where(t => t.Moneda == "USD" && (t.EstadoFila == "PAGADO" || t.EstadoFila == "CONCILIADO")).Sum(t => t.MontoNeto);
+                            decimal pagadoCLP = txEmitidas.Where(t => t.Moneda == "CLP" && (t.EstadoFila == "PAGADO" || t.EstadoFila == "CONCILIADO")).Sum(t => t.MontoNeto);
+
+                            decimal saldoUSD = factUSD - pagadoUSD;
+                            decimal saldoCLP = factCLP - pagadoCLP;
+
+                            bool tieneFacturas = txEmitidas.Any();
+                            bool todasPagadas = tieneFacturas && txEmitidas.All(t => t.EstadoFila == "PAGADO" || t.EstadoFila == "CONCILIADO");
+                            bool algunaPagada = tieneFacturas && txEmitidas.Any(t => t.EstadoFila == "PAGADO" || t.EstadoFila == "CONCILIADO");
+                            bool enDisputa = o.Comentarios != null && (o.Comentarios.Contains("[DISPUTA]") || o.Comentarios.Contains("[RECLAMO]"));
+
+                            double diasAntiguedad = (hoyDt - o.FechaCreacion).Value.TotalDays;
+                            bool estaAtrasada = !todasPagadas && !algunaPagada && diasAntiguedad > 15;
+
+                            string columnaNombre = "ABIERTAS"; string colBadgeClass = "col-abierta"; string colIcon = "bi-folder2-open";
+                            if (enDisputa) { columnaNombre = "DISPUTADAS"; colBadgeClass = "col-disputa"; colIcon = "bi-shield-exclamation"; }
+                            else if (todasPagadas) { columnaNombre = "PAGADAS"; colBadgeClass = "col-pagada"; colIcon = "bi-check-circle-fill"; }
+                            else if (algunaPagada) { columnaNombre = "PARCIALES"; colBadgeClass = "col-parcial"; colIcon = "bi-pie-chart-fill"; }
+                            else if (estaAtrasada) { columnaNombre = "ATRASADAS"; colBadgeClass = "col-atrasada"; colIcon = "bi-exclamation-triangle-fill"; }
+
+                            if (Model.FilterColumna != "ALL" && Model.FilterColumna != columnaNombre) { continue; }
+
+                            <tr class="row-main">
+                                <td class="text-center align-middle ps-4">
+                                    <button class="btn-toggle-row collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#detail-fact-@o.Id"><i class="bi bi-chevron-down"></i></button>
+                                </td>
+                                <td>
+                                    <span class="fw-bold d-block" style="color: var(--atilson-dark); font-size: 14px;">@o.NumeroBooking</span>
+                                    <span class="text-muted" style="font-size: 10px;">ID: @o.Id | Creada: @o.FechaCreacion.Value.ToString("dd/MM/yyyy")</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-uppercase d-block" style="font-size: 12px; max-width: 220px;" title="@o.IdClienteNavigation?.RazonSocial">
+                                        @(o.IdClienteNavigation?.RazonSocial ?? "Sin Mandante")
+                                    </span>
+                                </td>
+                                <td class="text-end monto-tecnico" style="color: var(--txt-main);">
+                                    @if (factUSD > 0)
+                                    {
+                                        <span class="d-block">USD $@factUSD.ToString("N2")</span>
+                                    }
+                                    @if (factCLP > 0)
+                                    {
+                                        <span class="d-block">CLP $@factCLP.ToString("N0")</span>
+                                    }
+                                    @if (factUSD == 0 && factCLP == 0)
+                                    {
+                                        <span class="text-muted" style="font-size: 10px;">En Provisión</span>
+                                    }
+                                </td>
+                                <td class="text-end monto-tecnico">
+                                    @if (saldoUSD > 0 || saldoCLP > 0)
+                                    {
+                                        if (saldoUSD > 0)
+                                        {
+                                            <span class="d-block text-danger">USD $@saldoUSD.ToString("N2")</span>
+                                        }
+                                        if (saldoCLP > 0)
+                                        {
+
+                                            <span class="d-block text-danger">CLP $@saldoCLP.ToString("N0")</span>
+                                        }
+                                    }
+                                    else if (todasPagadas)
+                                    {
+
+                                        <span class="text-success"><i class="bi bi-check2-all"></i> Sin Deuda</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="text-muted" style="font-size: 10px;">--</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="col-badge @colBadgeClass"><i class="bi @colIcon"></i> @columnaNombre</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="dropdown">
+                                        <a href="#" class="btn-action-dot" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></a>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" style="font-size: 12px; border-radius: 8px; min-width: 210px;">
+                                            <li><h6 class="dropdown-header text-muted fw-bold" style="font-size: 9px;">ACCIÓN GERENCIAL</h6></li>
+                                            @if (!todasPagadas)
+                                            {
+                                                var extrasOpe = o.ExtracostosOperacions?.Where(e => e.Monto > 0) ?? new List<ExtracostosOperacion>();
+                                                <li>
+                                                    <a class="dropdown-item py-2 fw-bold text-primary" href="javascript:void(0);" onclick="abrirModalCobro(@o.Id, '@o.NumeroBooking', '@(o.IdClienteNavigation?.RazonSocial ?? "")', 0, 'FLETE')">
+                                                        <i class="bi bi-file-earmark-plus me-2"></i> Emitir Flete Nuevo
+                                                    </a>
+                                                </li>
+                                                @if (extrasOpe.Any())
+                                                {
+                                                    <li>
+                                                        <a class="dropdown-item py-2 fw-bold text-danger" href="javascript:void(0);" onclick="abrirModalCobro(@o.Id, '@o.NumeroBooking', '@(o.IdClienteNavigation?.RazonSocial ?? "")', 0, 'EXTRACOSTO')">
+                                                            <i class="bi bi-file-earmark-break me-2"></i> Emitir Nota Cobro Extra
+                                                        </a>
+                                                    </li>
+                                                }
+                                            }
+                                            @if (!enDisputa && !todasPagadas)
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item py-2 text-warning fw-bold" href="javascript:void(0);" onclick="abrirModalDisputa(@o.Id, '@o.NumeroBooking')">
+                                                        <i class="bi bi-exclamation-octagon me-2"></i> Retener en Disputa
+                                                    </a>
+                                                </li>
+                                            }
+                                            <li>
+                                                <a class="dropdown-item py-2 fw-bold text-dark" href="/Finanzas/SetCobro/@o.Id" target="_blank">
+                                                    <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Ver Set de Cobro Oficial
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="p-0 border-0">
+                                <td colspan="7" class="p-0 border-0">
+                                    <div id="detail-fact-@o.Id" class="collapse row-detail">
+                                        <div class="p-4 w-100">
+                                            @{
+                                                var fletesList = txIngresos.Where(t => (t.GrupoCobro ?? "").ToUpper() != "EXTRACOSTO").ToList();
+                                                var extrasTx = txIngresos.Where(t => (t.GrupoCobro ?? "").ToUpper() == "EXTRACOSTO").ToList();
+                                                var extrasOp = o.ExtracostosOperacions?.ToList() ?? new List<ExtracostosOperacion>();
+                                            }
+
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="fw-bold m-0" style="font-size: 11px; text-transform: uppercase; color: var(--color-venta);">
+                                                    <i class="bi bi-file-earmark-text me-1"></i> 1. Detalle de Fletes y Servicios Base (Facturación Legal SII)
+                                                </h6>
+                                                <button type="button" class="btn btn-sm btn-outline-primary fw-bold" style="font-size: 10px; padding: 4px 10px;" onclick="abrirModalCobro(@o.Id, '@o.NumeroBooking', '@(o.IdClienteNavigation?.RazonSocial ?? "")', 0, 'FLETE')">
+                                                    <i class="bi bi-plus-circle me-1"></i> Emitir Factura Flete
+                                                </button>
+                                            </div>
+
+                                            @if (fletesList.Any())
+                                            {
+                                                <table class="table table-sm table-bordered bg-white mb-4" style="font-size: 11px;">
+                                                    <thead class="bg-light text-muted">
+                                                        <tr>
+                                                            <th style="font-weight: 800; width: 18%;">N° Documento</th>
+                                                            <th style="font-weight: 800; width: 34%;">Concepto / Servicio</th>
+                                                            <th style="font-weight: 800; width: 14%;" class="text-end">Monto Neto</th>
+                                                            <th style="font-weight: 800; width: 16%;" class="text-center">Estado</th>
+                                                            <th style="font-weight: 800; width: 18%;" class="text-center">Registro / Respaldo</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var doc in fletesList)
+                                                        {
+                                                            bool docPagado = doc.EstadoFila == "PAGADO" || doc.EstadoFila == "CONCILIADO";
+                                                            bool docFacturado = doc.EstadoFila == "FACTURADO";
+                                                            <tr>
+                                                                <td class="font-monospace fw-bold align-middle">@(string.IsNullOrEmpty(doc.NumeroDocumento) ? "POR EMITIR" : $"FACT. N° {doc.NumeroDocumento}")</td>
+                                                                <td class="align-middle">@doc.Concepto</td>
+                                                                <td class="text-end fw-bold font-monospace align-middle" style="color: var(--atilson-dark);">@doc.Moneda $@doc.MontoNeto.ToString(doc.Moneda == "CLP" ? "N0" : "N2")</td>
+                                                                <td class="text-center align-middle">
+                                                                    @if (docPagado)
+                                                                    {
+                                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 status-badge">PAGADO</span>
+                                                                    }
+                                                                    else if (docFacturado)
+                                                                    {
+
+                                                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 status-badge">FACTURADO</span>
+                                                                    }
+                                                                    else
+                                                                    {
+
+                                                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 status-badge">PROVISIÓN</span>
+                                                                    }
+                                                                </td>
+                                                                <td class="p-1 align-middle">
+                                                                    <div class="action-cell">
+                                                                        <div class="action-text">
+                                                                            @if (docFacturado)
+                                                                            {
+                                                                                <form method="post" asp-page-handler="MarcarPagoTransaccion" class="m-0 p-0">
+                                                                                    <input type="hidden" name="idTransaccion" value="@doc.Id" />
+                                                                                    <button type="submit" class="btn btn-sm btn-outline-success shadow-sm" style="font-size: 10px; font-weight: 800; padding: 4px 10px; width: 100%;"><i class="bi bi-currency-dollar"></i> Recaudar</button>
+                                                                                </form>
+                                                                            }
+                                                                            else if (docPagado)
+                                                                            {
+
+                                                                                <span class="text-success fw-bold d-block text-center" style="font-size: 10px;"><i class="bi bi-check-all"></i> Cobrado</span>
+                                                                            }
+                                                                            else
+                                                                            {
+
+                                                                                <span class="text-muted d-block text-center" style="font-size: 10px;">Pendiente</span>
+                                                                            }
+                                                                        </div>
+                                                                        <div class="action-icon">
+                                                                            @{
+                                                                                bool tieneAdjunto = System.IO.File.Exists(System.IO.Path.Combine(Env.WebRootPath, "uploads", "finanzas", $"Comprobante_TX_{doc.Id}.pdf"));
+                                                                            }
+                                                                            @if (tieneAdjunto)
+                                                                            {
+                                                                                <a href="/uploads/finanzas/Comprobante_TX_@(doc.Id).pdf" target="_blank" class="btn btn-sm btn-outline-primary shadow-sm" style="font-size: 11px; padding: 2px 6px;" title="Ver Respaldo PDF"><i class="bi bi-eye-fill"></i></a>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm" style="font-size: 11px; padding: 2px 6px;" title="Subir Respaldo PDF" onclick="abrirModalArchivo(@doc.Id, '@(string.IsNullOrEmpty(doc.NumeroDocumento) ? doc.Concepto : doc.NumeroDocumento)')"><i class="bi bi-paperclip"></i></button>
+                                                                            }
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            }
+                                            else
+                                            {
+                                                <div class="text-center py-2 text-muted border bg-white mb-4 rounded" style="font-size: 11px;">No hay facturas de flete registradas en provisión.</div>
+                                            }
+
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="fw-bold m-0" style="font-size: 11px; text-transform: uppercase; color: var(--color-costo);">
+                                                    <i class="bi bi-file-earmark-break me-1"></i> 2. Desviaciones y Extracostos Operativos (Notas de Cobro)
+                                                </h6>
+                                            </div>
+
+                                            @if (extrasTx.Any() || extrasOp.Any())
+                                            {
+                                                <table class="table table-sm table-bordered bg-white mb-0" style="font-size: 11px;">
+                                                    <thead class="bg-light text-muted">
+                                                        <tr>
+                                                            <th style="font-weight: 800; width: 18%;">N° Doc. / Ref.</th>
+                                                            <th style="font-weight: 800; width: 34%;">Tipo de Extracosto / Motivo</th>
+                                                            <th style="font-weight: 800; width: 14%;" class="text-end">Monto Neto</th>
+                                                            <th style="font-weight: 800; width: 16%;" class="text-center">Estado</th>
+                                                            <th style="font-weight: 800; width: 18%;" class="text-center">Registro / Respaldo</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var doc in extrasTx)
+                                                        {
+                                                            bool docPagado = doc.EstadoFila == "PAGADO" || doc.EstadoFila == "CONCILIADO";
+                                                            bool docFacturado = doc.EstadoFila == "FACTURADO";
+                                                            <tr>
+                                                                <td class="font-monospace fw-bold text-danger align-middle">@(string.IsNullOrEmpty(doc.NumeroDocumento) ? "POR EMITIR" : $"NC N° {doc.NumeroDocumento}")</td>
+                                                                <td class="align-middle">@doc.Concepto</td>
+                                                                <td class="text-end fw-bold font-monospace text-danger align-middle">@doc.Moneda $@doc.MontoNeto.ToString(doc.Moneda == "CLP" ? "N0" : "N2")</td>
+                                                                <td class="text-center align-middle">
+                                                                    @if (docPagado)
+                                                                    {
+                                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 status-badge">PAGADO</span>
+                                                                    }
+                                                                    else if (docFacturado)
+                                                                    {
+
+                                                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 status-badge">NC EMITIDA</span>
+                                                                    }
+                                                                    else
+                                                                    {
+
+                                                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 status-badge">PENDIENTE NC</span>
+                                                                    }
+                                                                </td>
+                                                                <td class="p-1 align-middle">
+                                                                    <div class="action-cell">
+                                                                        <div class="action-text">
+                                                                            @if (docFacturado)
+                                                                            {
+                                                                                <form method="post" asp-page-handler="MarcarPagoTransaccion" class="m-0 p-0">
+                                                                                    <input type="hidden" name="idTransaccion" value="@doc.Id" />
+                                                                                    <button type="submit" class="btn btn-sm btn-outline-success shadow-sm" style="font-size: 10px; font-weight: 800; padding: 4px 10px; width: 100%;"><i class="bi bi-currency-dollar"></i> Recaudar</button>
+                                                                                </form>
+                                                                            }
+                                                                            else if (docPagado)
+                                                                            {
+
+                                                                                <span class="text-success fw-bold d-block text-center" style="font-size: 10px;"><i class="bi bi-check-all"></i> Cobrado</span>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <button type="button" class="btn btn-sm btn-outline-danger shadow-sm" style="font-size: 10px; font-weight: 800; padding: 4px 10px; width: 100%;" onclick="abrirModalCobro(@o.Id, '@o.NumeroBooking', '@(o.IdClienteNavigation?.RazonSocial?.Replace("'", "") ?? "")', @doc.MontoNeto.ToString(System.Globalization.CultureInfo.InvariantCulture), 'EXTRACOSTO_TX', @doc.Id, '@doc.Concepto', '@doc.Moneda')"><i class="bi bi-file-earmark-break me-1"></i> Emitir NC</button>
+                                                                            }
+                                                                        </div>
+                                                                        <div class="action-icon">
+                                                                            @{
+                                                                                bool tieneAdjunto = System.IO.File.Exists(System.IO.Path.Combine(Env.WebRootPath, "uploads", "finanzas", $"Comprobante_TX_{doc.Id}.pdf"));
+                                                                            }
+                                                                            @if (tieneAdjunto)
+                                                                            {
+                                                                                <a href="/uploads/finanzas/Comprobante_TX_@(doc.Id).pdf" target="_blank" class="btn btn-sm btn-outline-primary shadow-sm" style="font-size: 11px; padding: 2px 6px;" title="Ver Respaldo PDF"><i class="bi bi-eye-fill"></i></a>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <button type="button" class="btn btn-sm btn-outline-secondary shadow-sm" style="font-size: 11px; padding: 2px 6px;" title="Subir Respaldo PDF" onclick="abrirModalArchivo(@doc.Id, '@(string.IsNullOrEmpty(doc.NumeroDocumento) ? doc.Concepto : doc.NumeroDocumento)')"><i class="bi bi-paperclip"></i></button>
+                                                                            }
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        }
+
+                                                        @foreach (var ex in extrasOp)
+                                                        {
+                                                            bool yaRegistrado = extrasTx.Any(t => t.Concepto.Contains(ex.TipoCosto ?? ""));
+                                                            if (!yaRegistrado && ex.Monto > 0 && (ex.Responsable ?? "").ToUpper() != "ATILSON")
+                                                            {
+                                                                <tr>
+                                                                    <td class="font-monospace text-muted align-middle">PENDIENTE NC</td>
+                                                                    <td class="align-middle">
+                                                                        <span class="fw-bold text-dark">@ex.TipoCosto</span>
+                                                                        <span class="text-muted d-block" style="font-size: 10px;">@(string.IsNullOrWhiteSpace(ex.Motivo) ? "Registrado por Operaciones" : ex.Motivo)</span>
+                                                                    </td>
+                                                                    <td class="text-end fw-bold font-monospace text-danger align-middle">@ex.Moneda $@ex.Monto.ToString(ex.Moneda == "CLP" ? "N0" : "N2")</td>
+                                                                    <td class="text-center align-middle">
+                                                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 status-badge">REPORTADO OP</span>
+                                                                    </td>
+                                                                    <td class="p-1 align-middle">
+                                                                        <div class="action-cell">
+                                                                            <div class="action-text">
+                                                                                <button type="button" class="btn btn-sm btn-outline-danger shadow-sm" style="font-size: 10px; font-weight: 800; padding: 4px 10px; width: 100%;" onclick="abrirModalCobro(@o.Id, '@o.NumeroBooking', '@(o.IdClienteNavigation?.RazonSocial?.Replace("'", "") ?? "")', @ex.Monto.ToString(System.Globalization.CultureInfo.InvariantCulture), 'EXTRACOSTO_OP', @ex.Id, '@ex.TipoCosto', '@ex.Moneda')"><i class="bi bi-file-earmark-break me-1"></i> Emitir NC</button>
+                                                                            </div>
+                                                                            <div class="action-icon"><span class="text-muted opacity-25" style="font-size: 11px;"><i class="bi bi-dash-lg"></i></span></div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            }
+                                            else
+                                            {
+                                                <div class="text-center py-2 text-muted border bg-white rounded" style="font-size: 11px;">No se registran extracostos ni desviaciones operativas para este booking.</div>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
+                                <span class="fw-bold fs-6">No hay operaciones en esta columna</span><br />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCobranza" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow:hidden;">
+            <div class="modal-header text-white" id="modalCobroHeader" style="background-color: var(--atilson-dark);">
+                <h5 class="modal-title fw-bold" style="font-size: 14px;" id="modalCobroTitle"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="EmitirDocumentoCobro">
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" id="cobroIdOperacion" name="idOperacion" />
+                    <input type="hidden" id="cobroTipoEmision" name="tipoEmision" />
+                    <input type="hidden" id="cobroIdContextual" name="idContextual" />
+                    <input type="hidden" id="cobroConcepto" name="conceptoContextual" />
+                    <input type="hidden" id="cobroMoneda" name="monedaContextual" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" style="font-size: 10px; color: var(--txt-muted);">BOOKING Y CLIENTE MANDANTE</label>
+                        <input type="text" id="cobroResumenOp" class="form-control form-control-sm fw-bold bg-white text-dark shadow-sm" readonly style="pointer-events: none;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" style="font-size: 10px; color: var(--txt-main);">N° FACTURA SII / NOTA DE COBRO ATILSON</label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 text-success fw-bold"><i class="bi bi-hash"></i></span>
+                            <input type="text" id="numeroFactura" name="numeroFactura" class="form-control border-start-0 fw-bold text-uppercase" placeholder="Ej: F-1045 o NC-0089" required autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-bold" style="font-size: 10px; color: var(--txt-muted);">MONTO TOTAL A EMITIR</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white border-end-0 fw-bold text-dark">$</span>
+                            <input type="number" step="0.01" id="cobroMontoTotal" name="montoTotalConfirmado" class="form-control border-start-0 fw-black fs-5 text-end text-success" required style="font-family: monospace;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top-0 py-3 px-4">
+                    <button type="button" class="btn btn-outline-secondary btn-sm fw-bold px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark btn-sm fw-bold px-4 shadow" style="background-color: var(--color-venta); border: none;"><i class="bi bi-check-circle-fill me-1"></i> Confirmar y Contabilizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDisputa" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow:hidden;">
+            <div class="modal-header text-white" style="background-color: var(--color-warn);">
+                <h6 class="modal-title fw-bold" style="font-size: 13px;"><i class="bi bi-shield-exclamation me-1"></i> Retener en Disputa</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="CambiarEstadoFactura">
+                <div class="modal-body p-3">
+                    <input type="hidden" id="disputaIdOperacion" name="idOperacion" />
+                    <input type="hidden" name="nuevoEstado" value="DISPUTA" />
+                    <div class="mb-2">
+                        <label class="form-label fw-bold" style="font-size: 10px;">MOTIVO DEL RECLAMO / RETENCIÓN</label>
+                        <textarea name="motivoDisputa" class="form-control form-control-sm shadow-sm" rows="3" placeholder="Ej: Cliente desconoce cobro de sobreestadía..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top-0 py-2">
+                    <button type="submit" class="btn btn-sm text-white fw-bold w-100 shadow-sm" style="background-color: var(--color-warn);">Mover a Columna Disputadas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow:hidden;">
+            <div class="modal-header text-white" style="background-color: var(--atilson-dark);">
+                <h6 class="modal-title fw-bold" style="font-size: 13px;"><i class="bi bi-cloud-arrow-up me-1"></i> Bóveda Documental</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="SubirComprobante" enctype="multipart/form-data">
+                <div class="modal-body p-4 text-center">
+                    <input type="hidden" id="adjuntoIdTransaccion" name="idTransaccionAdjunto" />
+                    <span class="badge bg-white text-dark border shadow-sm mb-3 w-100 py-2" id="badgeDocumentoAdjunto" style="font-size:10px;">Doc: </span>
+                    <p class="text-muted mb-3" style="font-size: 11px;">Sube el comprobante de transferencia o la factura física del SII. (Solo formato PDF).</p>
+                    <input type="file" name="archivoComprobante" class="form-control form-control-sm shadow-sm" accept="application/pdf" required />
+                </div>
+                <div class="modal-footer bg-light border-top-0 py-2">
+                    <button type="submit" class="btn btn-sm text-white fw-bold w-100 shadow-sm" style="background-color: var(--color-venta);"><i class="bi bi-upload me-1"></i> Guardar en Servidor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filtrarKanban(columna) {
+            document.getElementById('inputFilterColumna').value = columna;
+            document.forms[0].submit();
+        }
+
+        function abrirModalCobro(idOp, booking, cliente, monto, tipo, idContextual = 0, concepto = '', moneda = 'USD') {
+            document.getElementById('cobroIdOperacion').value = idOp;
+            document.getElementById('cobroTipoEmision').value = tipo;
+            document.getElementById('cobroIdContextual').value = idContextual;
+            document.getElementById('cobroConcepto').value = concepto;
+            document.getElementById('cobroMoneda').value = moneda;
+
+            document.getElementById('cobroResumenOp').value = booking + " | " + cliente + (concepto ? " | " + concepto : "");
+            document.getElementById('cobroMontoTotal').value = monto;
+            document.getElementById('numeroFactura').value = '';
+
+            let title = document.getElementById('modalCobroTitle');
+            if (tipo === 'FLETE') {
+                title.innerHTML = '<i class="bi bi-file-earmark-plus me-2"></i> Emitir Factura de Fletes Base';
+            } else {
+                title.innerHTML = '<i class="bi bi-file-earmark-break me-2"></i> Emitir Nota de Cobro (Extracosto)';
+            }
+            new bootstrap.Modal(document.getElementById('modalCobranza')).show();
+        }
+
+        function abrirModalArchivo(idTx, numeroDoc) {
+            document.getElementById('adjuntoIdTransaccion').value = idTx;
+            document.getElementById('badgeDocumentoAdjunto').innerText = "Ref: " + numeroDoc;
+            new bootstrap.Modal(document.getElementById('modalSubirArchivo')).show();
+        }
+
+        function abrirModalDisputa(idOp, booking) {
+            document.getElementById('disputaIdOperacion').value = idOp;
+            new bootstrap.Modal(document.getElementById('modalDisputa')).show();
+        }
+    </script>
+}
