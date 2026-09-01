@@ -1,0 +1,841 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Finanzas.ControlFinancieroModel
+@using AtilsonCargoSpa.Models
+@{
+    ViewData["Title"] = "Control Financiero Operativo";
+}
+
+<style>
+    :root {
+        --atilson-slate-900: #0f172a;
+        --atilson-slate-500: #64748b;
+        --atilson-bg-soft: #f8fafc;
+        --atilson-border: #e2e8f0;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .workspace-nav {
+        display: flex;
+        gap: 2px;
+        background: #ffffff;
+        padding: 6px;
+        border-radius: 8px;
+        border: 1px solid var(--atilson-border);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+
+    .ws-btn {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 10px 20px;
+        border-radius: 6px;
+        color: var(--atilson-slate-500);
+        text-decoration: none;
+        transition: all 0.2s;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .ws-btn:hover {
+            background: var(--atilson-bg-soft);
+            color: var(--atilson-slate-900);
+        }
+
+        .ws-btn.active {
+            background: var(--atilson-slate-900);
+            color: #ffffff;
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.15);
+        }
+
+    .atilson-tabs {
+        border-bottom: 1px solid var(--atilson-border);
+        gap: 20px;
+        padding-left: 10px;
+    }
+
+        .atilson-tabs .nav-link {
+            border: none;
+            color: var(--atilson-slate-500);
+            font-weight: 700;
+            font-size: 11px;
+            padding: 10px 4px;
+            background: transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+            .atilson-tabs .nav-link:hover {
+                color: var(--atilson-slate-900);
+            }
+
+            .atilson-tabs .nav-link.active {
+                background: transparent;
+                color: var(--atilson-slate-900) !important;
+                font-weight: 900;
+            }
+
+                .atilson-tabs .nav-link.active#ingresos-tab {
+                    border-bottom-color: #10b981;
+                }
+
+                .atilson-tabs .nav-link.active#egresos-tab {
+                    border-bottom-color: #ef4444;
+                }
+
+                .atilson-tabs .nav-link.active#resumen-tab {
+                    border-bottom-color: #6366f1;
+                }
+
+    .table-main-grid > thead > tr > th {
+        font-size: 10px;
+        text-transform: uppercase;
+        color: var(--atilson-slate-500);
+        font-weight: 700;
+        background-color: transparent;
+        border-bottom: 2px solid var(--atilson-slate-900);
+        padding: 8px 12px;
+        letter-spacing: 0.5px;
+    }
+
+    .table-main-grid > tbody > tr.main-row > td {
+        padding: 10px 12px;
+        font-size: 13px;
+        border-bottom: 1px solid var(--atilson-border);
+        background-color: #ffffff;
+    }
+
+    .table-main-grid > tbody > tr.main-row:hover > td {
+        background-color: var(--atilson-bg-soft);
+    }
+
+    .row-ingreso > td:first-child {
+        border-left: 3px solid #10b981;
+    }
+
+    .row-egreso > td:first-child {
+        border-left: 3px solid #ef4444;
+    }
+
+    .row-resumen > td:first-child {
+        border-left: 3px solid #6366f1;
+    }
+
+    .nested-container {
+        padding: 0;
+        background-color: var(--atilson-bg-soft);
+        border-bottom: 2px solid var(--atilson-border);
+    }
+
+    .nested-table {
+        background-color: transparent;
+        border: none;
+    }
+
+        .nested-table thead th {
+            background-color: #f1f5f9;
+            font-size: 9px;
+            text-transform: uppercase;
+            color: var(--atilson-slate-500);
+            font-weight: 800;
+            padding: 6px 12px;
+            border-bottom: 1px solid #cbd5e1;
+            letter-spacing: 0.5px;
+        }
+
+        .nested-table tbody td {
+            padding: 6px 12px;
+            font-size: 11.5px;
+            border-bottom: 1px solid var(--atilson-border);
+            color: #334155;
+            vertical-align: middle;
+        }
+
+    .row-group-header td {
+        background-color: #f8fafc;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 12px 12px 4px 12px !important;
+        color: var(--atilson-slate-900);
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .badge-estado {
+        font-size: 9px;
+        padding: 4px 6px;
+        border-radius: 4px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: center;
+        display: inline-block;
+        min-width: 80px;
+    }
+
+    .badge-pend {
+        background-color: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .badge-pag {
+        background-color: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+
+    .badge-resp-atilson {
+        background-color: transparent;
+        color: #e11d48;
+        border: 1px solid #fecdd3;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 9px;
+        font-weight: 700;
+    }
+
+    .badge-resp-cliente {
+        background-color: transparent;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 9px;
+        font-weight: 700;
+    }
+
+    .text-por-asignar {
+        color: #dc2626;
+        font-style: italic;
+        font-size: 11px;
+    }
+
+    .btn-xs {
+        padding: 2px 8px;
+        font-size: 10px;
+        font-weight: 600;
+        border-radius: 4px;
+    }
+
+    .btn-action-col {
+        height: 24px;
+        width: 28px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 900; color: var(--atilson-slate-900); margin: 0; letter-spacing: -0.5px;">CONTROL FINANCIERO OPERATIVO</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Trazabilidad de ingresos y costos operacionales.</p>
+        </div>
+    </div>
+
+    <div class="d-flex mb-4">
+        <div class="workspace-nav">
+            <a asp-page="/Finanzas/MainBoard" class="ws-btn"><i class="bi bi-grid-1x2-fill"></i> Main Board</a>
+            <a asp-page="/Finanzas/ControlFinanciero" class="ws-btn active"><i class="bi bi-sliders"></i> Control Financiero</a>
+            <a asp-page="/Finanzas/OrdenesCompra" class="ws-btn"><i class="bi bi-receipt"></i> Órdenes de Compra</a>
+            <a asp-page="/Finanzas/Facturacion" class="ws-btn"><i class="bi bi-file-earmark-spreadsheet-fill"></i> Facturación</a>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs atilson-tabs mb-3" id="finanzasTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="egresos-tab" data-bs-toggle="tab" data-bs-target="#egresos" type="button" role="tab">Egresos</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="ingresos-tab" data-bs-toggle="tab" data-bs-target="#ingresos" type="button" role="tab">Ingresos</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="resumen-tab" data-bs-toggle="tab" data-bs-target="#resumen" type="button" role="tab">Resumen Operacional</button>
+        </li>
+    </ul>
+
+    <div class="tab-content bg-white" id="finanzasTabsContent">
+
+        <!-- ================= PESTAÑA INGRESOS ================= -->
+        <div class="tab-pane fade show active" id="ingresos" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-main-grid mb-0">
+                    <thead>
+                        <tr><th>N° Booking / Detalle de Cobros al Cliente</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var op in Model.Operaciones.Where(o => o.TransaccionesFinancieras.Any(t => t.TipoMovimiento == "INGRESO")))
+                        {
+                            <tr data-bs-toggle="collapse" data-bs-target="#ing-CF-@op.Id" class="cursor-pointer main-row row-ingreso">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-chevron-right text-muted me-3" style="font-size: 10px;"></i>
+                                        <span style="font-weight: 800; color: #0f172a;">@op.NumeroBooking</span>
+                                        <span class="text-muted mx-2">|</span>
+                                        <span style="font-weight:500; color:#475569; font-size: 12px;">@(op.IdClienteNavigation?.RazonSocial ?? "Sin Cliente")</span>
+
+                                        <div class="ms-auto d-flex gap-2">
+                                            <a href="/Finanzas/Edit/@op.Id" class="btn btn-outline-dark btn-xs" onclick="event.stopPropagation();">
+                                                <i class="bi bi-pencil-square"></i> Editar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr id="ing-CF-@op.Id" class="collapse">
+                                <td class="p-0 border-0">
+                                    <div class="nested-container">
+                                        <form id="form-nc-@op.Id" method="post" asp-page-handler="EmitirNotaCobro" class="d-none">
+                                            <input type="hidden" name="operacionId" value="@op.Id" />
+                                        </form>
+
+                                        <table class="table table-sm nested-table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center" style="width: 5%;"><i class="bi bi-check2-square text-muted" title="Seleccionar exentos"></i></th>
+                                                    <th class="ps-2">Concepto</th>
+                                                    <th class="text-end" style="width: 12%;">Valor Neto</th>
+                                                    <th class="text-end" style="width: 12%;">Valor + IVA</th>
+                                                    <th class="text-center px-3" style="width: 180px;">N° Doc (Fact. / NC)</th>
+                                                    <th class="text-center pe-4" style="width: 160px;">Estado Pago</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    string[] ordenInmutable = { "Marítimo", "Transporte", "Documental", "Gate-Out/In", "Almacenamiento", "Otros" };
+                                                    var ingresosTodos = op.TransaccionesFinancieras.Where(t => t.TipoMovimiento == "INGRESO").Select(t => new { Tx = t, Grupo = (t.GrupoCobro == "Depósito" || t.GrupoCobro == "Deposito") ? "Gate-Out/In" : (string.IsNullOrWhiteSpace(t.GrupoCobro) ? "Otros" : t.GrupoCobro) }).ToList();
+                                                }
+                                                @foreach (var categoria in ordenInmutable)
+                                                {
+                                                    var grupo = ingresosTodos.Where(g => g.Grupo == categoria).Select(g => g.Tx).ToList();
+
+                                                    if (categoria == "Documental")
+                                                    {
+                                                        var dic = new Dictionary<string, int> { { "HONORARIOS", 1 }, { "LEGAL", 2 }, { "EMISIÓN", 2 }, { "ACLARACIÓN", 3 }, { "ROLEO", 4 }, { "CANCELACIÓN", 5 }, { "ORIGEN", 6 }, { "FITOSANITARIO", 7 }, { "SANITARIO", 7 }, { "CAPTURA", 8 }, { "ISPS", 9 }, { "SEGURIDAD", 9 }, { "GATE", 10 }, { "COURRIER NACIONAL", 11 }, { "COURRIER INTERNACIONAL", 12 }, { "CORRECCIÓN", 13 } };
+                                                        grupo = grupo.OrderBy(t =>
+                                                        {
+                                                            var c = (t.Concepto ?? "").ToUpper();
+                                                            if (c.Contains("REEMISIÓN") || c.Contains(" R1") || c.Contains(" R2") || c.Contains(" R3"))
+                                                            {
+                                                                if (c.Contains("ORIGEN")) return 14; if (c.Contains("FITO") || c.Contains("SANI")) return 15; if (c.Contains("CAPTU")) return 16;
+                                                            }
+                                                            foreach (var kv in dic) if (c.Contains(kv.Key)) return kv.Value;
+                                                            return 99;
+                                                        }).ToList();
+                                                    }
+                                                    if (!grupo.Any()) continue;
+
+                                                    <tr class="row-group-header">
+                                                        <td colspan="6" class="ps-4" style="color: var(--atilson-slate-900);">
+                                                            @{
+                                                                string gLabel = categoria;
+                                                                string iconCls = gLabel.ToUpper().Contains("MARÍTIMO") ? "bi-water text-primary" : (gLabel.ToUpper().Contains("TRANSPORTE") ? "bi-truck text-success" : (gLabel.ToUpper().Contains("DOCUMENTAL") ? "bi-file-earmark-check text-purple" : (gLabel.ToUpper().Contains("GATE") ? "bi-box-arrow-right text-danger" : (gLabel.ToUpper().Contains("ALMACENAMIENTO") ? "bi-boxes text-warning" : "bi-box text-secondary"))));
+                                                            }
+                                                            <i class="bi @iconCls me-2 fs-6"></i> @gLabel
+                                                        </td>
+                                                    </tr>
+                                                    foreach (var tx in grupo)
+                                                    {
+                                                        string estadoLimpiado = (tx.EstadoFila == "PAGADO" || tx.EstadoFila == "FACTURADO" || tx.EstadoFila == "CONCILIADO") ? "PAGADO" : "PENDIENTE";
+                                                        string claseEstado = estadoLimpiado == "PAGADO" ? "badge-pag" : "badge-pend";
+                                                        string cUpper = (tx.Concepto ?? "").ToUpper();
+                                                        string catUpper = categoria.ToUpper();
+                                                        bool isSeguridad = cUpper.Contains("SEGURIDAD") || cUpper.Contains("ISPS");
+                                                        bool esExento = catUpper.Contains("MARÍTIMO") || catUpper.Contains("MARITIMO") || isSeguridad || catUpper.Contains("GATE");
+                                                        decimal montoTotal = esExento ? tx.MontoNeto : Math.Round(tx.MontoNeto * 1.19m, 0);
+                                                        bool isCertificado = catUpper.Contains("DOCUMENTAL") && (cUpper.Contains("FITO") || cUpper.Contains("SANI") || cUpper.Contains("CAPTU") || cUpper.Contains("ORIGEN"));
+                                                        string docLabel = isCertificado ? "CERT" : "FACT/NC";
+
+                                                        <tr>
+                                                            <td class="text-center align-middle">
+                                                                @if (string.IsNullOrWhiteSpace(tx.NumeroDocumento))
+                                                                {
+                                                                    if (isCertificado)
+                                                                    {
+                                                                        <i class="bi bi-x-circle-fill text-danger" title="Incompleto - Bloqueado" style="font-size: 14px;"></i>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <input type="checkbox" name="idsExentos" value="@tx.Id" form="form-nc-@op.Id" class="form-check-input border-secondary shadow-sm" style="cursor: pointer;" />
+                                                                    }
+                                                                }
+                                                            </td>
+                                                            <td class="fw-bold text-dark ps-2">@tx.Concepto</td>
+                                                            <td class="text-end font-monospace">
+                                                                @if (tx.MontoNeto == 0m && !tx.TarifaManual)
+                                                                {
+                                                                    <span class="text-por-asignar">Por asignar</span>
+                                                                }
+                                                                else if (tx.TarifaManual)
+                                                                {
+                                                                    <div class="d-inline-flex align-items-center gap-1 justify-content-end" data-bs-toggle="tooltip" data-bs-placement="left" title="AJUSTE COMERCIAL: @tx.JustificacionManual" style="cursor: help;">
+                                                                        <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 13px;"></i>
+                                                                        <span style="background-color: #fffbeb; color: #d97706; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 12px;">@(tx.Moneda == "CLP" ? "$" : "USD") @tx.MontoNeto.ToString("N0")</span>
+                                                                    </div>
+                                                                }
+                                                                else
+                                                                {
+
+                                                                    <span class="text-success" style="font-weight: 600;">@(tx.Moneda == "CLP" ? "$" : "USD") @tx.MontoNeto.ToString("N0")</span>
+                                                                }
+                                                            </td>
+                                                            <td class="text-end font-monospace">
+                                                                @if (isSeguridad || (tx.MontoNeto == 0m && !tx.TarifaManual))
+                                                                {
+                                                                    <span class="text-muted fw-bold">-</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="text-success opacity-75" style="font-weight: 500;">@(tx.Moneda == "CLP" ? "$" : "USD") @montoTotal.ToString("N0")</span>
+                                                                }
+                                                            </td>
+
+                                                            <!-- COLUMNA N° DOC DUAL (MINIMALISTA) INGRESOS -->
+                                                            <td class="align-middle px-3">
+                                                                <div class="d-flex align-items-center justify-content-between gap-2 w-100">
+                                                                    <div class="flex-grow-1">
+                                                                        @if (string.IsNullOrWhiteSpace(tx.NumeroDocumento))
+                                                                        {
+                                                                            if (isCertificado)
+                                                                            {
+                                                                                <span class="text-danger fw-bold" style="font-size: 11px;">INCOMPLETO</span>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <form method="post" asp-page-handler="GuardarNumeroDoc" class="input-group input-group-sm shadow-sm m-0 p-0">
+                                                                                    <input type="hidden" name="transaccionId" value="@tx.Id" />
+                                                                                    <input type="text" name="numeroDoc" class="form-control text-center" style="font-size: 9px; height: 24px; border-color: #cbd5e1;" placeholder="N° Fact/NC" required />
+                                                                                    <button type="submit" class="btn btn-outline-success" style="padding: 0 8px; height: 24px;"><i class="bi bi-check2"></i></button>
+                                                                                </form>
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <span class="text-success fw-bold text-truncate" style="font-size: 10px;">@docLabel: @tx.NumeroDocumento</span>
+                                                                        }
+                                                                    </div>
+
+                                                                    <div style="width: 28px; flex-shrink: 0;" class="text-end">
+                                                                        @if (estadoLimpiado == "PENDIENTE")
+                                                                        {
+                                                                            <form method="post" asp-page-handler="SubirComprobante" enctype="multipart/form-data" class="m-0 p-0">
+                                                                                <input type="hidden" name="transaccionId" value="@tx.Id" />
+                                                                                <button type="button" class="btn btn-light border btn-xs shadow-sm text-secondary btn-action-col" title="Subir Factura Emitida" onclick="document.getElementById('file-ing-@tx.Id').click()">
+                                                                                    <i class="bi bi-upload"></i>
+                                                                                </button>
+                                                                                <input type="file" id="file-ing-@tx.Id" name="archivoRespaldo" class="d-none" accept=".pdf,.png,.jpg,.jpeg" onchange="if(this.files.length > 0) this.form.submit();" />
+                                                                            </form>
+                                                                        }
+                                                                        else if (!string.IsNullOrEmpty(tx.RutaComprobante))
+                                                                        {
+                                                                            <a href="@tx.RutaComprobante" target="_blank" class="btn btn-success btn-xs shadow-sm btn-action-col" title="Ver Documento">
+                                                                                <i class="bi bi-eye"></i>
+                                                                            </a>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td class="text-center align-middle pe-4">
+                                                                <span class="badge-estado @claseEstado shadow-sm m-0">@estadoLimpiado</span>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                        <div class="p-2 d-flex justify-content-between align-items-center border-top" style="background-color: #f8fafc;">
+                                            <div>
+                                                @if (op.TransaccionesFinancieras.Any(t => t.TipoMovimiento == "INGRESO" && ((t.MontoNeto == 0m && !t.TarifaManual) || (string.IsNullOrWhiteSpace(t.NumeroDocumento) && (t.Concepto.Contains("Origen") || t.Concepto.Contains("Fitosanitario") || t.Concepto.Contains("Sanitario") || t.Concepto.Contains("Captura"))))))
+                                                {
+                                                    <span class="text-danger fw-bold" style="font-size: 11px;"><i class="bi bi-exclamation-triangle-fill"></i> Existen montos "Por asignar" o Certificados INCOMPLETOS. Operaciones debe cerrar el caso.</span>
+                                                }
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                @if (op.TransaccionesFinancieras.Any(t => t.TipoMovimiento == "INGRESO" && ((t.MontoNeto == 0m && !t.TarifaManual) || (string.IsNullOrWhiteSpace(t.NumeroDocumento) && (t.Concepto.Contains("Origen") || t.Concepto.Contains("Fitosanitario") || t.Concepto.Contains("Sanitario") || t.Concepto.Contains("Captura"))))))
+                                                {
+                                                    <button class="btn btn-secondary btn-sm fw-bold px-3 shadow-sm" style="font-size: 10px;" disabled title="Existen montos o documentos pendientes"><i class="bi bi-file-earmark-pdf me-1"></i> GENERAR SET DE COBRO</button>
+                                                    <button class="btn btn-secondary btn-sm fw-bold px-3 shadow-sm" style="font-size: 10px;" disabled title="Existen montos o documentos pendientes"><i class="bi bi-file-earmark-text text-danger me-1"></i> CONSOLIDAR NOTA DE COBRO ATILSON</button>
+                                                }
+                                                else
+                                                {
+                                                    <a href="/Finanzas/SetCobro/@op.Id" target="_blank" class="btn btn-danger btn-sm fw-bold px-3 shadow-sm" style="font-size: 10px;"><i class="bi bi-file-earmark-pdf me-1"></i> GENERAR SET DE COBRO</a>
+                                                    <button type="submit" form="form-nc-@op.Id" class="btn btn-dark btn-sm fw-bold px-3 shadow-sm" style="font-size: 10px; background-color: var(--atilson-slate-900);"><i class="bi bi-file-earmark-text text-danger me-1"></i> CONSOLIDAR NOTA DE COBRO ATILSON</button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA EGRESOS ================= -->
+        <div class="tab-pane fade" id="egresos" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-main-grid mb-0">
+                    <thead>
+                        <tr><th>N° Booking / Detalle de Costos Operativos</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var op in Model.Operaciones.Where(o => o.TransaccionesFinancieras.Any(t => t.TipoMovimiento == "EGRESO")))
+                        {
+                            <tr data-bs-toggle="collapse" data-bs-target="#egr-CF-@op.Id" class="cursor-pointer main-row row-egreso">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-chevron-right text-muted me-3" style="font-size: 10px;"></i>
+                                        <span style="font-weight: 800; color: #0f172a;">@op.NumeroBooking</span>
+                                        <span class="text-muted mx-2">|</span>
+                                        <span style="font-weight:500; color:#475569; font-size: 12px;">@(op.IdClienteNavigation?.RazonSocial ?? "")</span>
+                                        <div class="ms-auto d-flex gap-2">
+                                            <a href="/Finanzas/Edit/@op.Id" class="btn btn-outline-dark btn-xs" onclick="event.stopPropagation();"><i class="bi bi-pencil-square"></i> Editar</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr id="egr-CF-@op.Id" class="collapse">
+                                <td class="p-0 border-0">
+                                    <div class="nested-container">
+                                        <table class="table table-sm nested-table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th class="ps-4">Proveedor</th>
+                                                    <th>Concepto</th>
+                                                    <th class="text-center" style="width: 10%;">Responsable</th>
+                                                    <th class="text-end" style="width: 12%;">Valor Neto</th>
+                                                    <th class="text-end" style="width: 12%;">(Valor + IVA)</th>
+                                                    <th class="text-center px-3" style="width: 180px;">N° Doc (Carga Factura)</th>
+                                                    <th class="text-center pe-4" style="width: 160px;">Respaldo de Pago</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    string[] ordenInmutableEgr = { "Marítimo", "Transporte", "Documental", "Gate-Out/In", "Almacenamiento", "Otros" };
+                                                    var egresosTodos = op.TransaccionesFinancieras.Where(t => t.TipoMovimiento == "EGRESO").Select(t => new { Tx = t, Grupo = (t.GrupoCobro == "Depósito" || t.GrupoCobro == "Deposito") ? "Gate-Out/In" : (string.IsNullOrWhiteSpace(t.GrupoCobro) ? "Otros" : t.GrupoCobro) }).ToList();
+                                                }
+                                                @foreach (var categoria in ordenInmutableEgr)
+                                                {
+                                                    var grupo = egresosTodos.Where(g => g.Grupo == categoria).Select(g => g.Tx).ToList();
+
+                                                    if (categoria == "Documental")
+                                                    {
+                                                        var dic = new Dictionary<string, int> { { "HONORARIOS", 1 }, { "LEGAL", 2 }, { "EMISIÓN", 2 }, { "ACLARACIÓN", 3 }, { "ROLEO", 4 }, { "CANCELACIÓN", 5 }, { "ORIGEN", 6 }, { "FITOSANITARIO", 7 }, { "SANITARIO", 7 }, { "CAPTURA", 8 }, { "ISPS", 9 }, { "SEGURIDAD", 9 }, { "GATE", 10 }, { "COURRIER NACIONAL", 11 }, { "COURRIER INTERNACIONAL", 12 }, { "CORRECCIÓN", 13 } };
+                                                        grupo = grupo.OrderBy(t =>
+                                                        {
+                                                            var c = (t.Concepto ?? "").ToUpper();
+                                                            if (c.Contains("REEMISIÓN") || c.Contains(" R1") || c.Contains(" R2") || c.Contains(" R3"))
+                                                            {
+                                                                if (c.Contains("ORIGEN")) return 14; if (c.Contains("FITO") || c.Contains("SANI")) return 15; if (c.Contains("CAPTU")) return 16;
+                                                            }
+                                                            foreach (var kv in dic) if (c.Contains(kv.Key)) return kv.Value;
+                                                            return 99;
+                                                        }).ToList();
+                                                    }
+                                                    if (!grupo.Any()) continue;
+
+                                                    <tr class="row-group-header">
+                                                        <td colspan="7" class="ps-4" style="color: var(--atilson-slate-900);">
+                                                            @{
+                                                                string gLabel = categoria;
+                                                                string iconCls = gLabel.ToUpper().Contains("MARÍTIMO") ? "bi-water text-primary" : (gLabel.ToUpper().Contains("TRANSPORTE") ? "bi-truck text-success" : (gLabel.ToUpper().Contains("DOCUMENTAL") ? "bi-file-earmark-check text-purple" : (gLabel.ToUpper().Contains("GATE") ? "bi-box-arrow-right text-danger" : (gLabel.ToUpper().Contains("ALMACENAMIENTO") ? "bi-boxes text-warning" : "bi-box text-secondary"))));
+                                                            }
+                                                            <i class="bi @iconCls me-2 fs-6"></i> @gLabel
+                                                        </td>
+                                                    </tr>
+                                                    foreach (var tx in grupo)
+                                                    {
+                                                        string estadoLimpiado = (tx.EstadoFila == "PAGADO" || tx.EstadoFila == "CONCILIADO") ? "PAGADO" : "PENDIENTE";
+                                                        string claseEstado = estadoLimpiado == "PAGADO" ? "badge-pag" : "badge-pend";
+                                                        string responsable = (tx.ResponsablePago ?? tx.Responsable ?? "CLIENTE").ToUpper();
+                                                        string cUpper = (tx.Concepto ?? "").ToUpper();
+                                                        string catUpper = categoria.ToUpper();
+
+                                                        // Regla ISPS/Seguridad (Guión en Total)
+                                                        bool isSeguridad = cUpper.Contains("SEGURIDAD") || cUpper.Contains("ISPS");
+                                                        bool esExento = catUpper.Contains("MARÍTIMO") || catUpper.Contains("MARITIMO") || isSeguridad || catUpper.Contains("GATE");
+                                                        decimal montoTotal = esExento ? tx.MontoNeto : Math.Round(tx.MontoNeto * 1.19m, 0);
+
+                                                        string gKey = (tx.GrupoCobro ?? "").ToUpper();
+                                                        string nombreProveedor = tx.IdProveedorNavigation?.NombreProveedor;
+
+                                                        if (gKey.Contains("DOCUMENTAL") || gKey.Contains("ADUANA"))
+                                                        {
+                                                            var doc = op.OperacionesDocumentales?.FirstOrDefault();
+                                                            nombreProveedor = doc?.IdAgenciaAduanaNavigation?.NombreAgencia ?? doc?.AgenciaAduana;
+                                                        }
+                                                        else if (string.IsNullOrWhiteSpace(nombreProveedor))
+                                                        {
+                                                            if (gKey.Contains("MARÍTIMO") || gKey.Contains("MARITIMO")) nombreProveedor = op.IdNavieraNavigation?.NombreNaviera;
+                                                            else if (gKey.Contains("TERRESTRE") || gKey.Contains("TRANSPORTE") || gKey.Contains("GATE")) nombreProveedor = op.OperacionesTerrestres?.FirstOrDefault()?.EmpresaTransporte;
+                                                            else if (gKey.Contains("ALMACENAMIENTO") || gKey.Contains("BODEGA") || gKey.Contains("PATIO")) nombreProveedor = op.OperacionesAlmacenamientos?.FirstOrDefault()?.IdProveedorNavigation?.NombreProveedor;
+                                                        }
+                                                        if (string.IsNullOrWhiteSpace(nombreProveedor)) { nombreProveedor = "Por Asignar"; }
+
+                                                        <tr>
+                                                            <td class="fw-bold ps-4" style="color: #475569;">@nombreProveedor</td>
+                                                            <td class="fw-bold text-dark">@tx.Concepto</td>
+                                                            <td class="text-center align-middle">
+                                                                @if (responsable.Contains("ATILSON"))
+                                                                {
+                                                                    <span class="badge-resp-atilson">ATILSON</span>
+                                                                }
+                                                                else
+                                                                {
+
+                                                                    <span class="badge-resp-cliente">CLIENTE</span>
+                                                                }
+                                                            </td>
+                                                            <td class="text-end font-monospace align-middle">
+                                                                @if (tx.MontoNeto == 0m && !tx.TarifaManual)
+                                                                {
+                                                                    <span class="text-por-asignar">Por asignar</span>
+                                                                }
+                                                                else if (tx.TarifaManual)
+                                                                {
+                                                                    <div class="d-inline-flex align-items-center gap-1 justify-content-end" data-bs-toggle="tooltip" data-bs-placement="left" title="AJUSTE COMERCIAL: @tx.JustificacionManual" style="cursor: help;">
+                                                                        <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 13px;"></i>
+                                                                        <span style="background-color: #fffbeb; color: #d97706; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 12px;">@(tx.Moneda == "CLP" ? "$" : "USD") @tx.MontoNeto.ToString("N0")</span>
+                                                                    </div>
+                                                                }
+                                                                else
+                                                                {
+
+                                                                    <span class="text-danger" style="font-weight: 600;">@(tx.Moneda == "CLP" ? "$" : "USD") @tx.MontoNeto.ToString("N0")</span>
+                                                                }
+                                                            </td>
+                                                            <td class="text-end font-monospace align-middle">
+                                                                @if (isSeguridad || (tx.MontoNeto == 0m && !tx.TarifaManual))
+                                                                {
+                                                                    <span class="text-muted fw-bold">-</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="text-danger opacity-75" style="font-weight: 500;">@(tx.Moneda == "CLP" ? "$" : "USD") @montoTotal.ToString("N0")</span>
+                                                                }
+                                                            </td>
+
+                                                            <!-- COLUMNA N° DOC DUAL (MINIMALISTA) -->
+                                                            <td class="align-middle px-3">
+                                                                <div class="d-flex align-items-center justify-content-between gap-2 w-100">
+                                                                    @{
+                                                                        bool isTransporte = catUpper.Contains("TRANSPORTE") || catUpper.Contains("TERRESTRE");
+                                                                        bool isFlete = isTransporte && !cUpper.Contains("INTERPLANTA");
+                                                                        bool isMaritimo = catUpper.Contains("MARÍTIMO") || catUpper.Contains("MARITIMO");
+                                                                        bool isGateOut = catUpper.Contains("GATE");
+                                                                        bool isCertificado = catUpper.Contains("DOCUMENTAL") && (cUpper.Contains("FITO") || cUpper.Contains("SANI") || cUpper.Contains("CAPTU") || cUpper.Contains("ORIGEN"));
+                                                                        string placeholderTexto = isMaritimo ? "N° BL" : (isCertificado ? "N° Cert" : "N° Fact");
+                                                                        string docLabel = isMaritimo ? "BL" : (isCertificado ? "CERT" : "FACT");
+                                                                    }
+
+                                                                    <div class="flex-grow-1 d-flex flex-column gap-1">
+                                                                        @if (isFlete)
+                                                                        {
+                                                                            @if (string.IsNullOrWhiteSpace(tx.NumeroOrdenCompra))
+                                                                            {
+                                                                                <span class="badge bg-light text-muted border border-secondary shadow-sm text-start" style="font-size: 8px;">OC PENDIENTE</span>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <span class="badge bg-primary shadow-sm text-start" style="font-size: 9px;"><i class="bi bi-receipt"></i> OC-@tx.NumeroOrdenCompra.Replace("OC-", "")</span>
+                                                                            }
+                                                                        }
+
+                                                                        @if (string.IsNullOrWhiteSpace(tx.NumeroDocumento))
+                                                                        {
+                                                                            if (isCertificado)
+                                                                            {
+                                                                                <span class="text-danger fw-bold" style="font-size: 11px;">INCOMPLETO</span>
+                                                                            }
+                                                                            else if (isGateOut)
+                                                                            {
+                                                                                <form method="post" asp-page-handler="GuardarNumeroDoc" class="input-group input-group-sm shadow-sm m-0 p-0">
+                                                                                    <input type="hidden" name="transaccionId" value="@tx.Id" />
+                                                                                    <div class="input-group-text bg-white border-secondary p-1">
+                                                                                        <input type="checkbox" class="form-check-input m-0" style="cursor:pointer; width:12px; height:12px;" onchange="document.getElementById('doc-gate-egr-@tx.Id').disabled = !this.checked; document.getElementById('btn-gate-egr-@tx.Id').disabled = !this.checked;" />
+                                                                                    </div>
+                                                                                    <input type="text" id="doc-gate-egr-@tx.Id" name="numeroDoc" class="form-control text-center border-secondary" style="font-size: 9px; padding: 2px; height:24px;" placeholder="N° Fact" required disabled />
+                                                                                    <button type="submit" id="btn-gate-egr-@tx.Id" class="btn btn-outline-primary" style="padding: 0 6px; height:24px;" disabled><i class="bi bi-check2"></i></button>
+                                                                                </form>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <form method="post" asp-page-handler="GuardarNumeroDoc" class="input-group input-group-sm shadow-sm m-0 p-0">
+                                                                                    <input type="hidden" name="transaccionId" value="@tx.Id" />
+                                                                                    <input type="text" name="numeroDoc" class="form-control text-center" style="font-size: 9px; height: 24px; border-color: #cbd5e1;" placeholder="@placeholderTexto" required />
+                                                                                    <button type="submit" class="btn btn-outline-primary" style="padding: 0 8px; height: 24px;"><i class="bi bi-check2"></i></button>
+                                                                                </form>
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <span class="text-primary fw-bold text-truncate" style="font-size: 10px;">@docLabel: @tx.NumeroDocumento</span>
+                                                                        }
+                                                                    </div>
+
+                                                                    <!-- Botón Subir Factura (Fijo a la derecha para alinear) -->
+                                                                    <div style="width: 28px; flex-shrink: 0;" class="text-end">
+                                                                        @if (string.IsNullOrEmpty(tx.RutaFactura))
+                                                                        {
+                                                                            <form method="post" asp-page-handler="SubirFactura" enctype="multipart/form-data" class="m-0 p-0">
+                                                                                <input type="hidden" name="transaccionId" value="@tx.Id" />
+                                                                                <button type="button" class="btn btn-light border btn-xs shadow-sm text-secondary btn-action-col" title="Subir PDF de Factura" onclick="document.getElementById('file-fact-@tx.Id').click()">
+                                                                                    <i class="bi bi-upload"></i>
+                                                                                </button>
+                                                                                <input type="file" id="file-fact-@tx.Id" name="archivoFactura" class="d-none" accept=".pdf,.png,.jpg,.jpeg" onchange="if(this.files.length > 0) this.form.submit();" />
+                                                                            </form>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <a href="@tx.RutaFactura" target="_blank" class="btn btn-dark btn-xs shadow-sm btn-action-col" title="Ver PDF de Factura">
+                                                                                <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                                                            </a>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+
+                                                            <!-- COLUMNA RESPALDO DE PAGO -->
+                                                            <td class="text-center align-middle pe-4">
+                                                                <div class="d-flex align-items-center justify-content-between gap-2 w-100">
+                                                                    <div class="flex-grow-1 text-center">
+                                                                        <span class="badge-estado @claseEstado shadow-sm m-0">@estadoLimpiado</span>
+                                                                    </div>
+
+                                                                    <div style="width: 28px; flex-shrink: 0;" class="text-end">
+                                                                        @if (estadoLimpiado == "PENDIENTE")
+                                                                        {
+                                                                            <form method="post" asp-page-handler="SubirComprobante" enctype="multipart/form-data" class="m-0 p-0">
+                                                                                <input type="hidden" name="transaccionId" value="@tx.Id" />
+                                                                                <button type="button" class="btn btn-outline-success btn-xs shadow-sm btn-action-col" title="Subir Respaldo de Pago" onclick="document.getElementById('file-egr-@tx.Id').click()">
+                                                                                    <i class="bi bi-currency-dollar"></i>
+                                                                                </button>
+                                                                                <input type="file" id="file-egr-@tx.Id" name="archivoRespaldo" class="d-none" accept=".pdf,.png,.jpg,.jpeg" onchange="if(this.files.length > 0) this.form.submit();" />
+                                                                            </form>
+                                                                        }
+                                                                        else if (!string.IsNullOrEmpty(tx.RutaComprobante))
+                                                                        {
+                                                                            <a href="@tx.RutaComprobante" target="_blank" class="btn btn-success btn-xs shadow-sm btn-action-col" title="Ver Respaldo">
+                                                                                <i class="bi bi-eye"></i>
+                                                                            </a>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA RESUMEN ================= -->
+        <div class="tab-pane fade" id="resumen" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-main-grid mb-0">
+                    <thead>
+                        <tr><th>N° Booking / Cruce Exacto de Rentabilidad</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var op in Model.Operaciones)
+                        {
+                            string[] ordenInmutable = { "Marítimo", "Transporte", "Documental", "Gate-Out/In", "Almacenamiento", "Otros" };
+
+                            var resumenConceptos = op.TransaccionesFinancieras
+                                .Select(t => new { Tx = t, GrupoNormalizado = (t.GrupoCobro == "Depósito" || t.GrupoCobro == "Deposito") ? "Gate-Out/In" : (string.IsNullOrWhiteSpace(t.GrupoCobro) ? "Otros" : t.GrupoCobro) })
+                                .GroupBy(t => new { t.GrupoNormalizado, t.Tx.Moneda })
+                                .Select(g => new
+                                {
+                                    Concepto = g.Key.GrupoNormalizado,
+                                    Moneda = g.Key.Moneda,
+                                    Ingreso = g.Where(x => x.Tx.TipoMovimiento == "INGRESO").Sum(x => x.Tx.MontoNeto),
+                                    Egreso = g.Where(x => x.Tx.TipoMovimiento == "EGRESO").Sum(x => x.Tx.MontoNeto),
+                                    Rentabilidad = g.Where(x => x.Tx.TipoMovimiento == "INGRESO").Sum(x => x.Tx.MontoNeto) - g.Where(x => x.Tx.TipoMovimiento == "EGRESO").Sum(x => x.Tx.MontoNeto)
+                                })
+                                .OrderBy(r => Array.IndexOf(ordenInmutable, r.Concepto) >= 0 ? Array.IndexOf(ordenInmutable, r.Concepto) : 99)
+                                .ToList();
+
+                            <tr data-bs-toggle="collapse" data-bs-target="#res-CF-@op.Id" class="cursor-pointer main-row row-resumen">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-chevron-right text-muted me-3" style="font-size: 10px;"></i>
+                                        <span style="font-weight: 800; color: #0f172a;">@op.NumeroBooking</span>
+                                        <span class="text-muted mx-2">|</span>
+                                        <span style="font-weight:500; color:#475569; font-size: 12px;">@(op.IdClienteNavigation?.RazonSocial ?? "")</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr id="res-CF-@op.Id" class="collapse">
+                                <td class="p-0 border-0">
+                                    <div class="nested-container">
+                                        <table class="table table-sm nested-table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th class="ps-4">Concepto Operativo</th>
+                                                    <th class="text-end">Ingreso</th>
+                                                    <th class="text-end">Egreso</th>
+                                                    <th class="text-end pe-4">Rentabilidad</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var linea in resumenConceptos)
+                                                {
+                                                    string simbolo = linea.Moneda == "CLP" ? "$" : "USD";
+                                                    string colorProfit = linea.Rentabilidad > 0 ? "text-success" : (linea.Rentabilidad < 0 ? "text-danger" : "text-dark");
+                                                    <tr>
+                                                        <td class="fw-bold text-dark ps-4">
+                                                            @linea.Concepto
+                                                            <span class="ms-1" style="font-size:9px; color: #94a3b8; font-weight: normal;">(@linea.Moneda)</span>
+                                                        </td>
+                                                        <td class="text-end font-monospace" style="color: #64748b;">@simbolo @linea.Ingreso.ToString("N0")</td>
+                                                        <td class="text-end font-monospace" style="color: #64748b;">@simbolo @linea.Egreso.ToString("N0")</td>
+                                                        <td class="text-end font-monospace fw-bold @colorProfit pe-4">@simbolo @linea.Rentabilidad.ToString("N0")</td>
+                                                    </tr>
+                                                }
+                                                @if (!resumenConceptos.Any())
+                                                {
+                                                    <tr><td colspan="4" class="text-center text-muted py-3" style="font-style: italic; font-size: 11px;">Aún no hay transacciones para este Booking.</td></tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+}

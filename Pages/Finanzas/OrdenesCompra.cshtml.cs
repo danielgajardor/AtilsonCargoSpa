@@ -22,52 +22,71 @@ namespace AtilsonCargoSpa.Pages.Finanzas
         [BindProperty(SupportsGet = true)]
         public string? SearchString { get; set; }
 
-        // KPIs Inteligentes de Cuentas por Pagar (Proveedores)
-        public int TotalOrdenes { get; set; }
-        public decimal TotalAPagar { get; set; }
-        public int OpsSinTarifa { get; set; }
-        public int OpsListasEmitir { get; set; }
-
         public async Task OnGetAsync()
         {
             var query = _context.Operaciones
                 .Include(o => o.IdClienteNavigation)
                 .Include(o => o.OperacionesTerrestres)
-                .Include(o => o.Finanzasoperacions)
-                .Include(o => o.IdPuertoOrigenNavigation) // Añadido para la ruta
-                .Include(o => o.IdPuertoDestinoNavigation) // Añadido para la ruta
-                .Where(o => !o.IsDeleted && o.OperacionesTerrestres.Any())
+                .Include(o => o.TransaccionesFinancieras)
+                    .ThenInclude(t => t.IdProveedorNavigation)
+                .Where(o => !o.IsDeleted && o.TransaccionesFinancieras.Any(t =>
+                    t.TipoMovimiento == "EGRESO" &&
+                    t.GrupoCobro != null &&
+                    (t.GrupoCobro.ToUpper().Contains("TERRESTRE") ||
+                     t.GrupoCobro.ToUpper().Contains("TRANSPORTE") ||
+                     t.GrupoCobro.ToUpper().Contains("EXTRACOSTO"))))
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(SearchString))
             {
                 string s = SearchString.ToLower();
                 query = query.Where(o =>
-                    (o.OperacionesTerrestres.Any(t => t.EmpresaTransporte != null && t.EmpresaTransporte.ToLower().Contains(s))) ||
-                    (o.NumeroBooking != null && o.NumeroBooking.ToLower().Contains(s))
+                    (o.NumeroBooking != null && o.NumeroBooking.ToLower().Contains(s)) ||
+                    (o.TransaccionesFinancieras.Any(t => t.IdProveedorNavigation != null && t.IdProveedorNavigation.NombreProveedor.ToLower().Contains(s)))
                 );
             }
 
             ListaOrdenes = await query.OrderByDescending(o => o.Id).ToListAsync();
+        }
 
-            // Cálculo de KPIs para el Dashboard de Proveedores
-            foreach (var o in ListaOrdenes)
+        // ==================== ASIGNACIÓN AUTOMÁTICA DEL N° DE OC ====================
+        public async Task<IActionResult> OnPostAsignarOCAsync(string transaccionesIds)
+        {
+            if (!string.IsNullOrWhiteSpace(transaccionesIds))
             {
-                TotalOrdenes++;
-                var fin = o.Finanzasoperacions?.FirstOrDefault();
+                var ids = transaccionesIds.Split(',').Select(int.Parse).ToList();
+                var transacciones = await _context.TransaccionesFinancieras
+                                        .Where(t => ids.Contains(t.Id))
+                                        .ToListAsync();
 
-                bool tieneTarifa = fin != null && (fin.CostoTerrestreNeto ?? 0) > 0;
+                // 1. Buscar el correlativo más alto de OC actuales
+                var ultimasOc = await _context.TransaccionesFinancieras
+                    .Where(t => t.NumeroOrdenCompra != null && t.NumeroOrdenCompra.StartsWith("OC-"))
+                    .Select(t => t.NumeroOrdenCompra)
+                    .ToListAsync();
 
-                if (tieneTarifa)
+                int maxCorrelativo = 2000;
+                foreach (var oc in ultimasOc)
                 {
-                    TotalAPagar += (fin.CostoTerrestreNeto ?? 0);
-                    OpsListasEmitir++;
+                    if (int.TryParse(oc.Replace("OC-", ""), out int num))
+                    {
+                        if (num > maxCorrelativo) maxCorrelativo = num;
+                    }
                 }
-                else
+
+                // 2. Generar el nuevo folio
+                string nuevaOc = $"OC-{maxCorrelativo + 1}";
+
+                // 3. Asignarle el mismo número correlativo a toda la agrupación
+                foreach (var tx in transacciones)
                 {
-                    OpsSinTarifa++;
+                    tx.NumeroOrdenCompra = nuevaOc;
                 }
+
+                await _context.SaveChangesAsync();
             }
+
+            return RedirectToPage("./OrdenesCompra");
         }
     }
 }

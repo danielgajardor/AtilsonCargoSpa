@@ -7,6 +7,9 @@
     var puertosDb = ViewData["PuertosList"] as IEnumerable<AtilsonCargoSpa.Models.Puerto>;
     var depositosDb = ViewData["DepositosList"] as IEnumerable<AtilsonCargoSpa.Models.Deposito>;
     var plantasDb = ViewData["PlantasList"] as IEnumerable<AtilsonCargoSpa.Models.Planta>;
+
+    // 👇 NUEVA VARIABLE PARA LAS AGENCIAS 👇
+    var agenciasDb = ViewData["AgenciasList"] as IEnumerable<AtilsonCargoSpa.Models.AgenciasAduana>;
 }
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -766,7 +769,17 @@
                     <div class="row g-4 mb-5">
                         <div class="col-md-6">
                             <label class="erp-label">Agencia de Aduana Designada</label>
-                            <input type="text" class="form-control erp-input text-uppercase" name="DocAgencia" id="inpAgenciaDoc" placeholder="Nombre de la Agencia" />
+                            <select name="DocAgencia" id="inpAgenciaDoc" class="form-select erp-input text-uppercase">
+                                <option value="">-- SELECCIONAR AGENCIA --</option>
+                                @if (agenciasDb != null)
+                                {
+                                    foreach (var agencia in agenciasDb)
+                                    {
+                                        <!-- Guardamos el Nombre como value para mantener la lógica de tu OnPostAsync -->
+                                        <option value="@agencia.NombreAgencia">@agencia.NombreAgencia</option>
+                                    }
+                                }
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="erp-label">N° Correlativo DUS / DIN</label>

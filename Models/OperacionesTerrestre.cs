@@ -55,6 +55,7 @@ public partial class OperacionesTerrestre
     public string? UsuarioCreador { get; set; }
 
     public DateTime? FechaModificacion { get; set; }
+    public int? IdUnidadTecnica { get; set; }
 
     [StringLength(50)]
     public string? UsuarioModificador { get; set; }

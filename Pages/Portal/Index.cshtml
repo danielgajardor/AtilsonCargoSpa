@@ -250,6 +250,7 @@
                 .portal-view.active {
                     display: block;
                 }
+
             @@keyframes fadeUp {
                 from {
                     opacity: 0;
@@ -408,6 +409,23 @@
                 display: inline-block;
                 border: 1px solid transparent;
             }
+
+            /* Clases adicionales para formulario unificado */
+            .form-input-clean {
+                border-radius: 8px;
+                border: 1px solid #cbd5e1;
+                padding: 12px 15px;
+                width: 100%;
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--dark-text);
+                outline: none;
+            }
+
+                .form-input-clean:focus {
+                    border-color: var(--atilson-purple);
+                    box-shadow: inset 0 0 0 1px var(--atilson-purple);
+                }
     </style>
 </head>
 <body>
@@ -419,12 +437,15 @@
         <ul class="sidebar-nav">
             <li class="nav-item sidebar-title">Mi Espacio</li>
             <li><a class="nav-link active" data-target="view-dashboard" onclick="navTo('view-dashboard', 'Panel Principal')"><i class="bi bi-grid-1x2-fill"></i> <span class="nav-text">Dashboard</span></a></li>
-
             <li><a class="nav-link" href="/Portal/Tracking"><i class="bi bi-crosshair"></i> <span class="nav-text">Localizar Carga</span></a></li>
 
             <li class="nav-item sidebar-title">Gestión Operativa</li>
             <li><a class="nav-link" data-target="view-embarques" onclick="navTo('view-embarques', 'Historial de Embarques')"><i class="bi bi-box-seam-fill"></i> <span class="nav-text">Mis Embarques</span></a></li>
             <li><a class="nav-link" data-target="view-documentos" onclick="navTo('view-documentos', 'Documentación y BLs')"><i class="bi bi-file-earmark-pdf-fill"></i> <span class="nav-text">Documentos BL</span></a></li>
+
+            <!-- NUEVO ITEM: Módulo de cotización -->
+            <li class="nav-item sidebar-title">Cotizaciones</li>
+            <li><a class="nav-link" data-target="view-cotizar" onclick="navTo('view-cotizar', 'Solicitar Cotización')"><i class="bi bi-calculator"></i> <span class="nav-text">Nueva Solicitud</span></a></li>
         </ul>
 
         <div class="sidebar-user-footer">
@@ -432,7 +453,7 @@
                 <div class="user-avatar" title="@nombreUsuario">@inicialUsuario</div>
                 <div class="user-info" style="line-height: 1.2;">
                     <span class="d-block fw-bold" style="font-size: 13px; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@nombreUsuario</span>
-                    <span style="font-size: 10px; font-weight: 600; color: var(--atilson-accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@@Model.EmpresaCliente</span>
+                    <span style="font-size: 10px; font-weight: 600; color: var(--atilson-accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@Model.EmpresaCliente</span>
                 </div>
             </div>
             <form method="post" asp-page="/Logout" title="Cerrar Sesión">
@@ -446,7 +467,7 @@
             <h2 class="page-title" id="pageTitle">Panel Principal</h2>
         </header>
 
-        <div class="content-wrapper">
+        <div class="content-wrapper" style="padding: 30px 40px;">
             <div id="view-dashboard" class="portal-view active">
                 <div class="row align-items-center mb-4 pb-2 border-bottom border-soft">
                     <div class="col-md-8">
@@ -560,24 +581,69 @@
                 </div>
             </div>
 
+            <!-- NUEVA VISTA: Módulo de Cotización (Autoatención) -->
+            <div id="view-cotizar" class="portal-view">
+                <div class="saas-card p-0 overflow-hidden">
+                    <div class="p-4 border-bottom border-soft bg-light">
+                        <h6 class="fw-bold m-0" style="color: var(--atilson-dark); font-size: 14px;"><i class="bi bi-calculator-fill text-muted me-2"></i>Solicitud de Cotización</h6>
+                        <p class="text-muted small m-0 mt-1">Solicita un nuevo flete seleccionando tu naviera de preferencia. Nuestro equipo te devolverá la mejor tarifa disponible.</p>
+                    </div>
+                    <div class="p-4">
+                        <form method="post" asp-page-handler="Cotizar" class="row g-4">
+                            <div class="col-md-6">
+                                <label class="data-label mb-2">Puerto de Origen (POL)</label>
+                                <input type="text" class="form-input-clean" name="Origen" placeholder="Ej: San Antonio, Chile" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="data-label mb-2">Puerto de Destino (POD)</label>
+                                <input type="text" class="form-input-clean" name="Destino" placeholder="Ej: Miami, USA" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="data-label mb-2">Naviera Preferida (Opcional)</label>
+                                <select class="form-input-clean" name="IdNaviera" asp-items="Model.NavierasList">
+                                    <option value="">Seleccione o deje en blanco...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="data-label mb-2">Equipamiento</label>
+                                <select class="form-input-clean" name="TipoEquipo" required>
+                                    <option value="">Seleccione equipamiento...</option>
+                                    <option value="20 ST">Contenedor 20' ST</option>
+                                    <option value="40 ST">Contenedor 40' ST</option>
+                                    <option value="40 HC">Contenedor 40' HC</option>
+                                    <option value="LCL">Carga Suelta (LCL)</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="data-label mb-2">Detalles Adicionales</label>
+                                <textarea class="form-input-clean" rows="3" name="Comentarios" style="font-weight: normal;" placeholder="Indique peso estimado, tipo de mercancía o requerimientos especiales..."></textarea>
+                            </div>
+                            <div class="col-12 text-end mt-4">
+                                <button type="submit" class="btn btn-dark fw-bold px-4 py-2" style="background: var(--atilson-purple); border: none; font-size: 13px;">ENVIAR SOLICITUD A OPERACIONES</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-        window.navTo = function(targetId, titleStr) {
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-        let targetMenu = document.querySelector(`.nav-link[data-target="${targetId}"]`);
-        if(targetMenu) targetMenu.classList.add('active');
+            document.addEventListener("DOMContentLoaded", function() {
+                window.navTo = function(targetId, titleStr) {
+                    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                    let targetMenu = document.querySelector(`.nav-link[data-target="${targetId}"]`);
+                    if (targetMenu) targetMenu.classList.add('active');
 
-        document.querySelectorAll('.portal-view').forEach(el => el.classList.remove('active'));
-        let targetView = document.getElementById(targetId);
-        if(targetView) targetView.classList.add('active');
+                    document.querySelectorAll('.portal-view').forEach(el => el.classList.remove('active'));
+                    let targetView = document.getElementById(targetId);
+                    if (targetView) targetView.classList.add('active');
 
-        if(titleStr) document.getElementById('pageTitle').innerText = titleStr;
-        };
-        });
+                    if (titleStr) document.getElementById('pageTitle').innerText = titleStr;
+                };
+            });
     </script>
 </body>
 </html>

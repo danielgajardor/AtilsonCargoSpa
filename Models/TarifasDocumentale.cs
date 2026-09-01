@@ -39,6 +39,7 @@ public partial class TarifasDocumentale
 
     [Unicode(false)]
     public string? Comentarios { get; set; }
+    public string? Clasificacion { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime? FechaCreacion { get; set; }

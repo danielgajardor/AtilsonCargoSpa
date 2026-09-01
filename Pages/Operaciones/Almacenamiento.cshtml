@@ -5,23 +5,174 @@
 }
 
 <style>
-    :root { --txt-main: #0f172a; --txt-muted: #64748b; --border-soft: #e2e8f0; --bg-main: #ffffff; --bg-soft: #f8fafc; }
-    .table-container { background: var(--bg-main); border: 1px solid var(--border-soft); overflow-x: auto; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
-    .table-exec { min-width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 0; }
-    .table-exec th { background: var(--bg-soft); color: var(--txt-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; padding: 14px 20px; border-bottom: 1px solid var(--border-soft); font-weight: 800; }
-    
-    .workspace-nav { background: #ffffff; padding: 6px; border-radius: 8px; border: 1px solid var(--border-soft); display: inline-flex; gap: 4px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .ws-btn { font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 8px 16px; border-radius: 6px; color: var(--txt-muted); text-decoration: none; transition: all 0.2s; display: flex; align-items: center; letter-spacing: 0.5px; }
-    .ws-btn:hover { background: #f1f5f9; color: var(--txt-main); }
-    .ws-btn.active { background: var(--atilson-dark); color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .ws-btn i { font-size: 14px; margin-right: 6px; }
+    :root {
+        --txt-main: #0f172a;
+        --txt-muted: #64748b;
+        --border-soft: #e2e8f0;
+        --bg-main: #ffffff;
+        --bg-soft: #f8fafc;
+        --atilson-dark: #0f172a;
+    }
+
+    .table-container {
+        background: var(--bg-main);
+        border: 1px solid var(--border-soft);
+        overflow-x: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+    }
+
+    .table-exec {
+        min-width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-bottom: 0;
+    }
+
+        .table-exec th {
+            background: var(--bg-soft);
+            color: var(--txt-muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--border-soft);
+            font-weight: 800;
+        }
+
+        .table-exec td {
+            padding: 14px 24px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-soft);
+            font-size: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .table-exec tbody tr.main-row:hover td {
+            background-color: #f1f5f9;
+        }
+
+    .workspace-nav {
+        background: #ffffff;
+        padding: 6px;
+        border-radius: 8px;
+        border: 1px solid var(--border-soft);
+        display: inline-flex;
+        gap: 4px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .ws-btn {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 8px 16px;
+        border-radius: 6px;
+        color: var(--txt-muted);
+        text-decoration: none;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        letter-spacing: 0.5px;
+    }
+
+        .ws-btn:hover {
+            background: #f1f5f9;
+            color: var(--txt-main);
+        }
+
+        .ws-btn.active {
+            background: var(--atilson-dark);
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .ws-btn i {
+            font-size: 14px;
+            margin-right: 6px;
+        }
+
+    .patio-card {
+        border-radius: 8px;
+        border: 1px solid var(--border-soft);
+        background-color: #ffffff;
+        padding: 24px;
+    }
+
+    .patio-section-title {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--txt-main);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--border-soft);
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .custom-label {
+        font-size: 9px;
+        font-weight: 800;
+        color: var(--txt-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .form-control-sm, .form-select-sm {
+        font-size: 11px !important;
+        padding: 7px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        color: var(--txt-main);
+        font-weight: 600;
+        box-shadow: none !important;
+    }
+
+        .form-control-sm:focus {
+            border-color: #94a3b8;
+            background-color: #ffffff;
+        }
+
+    .transport-box {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 16px;
+    }
+
+    .file-dropzone {
+        border: 1px dashed #94a3b8 !important;
+        background-color: #f8fafc;
+        color: #64748b;
+        cursor: pointer;
+    }
+
+        .file-dropzone:hover {
+            background-color: #f1f5f9;
+            border-color: var(--atilson-dark) !important;
+        }
+
+    .sub-row-hover {
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+    }
+
+        .sub-row-hover:hover {
+            background-color: #f1f5f9;
+            border-left: 3px solid var(--atilson-dark);
+        }
 </style>
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 style="font-size: 22px; font-weight: 800; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">WORKSPACE: ALMACENAMIENTO</h1>
-            <p class="text-muted small m-0 fw-medium">Control de inventario, bodegaje y depósitos</p>
+            <h1 style="font-size: 24px; font-weight: 900; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">SERVICIO DE ALMACENAMIENTO</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Control de inventario, bodegaje y depósitos</p>
         </div>
         <a asp-page="./Index" class="btn btn-light border btn-sm px-4 fw-bold shadow-sm text-muted">VOLVER AL MAIN BOARD</a>
     </div>
@@ -38,23 +189,556 @@
         <table class="table table-exec">
             <thead>
                 <tr>
-                    <th>Referencia</th>
-                    <th>Cliente</th>
-                    <th>Bodega / Centro</th>
-                    <th>Fecha Ingreso</th>
-                    <th>Fecha Salida</th>
-                    <th>Estado Bodega</th>
-                    <th class="text-end">Acciones</th>
+                    <th style="width: 25%;">Booking / Equipo</th>
+                    <th style="width: 20%;">Cliente Mandante</th>
+                    <th style="width: 20%;">Bodega / Centro</th>
+                    <th class="text-center" style="width: 12%;">Fecha Ingreso</th>
+                    <th class="text-center" style="width: 12%;">Fecha Salida</th>
+                    <th class="text-end" style="width: 11%;">Estado Bodega</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td colspan="7" class="text-center py-5">
-                        <i class="bi bi-tools text-muted" style="font-size: 2rem; opacity: 0.5;"></i>
-                        <p class="text-muted fw-bold mt-2 mb-0">Módulo en construcción a petición de Gerencia.</p>
-                    </td>
-                </tr>
+                @if (Model.Operaciones != null && Model.Operaciones.Any())
+                {
+                    foreach (var op in Model.Operaciones)
+                    {
+                        var almacen = op.OperacionesAlmacenamientos.FirstOrDefault();
+                        string estado = "SIN ASIGNAR";
+                        string colorBadge = "bg-secondary bg-opacity-10 text-secondary border-secondary";
+
+                        if (almacen != null)
+                        {
+                            if (almacen.FechaIngreso.HasValue && !almacen.FechaSalida.HasValue) { estado = "EN PATIO"; colorBadge = "bg-warning bg-opacity-10 text-warning border-warning"; }
+                            else if (almacen.FechaIngreso.HasValue && almacen.FechaSalida.HasValue) { estado = "RETIRADO"; colorBadge = "bg-success bg-opacity-10 text-success border-success"; }
+                            else { estado = "PROGRAMADO"; colorBadge = "bg-info bg-opacity-10 text-info border-info"; }
+                        }
+
+                        <tr class="main-row" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapse-almacen-@op.Id" aria-expanded="false">
+                            <td class="font-monospace">
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="fw-bold text-dark" style="font-size: 14px; letter-spacing: -0.3px;">@(op.NumeroBooking ?? "S/N")</span>
+                                </div>
+                                <div class="d-flex align-items-center text-muted" style="font-size: 11px; margin-left: 2px;">
+                                    <i class="bi bi-box-seam me-2 text-primary" style="font-size: 12px;"></i>
+                                    <span class="fw-bold me-2 text-dark">@(op.TipoContenedor ?? "EQUIPO:")</span>
+                                    <span>@(op.NumeroContenedor ?? "Sin Asignar")</span>
+                                </div>
+                            </td>
+                            <td class="fw-bold text-uppercase">@(op.IdClienteNavigation?.NombreCliente ?? "Sin Cliente")</td>
+                            <td class="fw-bold text-dark">@(almacen?.IdProveedorNavigation?.NombreProveedor ?? "No Seleccionado")</td>
+                            <td class="font-monospace text-center text-muted">@(almacen?.FechaIngreso?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                            <td class="font-monospace text-center text-muted">@(almacen?.FechaSalida?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                            <td class="text-end">
+                                <span class="badge @colorBadge border border-opacity-25 shadow-sm px-3 py-2" style="font-size: 9px; letter-spacing: 0.5px;">@estado</span>
+                            </td>
+                        </tr>
+
+                        <!-- ACORDEÓN DE SUB-FILAS -->
+                        <tr class="collapse p-0" id="collapse-almacen-@op.Id">
+                            <td colspan="6" class="p-0 border-0 bg-light">
+                                <div class="d-flex flex-column border-start border-end border-bottom">
+                                    <div class="px-4 py-3 border-bottom sub-row-hover d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal-ingreso-@op.Id">
+                                        <div class="d-flex align-items-center gap-4" style="font-size: 11px;">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-1" style="width: 70px; text-align:center;">INGRESO</span>
+                                            <span class="text-muted"><i class="bi bi-building me-1"></i> <strong>Prov:</strong> @(almacen?.IdProveedorNavigation?.NombreProveedor ?? "S/N")</span>
+                                            <span class="text-muted"><i class="bi bi-person me-1"></i> <strong>Cond:</strong> @(almacen?.ConductorIngresoNombre ?? "S/N")</span>
+                                            <span class="text-muted"><i class="bi bi-card-text me-1"></i> <strong>RUT:</strong> @(almacen?.ConductorIngresoRut ?? "S/N")</span>
+                                            <span class="text-muted"><i class="bi bi-telephone me-1"></i> <strong>Tel:</strong> @(almacen?.ConductorIngresoTelefono ?? "S/N")</span>
+                                            <span class="text-muted"><i class="bi bi-truck me-1"></i> <strong>Pat:</strong> @(almacen?.CamionIngresoPatente ?? "S/N")</span>
+                                        </div>
+                                        <i class="bi bi-pencil-square text-muted"></i>
+                                    </div>
+                                    <div class="px-4 py-3 sub-row-hover d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal-retiro-@op.Id">
+                                        <div class="d-flex align-items-center gap-4" style="font-size: 11px;">
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-3 py-1" style="width: 70px; text-align:center;">RETIRO</span>
+                                            <span class="text-muted"><i class="bi bi-building me-1"></i> <strong>Prov:</strong> @(almacen?.IdProveedorNavigation?.NombreProveedor ?? "S/N")</span>
+                                            <span class="text-muted"><i class="bi bi-person me-1"></i> <strong>Cond:</strong> @(almacen?.ConductorSalidaNombre ?? "S/N")</span>
+                                            <span class="text-muted"><i class="bi bi-card-text me-1"></i> <strong>RUT:</strong> @(almacen?.ConductorSalidaRut ?? "S/N")</span>
+                                            <span class="text-muted"><i class="bi bi-telephone me-1"></i> <strong>Tel:</strong> @(almacen?.ConductorSalidaTelefono ?? "S/N")</span>
+                                            <span class="text-muted"><i class="bi bi-truck me-1"></i> <strong>Pat:</strong> @(almacen?.CamionSalidaPatente ?? "S/N")</span>
+                                        </div>
+                                        <i class="bi bi-pencil-square text-muted"></i>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- MODAL INGRESO -->
+                        <div class="modal fade" id="modal-ingreso-@op.Id" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content border-0 shadow-lg" style="background-color: #f1f5f9;">
+                                    <div class="modal-header bg-white border-bottom px-4 py-3">
+                                        <div>
+                                            <h5 class="modal-title fw-bold text-dark m-0" style="font-size: 16px; letter-spacing: -0.3px;">
+                                                <i class="bi bi-box-arrow-in-right text-primary me-2"></i> GESTIÓN DE INGRESO A PATIO
+                                            </h5>
+                                            <div class="text-muted font-monospace mt-1" style="font-size: 11px;">
+                                                BOOKING: <strong>@(op.NumeroBooking)</strong> &nbsp;|&nbsp; CONTENEDOR: <strong>@(op.NumeroContenedor)</strong>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <form method="post" enctype="multipart/form-data" class="auto-save-form">
+                                            <input type="hidden" name="IdOperacion" value="@op.Id" />
+                                            @Html.AntiForgeryToken()
+
+                                            <div class="row justify-content-center mb-4">
+                                                <div class="col-md-8 text-center">
+                                                    <label class="custom-label">CADENA DE DEPÓSITO ASIGNADA</label>
+                                                    <select name="IdProveedor" asp-items="Model.ListaCadenas" class="form-select form-select-sm text-center fw-bold shadow-sm py-2">
+                                                        <option value="">- SELECCIONAR DEPÓSITO DE ALMACENAMIENTO -</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="row justify-content-center">
+                                                <div class="col-md-10 d-flex flex-column">
+                                                    <div class="patio-card shadow-sm">
+                                                        <div class="mb-4">
+                                                            <label class="custom-label text-center">Fecha y Hora de Ingreso</label>
+                                                            <input type="datetime-local" name="FechaIngreso" class="form-control form-control-sm text-center bg-light" value="@(almacen?.FechaIngreso?.ToString("yyyy-MM-ddTHH:mm"))" />
+                                                        </div>
+                                                        <div class="transport-box mb-4">
+                                                            <label class="custom-label text-center border-bottom pb-2 mb-3">Datos del Transportista (Entrega)</label>
+                                                            <div class="row g-2">
+                                                                <div class="col-7">
+                                                                    <input type="text" name="ConductorIngresoNombre" list="listaChoferes" class="form-control form-control-sm text-center input-chofer" value="@almacen?.ConductorIngresoNombre" placeholder="Nombre completo" autocomplete="off" />
+                                                                </div>
+                                                                <div class="col-5">
+                                                                    <input type="text" name="ConductorIngresoRut" class="form-control form-control-sm text-center font-monospace input-rut" value="@almacen?.ConductorIngresoRut" placeholder="RUT" />
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <input type="text" name="ConductorIngresoTelefono" class="form-control form-control-sm text-center font-monospace input-tel" value="@almacen?.ConductorIngresoTelefono" placeholder="Teléfono" />
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <input type="text" name="CamionIngresoPatente" class="form-control form-control-sm text-center fw-bold text-uppercase input-pat" value="@almacen?.CamionIngresoPatente" placeholder="Patente" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+
+                                                        <div class="mb-4">
+                                                            <label class="custom-label text-muted text-center"><i class="bi bi-chat-square-text me-1"></i> Observaciones</label>
+                                                            <input type="text" name="Comentarios" class="form-control form-control-sm text-center text-muted" value="@almacen?.Comentarios" placeholder="Opcional..." />
+                                                        </div>
+                                                        <div class="text-center mt-4">
+                                                            <button type="button" class="btn btn-dark btn-sm fw-bold w-100 py-2 btn-preview-mail"
+                                                                    data-tipo="ingreso" data-op="@op.Id" data-cliente="@(op.IdClienteNavigation?.NombreCliente)" data-booking="@(op.NumeroBooking)" data-contenedor="@(op.NumeroContenedor)">
+                                                                <i class="bi bi-envelope-plus me-2"></i>PREVISUALIZAR CORREO DE INGRESO
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MODAL RETIRO -->
+                        <div class="modal fade" id="modal-retiro-@op.Id" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content border-0 shadow-lg" style="background-color: #f1f5f9;">
+                                    <div class="modal-header bg-white border-bottom px-4 py-3">
+                                        <div>
+                                            <h5 class="modal-title fw-bold text-dark m-0" style="font-size: 16px; letter-spacing: -0.3px;">
+                                                <i class="bi bi-box-arrow-up-right text-primary me-2"></i> GESTIÓN DE RETIRO DE PATIO
+                                            </h5>
+                                            <div class="text-muted font-monospace mt-1" style="font-size: 11px;">
+                                                BOOKING: <strong>@(op.NumeroBooking)</strong> &nbsp;|&nbsp; CONTENEDOR: <strong>@(op.NumeroContenedor)</strong>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <form method="post" enctype="multipart/form-data" class="auto-save-form">
+                                            <input type="hidden" name="IdOperacion" value="@op.Id" />
+                                            @Html.AntiForgeryToken()
+
+                                            <div class="row justify-content-center mb-4">
+                                                <div class="col-md-8 text-center">
+                                                    <label class="custom-label">CADENA DE DEPÓSITO ASIGNADA</label>
+                                                    <select name="IdProveedor" asp-items="Model.ListaCadenas" class="form-select form-select-sm text-center fw-bold shadow-sm py-2">
+                                                        <option value="">- SELECCIONAR CADENA (ONU, CALICÓN, ETC) -</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="row justify-content-center">
+                                                <div class="col-md-10 d-flex flex-column">
+                                                    <div class="patio-card shadow-sm">
+                                                        <div class="mb-4">
+                                                            <label class="custom-label text-center">Fecha y Hora de Salida</label>
+                                                            <input type="datetime-local" name="FechaSalida" class="form-control form-control-sm text-center bg-light" value="@(almacen?.FechaSalida?.ToString("yyyy-MM-ddTHH:mm"))" />
+                                                        </div>
+                                                        <div class="transport-box mb-4">
+                                                            <label class="custom-label text-center border-bottom pb-2 mb-3">Datos del Transportista (Retiro)</label>
+                                                            <div class="row g-2">
+                                                                <div class="col-7">
+                                                                    <input type="text" name="ConductorSalidaNombre" list="listaChoferes" class="form-control form-control-sm text-center input-chofer" value="@almacen?.ConductorSalidaNombre" placeholder="Nombre completo" autocomplete="off" />
+                                                                </div>
+                                                                <div class="col-5">
+                                                                    <input type="text" name="ConductorSalidaRut" class="form-control form-control-sm text-center font-monospace input-rut" value="@almacen?.ConductorSalidaRut" placeholder="RUT" />
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <input type="text" name="ConductorSalidaTelefono" class="form-control form-control-sm text-center font-monospace input-tel" value="@almacen?.ConductorSalidaTelefono" placeholder="Teléfono" />
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <input type="text" name="CamionSalidaPatente" class="form-control form-control-sm text-center fw-bold text-uppercase input-pat" value="@almacen?.CamionSalidaPatente" placeholder="Patente" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- ADJUNTAR RESPALDO DE PAGO -->
+                                                        <div class="p-3 border rounded shadow-sm mb-4" style="background-color: #ffffff;">
+                                                            <label class="custom-label text-center text-primary mb-2" style="font-size: 10px;">
+                                                                <i class="bi bi-receipt me-1"></i> Adjuntar Respaldo de Pago (Almacenaje)
+                                                            </label>
+                                                            <input type="file" name="ArchivoTransferencia" class="form-control form-control-sm file-dropzone" accept=".pdf, image/*" onchange="subirRespaldoPatio(this, @op.Id)" />
+                                                            
+                                                            <div id="link-respaldo-@op.Id" class="text-center mt-2" style="display: @(!string.IsNullOrEmpty(almacen?.RutaArchivoTransferencia) ? "block" : "none");">
+                                                                <a href="@almacen?.RutaArchivoTransferencia" target="_blank" class="btn btn-sm btn-outline-info py-0 px-2 fw-bold" style="font-size: 10px;">
+                                                                    <i class="bi bi-eye me-1"></i> Ver Comprobante Actual
+                                                                </a>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="text-center mt-4">
+                                                            <button type="button" class="btn btn-dark btn-sm fw-bold w-100 py-2 btn-preview-mail"
+                                                                    data-tipo="retiro" data-op="@op.Id" data-cliente="@(op.IdClienteNavigation?.NombreCliente)" data-booking="@(op.NumeroBooking)" data-contenedor="@(op.NumeroContenedor)">
+                                                                <i class="bi bi-envelope-plus me-2"></i>PREVISUALIZAR CORREO DE RETIRO
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <i class="bi bi-inbox text-muted" style="font-size: 2rem; opacity: 0.5;"></i>
+                            <p class="text-muted fw-bold mt-2 mb-0">No hay operaciones activas para gestionar en patio.</p>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
 </div>
+
+<datalist id="listaChoferes">
+    @if (Model.ChoferesHistorial != null)
+    {
+        @foreach (var c in Model.ChoferesHistorial)
+        {
+            <option value="@c.Nombre" data-rut="@c.Rut" data-tel="@c.Telefono" data-pat="@c.Patente"></option>
+        }
+    }
+</datalist>
+
+<!-- Tostada Autoguardado -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="saveToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body fw-bold" style="font-size:12px;">
+                <i class="bi bi-cloud-check-fill me-2"></i> Borrador guardado exitosamente.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL GLOBAL DE PREVISUALIZACIÓN DE CORREO -->
+<div class="modal fade" id="modalEmailPreview" tabindex="-1" aria-hidden="true" data-bs-focus="false" style="z-index: 1060;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-dark text-white px-4 py-3 border-0">
+                <h5 class="modal-title fw-bold" style="font-size: 15px;">
+                    <i class="bi bi-envelope-paper me-2"></i> PREVISUALIZADOR DE CORREO AUTOMÁTICO
+                </h5>
+                <button type="button" class="btn-close btn-close-white" id="btnCerrarEmailModal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-light p-4">
+                <form id="formEmailPreview">
+                    <input type="hidden" id="emailOpId" name="IdOperacion">
+                    <input type="hidden" id="emailTipo" name="TipoNotificacion">
+
+                    <div class="mb-3">
+                        <label class="custom-label mb-2 text-primary">Correo Destino (Para)</label>
+                        <input type="email" id="emailDestino" name="Destinatario" class="form-control fw-bold border-primary text-dark shadow-sm" placeholder="ejemplo@cliente.com o proveedor@transporte.cl">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="custom-label mb-2">Asunto del Correo</label>
+                        <input type="text" id="emailAsunto" name="Asunto" class="form-control fw-bold border-secondary text-dark shadow-sm">
+                    </div>
+                    <div class="mb-3">
+                        <label class="custom-label mb-2">Cuerpo del Mensaje (Editable)</label>
+                        <textarea id="emailCuerpo" name="Mensaje" class="form-control border-secondary text-dark shadow-sm" rows="12" style="resize: none; font-size: 13px; line-height: 1.6;"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white border-top p-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary fw-bold px-4 btn-sm" id="btnVolverGuardar">
+                    <i class="bi bi-save me-1"></i> GUARDAR BORRADOR Y VOLVER
+                </button>
+                <button type="button" class="btn btn-primary fw-bold px-4 btn-sm shadow-sm" id="btnEnviarEmailDefinitivo">
+                    ENVIAR CORREO <i class="bi bi-send ms-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // 1. AUTOCOMPLETADO CHOFERES
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('input-chofer')) {
+                    let option = document.querySelector(`#listaChoferes option[value="${e.target.value}"]`);
+                    if (option) {
+                        let container = e.target.closest('.transport-box');
+                        if (container) {
+                            container.querySelector('.input-rut').value = option.getAttribute('data-rut');
+                            container.querySelector('.input-tel').value = option.getAttribute('data-tel');
+                            container.querySelector('.input-pat').value = option.getAttribute('data-pat');
+                            container.querySelector('.input-rut').dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    }
+                }
+            });
+
+            // 2. AUTOGUARDADO (AJAX SILENCIOSO EN SEGUNDO PLANO)
+            document.addEventListener('change', function(e) {
+                if (e.target.matches('.auto-save-form input:not([type="file"]), .auto-save-form select')) {
+                    let form = e.target.closest('form');
+                    fetch('?handler=AutoGuardar', {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                var toastEl = document.getElementById('saveToast');
+                                new bootstrap.Toast(toastEl, { delay: 1500 }).show();
+                            }
+                        }).catch(err => console.warn(err));
+                }
+            });
+
+            let activeMainModalId = null;
+
+            // 3. ABRIR PREVISUALIZADOR
+            document.addEventListener('click', function(e) {
+                let btnPreview = e.target.closest('.btn-preview-mail');
+                if (btnPreview) {
+                    let tipo = btnPreview.getAttribute('data-tipo');
+                    let opId = btnPreview.getAttribute('data-op');
+                    let cliente = btnPreview.getAttribute('data-cliente') || 'Sin Cliente';
+                    let booking = btnPreview.getAttribute('data-booking') || 'S/N';
+                    let contenedor = btnPreview.getAttribute('data-contenedor') || 'Sin Asignar';
+
+                    let formId = `#modal-${tipo}-${opId}`;
+                    let form = document.querySelector(`${formId} form`);
+                    if (!form) return;
+
+                    let formData = new FormData(form);
+                    let suffix = tipo === 'ingreso' ? 'Ingreso' : 'Salida';
+
+                    let fechaInput = formData.get(`Fecha${suffix === 'Ingreso' ? 'Ingreso' : 'Salida'}`) || '';
+                    let conductorInput = formData.get(`Conductor${suffix}Nombre`) || '';
+                    let rutInput = formData.get(`Conductor${suffix}Rut`) || '';
+                    let telInput = formData.get(`Conductor${suffix}Telefono`) || '';
+                    let patInput = formData.get(`Camion${suffix}Patente`) || '';
+
+                    let provSelect = form.querySelector('select[name="IdProveedor"]');
+                    let proveedorNombre = (provSelect && provSelect.selectedIndex > 0) ? provSelect.options[provSelect.selectedIndex].text : '';
+
+                    let fechaStr = fechaInput ? fechaInput.replace('T', ' ') : 'Pendiente de asignación';
+                    let asuntoTemplate = `Aviso de ${tipo.toUpperCase()} a Patio - Booking ${booking}`;
+                    let cuerpoTemplate = `Estimados ${proveedorNombre},
+
+        Junto con saludar cordialmente, enviamos los datos del conductor y unidades para el proceso de ${tipo.toUpperCase()} de almacenamiento.
+
+        -- DATOS DE OPERACIÓN --
+        Cliente: ${cliente}
+        Booking / Reserva: ${booking}
+        Contenedor / Equipo: ${contenedor}
+
+        -- DATOS DEL CONDUCTOR Y TRANSPORTE --
+        Nombre Conductor: ${conductorInput || 'No asignado aún'}
+        RUT Conductor: ${rutInput || 'S/N'}
+        Teléfono de Contacto: ${telInput || 'S/N'}
+        Patente del Camión: ${patInput || 'S/N'}
+
+        Fecha y Hora Programada: ${fechaStr}
+
+        Favor gestionar recepción en sistema.
+
+        Saludos cordiales.`;
+
+                    document.getElementById('emailOpId').value = opId;
+                    document.getElementById('emailTipo').value = tipo;
+                    document.getElementById('emailDestino').value = "";
+                    document.getElementById('emailAsunto').value = asuntoTemplate;
+                    document.getElementById('emailCuerpo').value = cuerpoTemplate;
+
+                    activeMainModalId = `modal-${tipo}-${opId}`;
+                    let mainModalEl = document.getElementById(activeMainModalId);
+                    if (mainModalEl) {
+                        let mainModal = bootstrap.Modal.getInstance(mainModalEl) || bootstrap.Modal.getOrCreateInstance(mainModalEl);
+                        mainModal.hide();
+                    }
+
+                    setTimeout(() => {
+                        let emailModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEmailPreview'));
+                        emailModal.show();
+                    }, 400);
+                }
+
+                // 4. ACCIÓN: GUARDAR BORRADOR Y CERRAR
+                if (e.target.closest('#btnVolverGuardar') || e.target.closest('#btnCerrarEmailModal')) {
+                    try {
+                        let opId = document.getElementById('emailOpId').value;
+                        let tipo = document.getElementById('emailTipo').value;
+
+                        if (!opId || !tipo) { cerrarModalesYRefrescar(); return; }
+
+                        let formId = `#modal-${tipo}-${opId}`;
+                        let form = document.querySelector(`${formId} form`);
+
+                        // Forzamos el guardado y recargamos
+                        fetch('?handler=AutoGuardar', {
+                            method: 'POST',
+                            body: new FormData(form),
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                cerrarModalesYRefrescar("¡Borrador Guardado!", "Los datos se han guardado correctamente.");
+                            })
+                            .catch(err => cerrarModalesYRefrescar());
+                    } catch (err) { cerrarModalesYRefrescar(); }
+                }
+
+                // 5. ENVIAR CORREO DEFINITIVO
+                let btnEnviar = e.target.closest('#btnEnviarEmailDefinitivo');
+                if (btnEnviar) {
+                    let btnTextOrigin = btnEnviar.innerHTML;
+                    btnEnviar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
+                    btnEnviar.disabled = true;
+
+                    let opId = document.getElementById('emailOpId').value;
+                    let tipo = document.getElementById('emailTipo').value;
+                    let destino = document.getElementById('emailDestino').value.trim();
+
+                    if (!destino) {
+                        Swal.fire('Atención', 'Debes escribir un correo de destino.', 'warning');
+                        btnEnviar.innerHTML = btnTextOrigin; btnEnviar.disabled = false;
+                        return;
+                    }
+
+                    let formId = `#modal-${tipo}-${opId}`;
+                    let form = document.querySelector(`${formId} form`);
+                    let formData = new FormData(form);
+
+                    formData.append('EmailDestinatario', destino);
+                    formData.append('EmailAsunto', document.getElementById('emailAsunto').value);
+                    formData.append('EmailCuerpo', document.getElementById('emailCuerpo').value);
+
+                    let handler = tipo === 'ingreso' ? 'NotificarIngreso' : 'NotificarSalida';
+
+                    fetch(`?handler=${handler}`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                cerrarModalesYRefrescar("¡Enviado y Guardado!", "El correo fue enviado exitosamente y los datos actualizados en el sistema.");
+                            } else {
+                                Swal.fire('Error', data.message || 'No se pudo procesar el envío.', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Error de Sistema', 'Revise su conexión a internet.', 'error');
+                        })
+                        .finally(() => {
+                            btnEnviar.innerHTML = btnTextOrigin;
+                            btnEnviar.disabled = false;
+                        });
+                }
+            });
+
+            function cerrarModalesYRefrescar(titulo = null, texto = null) {
+                let emailModalEl = document.getElementById('modalEmailPreview');
+                if (emailModalEl) {
+                    let emailModal = bootstrap.Modal.getInstance(emailModalEl);
+                    if (emailModal) emailModal.hide();
+                }
+
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style = "";
+
+                if (titulo && texto) {
+                    Swal.fire({ icon: 'success', title: titulo, text: texto, confirmButtonColor: '#10b981', timer: 3000 })
+                        .then(() => { location.reload(); });
+                } else {
+                    location.reload();
+                }
+            }
+
+            // --- SCRIPT PARA SUBIR EL COMPROBANTE AL INSTANTE ---
+            window.subirRespaldoPatio = function(input, idOp) {
+                if (!input.files || input.files.length === 0) return;
+
+                let formData = new FormData();
+                formData.append('IdOperacion', idOp);
+                formData.append('ArchivoTransferencia', input.files[0]);
+                let token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                Swal.fire({ title: 'Subiendo comprobante...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+                fetch('?handler=SubirComprobantePatio', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'RequestVerificationToken': token }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Comprobante subido exitosamente.', timer: 1500, showConfirmButton: false });
+                            let linkDiv = document.getElementById(`link-respaldo-${idOp}`);
+                            if (linkDiv) {
+                                linkDiv.style.display = 'block';
+                                let a = linkDiv.querySelector('a');
+                                if (a) a.href = data.ruta;
+                            }
+                        } else {
+                            Swal.fire('Error', data.message || 'No se pudo subir el archivo.', 'error');
+                            input.value = '';
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Error', 'Problema de conexión.', 'error');
+                        input.value = '';
+                    });
+            };
+        });
+    </script>
+}

@@ -31,5 +31,6 @@ namespace AtilsonCargoSpa.Models
 
         [Column(TypeName = "decimal(5, 2)")]
         public decimal? PorcentajeCobro { get; set; }
+        public string? Clasificacion { get; set; }
     }
 }

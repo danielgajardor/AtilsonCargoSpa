@@ -85,7 +85,7 @@ namespace AtilsonCargoSpa.Pages
                 }
                 else
                 {
-                    return RedirectToPage("/Operaciones/Index"); // A la matriz de Atilson
+                    return RedirectToPage("/Dashboard"); // A la matriz de Atilson
                 }
             }
 

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AtilsonCargoSpa.Models;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace AtilsonCargoSpa.Pages.Portal
 
         public Operacione OperacionTracking { get; set; }
         public List<Operacione> MisOperaciones { get; set; } = new List<Operacione>();
+        public SelectList NavierasList { get; set; }
 
         public int EmbarquesActivos { get; set; }
         public int EnTransito { get; set; }
@@ -37,7 +39,6 @@ namespace AtilsonCargoSpa.Pages.Portal
             string idClienteStr = User.FindFirst("IdCliente")?.Value ?? "0";
             int idClienteLogueado = int.Parse(idClienteStr);
 
-            // DETECTAMOS SI ES LA CUENTA DE PRUEBAS "MODO LIBRE"
             string userEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "";
             bool esModoLibre = userEmail.Equals("cliente@empresa.cl", StringComparison.OrdinalIgnoreCase) ||
                                userEmail.Equals("cliente@empresa.com", StringComparison.OrdinalIgnoreCase);
@@ -52,7 +53,13 @@ namespace AtilsonCargoSpa.Pages.Portal
                 EmpresaCliente = clienteInfo?.RazonSocial ?? "Empresa no asignada";
             }
 
-            // 1. OBTENER OPERACIONES (Con o Sin Filtro de Seguridad)
+            // CARGAR NAVIERAS PARA EL MÓDULO DE COTIZACIÓN
+            var navieras = await _context.Navieras
+                .Where(n => !n.IsDeleted)
+                .OrderBy(n => n.NombreNaviera)
+                .ToListAsync();
+            NavierasList = new SelectList(navieras, "Id", "NombreNaviera");
+
             var queryOperaciones = _context.Operaciones
                 .Include(o => o.IdPuertoOrigenNavigation)
                 .Include(o => o.IdPuertoDestinoNavigation)
@@ -60,7 +67,6 @@ namespace AtilsonCargoSpa.Pages.Portal
                 .Include(o => o.IdClienteNavigation)
                 .Where(o => !o.IsDeleted);
 
-            // Si NO es el correo de prueba, le bloqueamos ver cargas ajenas
             if (!esModoLibre)
             {
                 queryOperaciones = queryOperaciones.Where(o => o.IdCliente == idClienteLogueado);
@@ -71,12 +77,10 @@ namespace AtilsonCargoSpa.Pages.Portal
                 .Take(50)
                 .ToListAsync();
 
-            // 2. CALCULAR KPIs
             EmbarquesActivos = MisOperaciones.Count(o => o.EstadoWorkflow != "FINALIZADO" && o.EstadoWorkflow != "CONTENEDOR RETIRADO" && o.EstadoWorkflow != "CANCELADO");
             EnTransito = MisOperaciones.Count(o => o.EstadoWorkflow == "EMBARCADO" || o.EstadoWorkflow == "ZARPE" || o.EstadoWorkflow == "PROXIMO ARRIBO");
             Entregados = MisOperaciones.Count(o => o.EstadoWorkflow == "ARRIBADO" || o.EstadoWorkflow == "FINALIZADO" || o.EstadoWorkflow == "CONTENEDOR RETIRADO");
 
-            // 3. LÓGICA DE BÚSQUEDA RÁPIDA (Rastreo en el Dashboard)
             if (!string.IsNullOrWhiteSpace(BookingNumber))
             {
                 var queryTracking = _context.Operaciones

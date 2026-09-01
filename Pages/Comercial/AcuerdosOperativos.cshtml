@@ -1,0 +1,735 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.Comercial.AcuerdosOperativosModel
+@{
+    ViewData["Title"] = "Bookings - Acuerdos Operativos";
+}
+
+<style>
+    /* VARIABLES CORPORATIVAS ATILSON */
+    :root {
+        --atilson-dark: #0f172a;
+        --txt-main: #334155;
+        --border-soft: #e2e8f0;
+        --bg-light: #f8fafc;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', system-ui, sans-serif;
+        color: var(--txt-main);
+    }
+
+    /* BARRA SUPERIOR */
+    .workspace-nav {
+        background: #ffffff;
+        padding: 6px;
+        border-radius: 8px;
+        border: 1px solid var(--border-soft);
+        display: inline-flex;
+        gap: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+
+    .ws-btn {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 8px 18px;
+        border-radius: 6px;
+        color: #64748b;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+        .ws-btn:hover {
+            background: #f1f5f9;
+            color: var(--atilson-dark);
+        }
+
+        .ws-btn.active {
+            background: var(--atilson-dark);
+            color: #ffffff;
+        }
+
+    /* BUSCADOR */
+    .search-wrapper {
+        position: relative;
+        width: 400px;
+    }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 16px 10px 38px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid var(--border-soft);
+        border-radius: 6px;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+        .search-input:focus {
+            border-color: var(--atilson-dark);
+            box-shadow: 0 0 0 3px rgba(15,23,42,0.05);
+        }
+
+    /* GRILLA PRINCIPAL EJECUTIVA */
+    .table-container {
+        background: #ffffff;
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .table-minimal {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+        .table-minimal th {
+            background-color: #ffffff;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--border-soft);
+            text-align: left;
+        }
+
+        .table-minimal td {
+            padding: 16px 20px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--atilson-dark);
+        }
+
+    /* FILA DESPLEGABLE */
+    .row-master {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .row-master:hover {
+            background-color: #f8fafc;
+        }
+
+    .icon-chevron {
+        transition: transform 0.3s;
+        font-size: 13px;
+        color: #94a3b8;
+        display: inline-block;
+        margin-right: 12px;
+    }
+
+    .row-master[aria-expanded="true"] .icon-chevron {
+        transform: rotate(180deg);
+        color: var(--atilson-dark);
+    }
+
+    .row-master[aria-expanded="true"] {
+        background-color: #f8fafc;
+    }
+
+    /* LABORATORIO INTERNO */
+    .row-detail td {
+        padding: 0 !important;
+        border-bottom: 1px solid var(--border-soft) !important;
+        background-color: #fafbfd;
+    }
+
+    .lab-workspace {
+        padding: 30px;
+        border-left: 4px solid var(--atilson-dark);
+    }
+
+    /* PESTAÑAS DEL LABORATORIO */
+    .lab-tabs {
+        border-bottom: 2px solid var(--border-soft);
+        gap: 10px;
+        margin-bottom: 24px;
+        display: flex;
+        list-style: none;
+        padding: 0;
+    }
+
+        .lab-tabs .nav-link {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #94a3b8;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            border-radius: 0;
+            cursor: pointer;
+        }
+
+            .lab-tabs .nav-link:hover {
+                color: var(--txt-main);
+            }
+
+            .lab-tabs .nav-link.active {
+                color: var(--atilson-dark);
+                border-bottom-color: var(--atilson-dark);
+                background: transparent;
+            }
+
+    /* TABLAS DE TARIFAS INTERNAS MEJORADAS */
+    .pricing-grid {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+        background: #ffffff;
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+        .pricing-grid th {
+            background: #f8fafc;
+            font-size: 10px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-soft);
+            letter-spacing: 0.3px;
+        }
+
+        .pricing-grid td {
+            font-size: 12px;
+            padding: 14px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            transition: background-color 0.2s;
+        }
+
+        .pricing-grid tbody tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .pricing-grid tr:last-child td {
+            border-bottom: none;
+        }
+
+    /* INPUTS DE ACUERDOS / DESCUENTOS */
+    .input-calibrar {
+        width: 100%;
+        text-align: right;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        padding: 8px 12px;
+        font-weight: 800;
+        font-family: monospace;
+        font-size: 14px;
+        color: var(--atilson-dark);
+        transition: all 0.2s;
+    }
+
+        .input-calibrar:focus {
+            border-color: #0ea5e9;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        .input-calibrar.is-modified {
+            border-color: #f59e0b;
+            background: #fffbeb;
+            color: #d97706;
+        }
+
+    /* CAJA DE AUDITORÍA ROJA */
+    .audit-box {
+        display: none;
+        margin-top: 8px;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    .input-auditoria {
+        width: 100%;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 8px 12px;
+        border: 1px solid #fca5a5;
+        border-radius: 6px;
+        color: #991b1b;
+        background: #fef2f2;
+    }
+
+        .input-auditoria:focus {
+            outline: none;
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+    .service-title {
+        font-size: 13px;
+        font-weight: 900;
+        text-transform: uppercase;
+        color: var(--atilson-dark);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        letter-spacing: 0.5px;
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="container-fluid py-4" style="padding-left: 30px; padding-right: 30px; max-width: 1600px;">
+    <!-- HEADER EJECUTIVO -->
+    <div class="d-flex justify-content-between align-items-end mb-4 pb-2 border-bottom">
+        <div>
+            <h1 style="font-size: 22px; font-weight: 900; color: var(--atilson-dark); margin: 0; letter-spacing: -0.5px;">ACUERDOS COMERCIALES</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Calibración y negociación de tarifas por Booking (Cierre Comercial).</p>
+        </div>
+    </div>
+
+    <!-- NAVEGACIÓN Y BUSCADOR -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="search-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="text" id="liveSearchInput" class="search-input" placeholder="Buscar Booking o Cliente..." onkeyup="filterBookings()">
+        </div>
+    </div>
+
+    <!-- GRILLA PRINCIPAL DE BOOKINGS -->
+    <div class="table-container shadow-sm">
+        <table class="table-minimal" id="bookingsTable">
+            <thead>
+                <tr>
+                    <th style="width: 30%; padding-left: 24px;">N° Booking</th>
+                    <th style="width: 50%;">Cliente Mandante</th>
+                    <th style="width: 20%;">Servicio Contratado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Bookings != null && Model.Bookings.Any())
+                {
+                    @foreach (var b in Model.Bookings)
+                    {
+                        <!-- FILA RESUMEN -->
+                        <tr class="row-master collapsed" data-bs-toggle="collapse" data-bs-target="#bkg-@b.IdOperacion" aria-expanded="false">
+                            <td style="padding-left: 24px;" class="font-monospace"><i class="bi bi-chevron-down icon-chevron"></i> @b.NumeroBooking</td>
+                            <td class="text-uppercase text-primary text-truncate" style="max-width: 400px;">@b.Cliente</td>
+                            <td>
+                                <span class="badge bg-light text-dark border px-2 py-1 fw-bold" style="font-size: 10px; letter-spacing: 0.5px;">@b.ServicioContratado</span>
+                                @if (b.TieneInterplanta)
+                                {
+                                    <span class="badge px-2 py-1 fw-bold ms-1" style="background-color: #fffbeb; color: #d97706; border: 1px solid #fde68a; font-size: 10px;" title="Operación con Múltiples Plantas">
+                                        <i class="bi bi-signpost-split-fill"></i> INTERPLANTA
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+
+                        <!-- LABORATORIO DESPLEGABLE -->
+                        <tr class="collapse row-detail" id="bkg-@b.IdOperacion">
+                            <td colspan="3">
+                                <div class="lab-workspace">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <div>
+                                            <h6 class="m-0 fw-bold" style="font-size: 15px; color: var(--atilson-dark);"><i class="bi bi-sliders text-primary me-2"></i>Centro de Negociación</h6>
+                                            <span class="text-muted fw-bold font-monospace" style="font-size: 11px;">BKG: @b.NumeroBooking | @b.Cliente</span>
+                                        </div>
+                                        <button class="btn btn-dark btn-sm fw-bold px-4 shadow-sm" style="border-radius: 4px;" onclick="guardarAcuerdos(@b.IdOperacion, this)"><i class="bi bi-save me-2"></i> GUARDAR ACUERDOS</button>
+                                    </div>
+
+                                    @if (b.TieneInterplanta)
+                                    {
+                                        <div class="d-flex align-items-center justify-content-between bg-warning bg-opacity-10 border border-warning border-opacity-50 rounded px-3 py-2 mb-4 shadow-sm">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <i class="bi bi-signpost-split-fill text-warning fs-4"></i>
+                                                <div style="line-height: 1.2;">
+                                                    <span class="fw-bold" style="font-size: 11px; color: #b45309; text-transform: uppercase;">Servicio Interplanta Detectado</span><br>
+                                                    <span class="text-muted" style="font-size: 10px;">Ruta Logística: <strong>@b.RutaInterplanta</strong></span>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn btn-sm fw-bold shadow-sm" style="background-color: #fefce8; color: #b45309; border: 1px solid #fde68a; font-size: 10px;" onclick="agregarTramoInterplanta(@b.IdOperacion, this)">
+                                                <i class="bi bi-plus-circle-fill me-1"></i> Añadir Tarifa Interplanta (Costo y Venta)
+                                            </button>
+                                        </div>
+                                    }
+
+                                    <!-- PESTAÑAS (PROVEEDOR / CLIENTE) -->
+                                    <ul class="nav lab-tabs" role="tablist">
+                                        <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#prov-@b.IdOperacion" type="button" role="tab">1. LÍNEA PROVEEDOR</button></li>
+                                        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#cli-@b.IdOperacion" type="button" role="tab">2. LÍNEA CLIENTE</button></li>
+                                    </ul>
+
+                                    <div class="tab-content">
+                                        <!-- ============================================== -->
+                                        <!-- MUNDO PROVEEDORES (COSTOS / EGRESOS)           -->
+                                        <!-- ============================================== -->
+                                        <div class="tab-pane fade show active" id="prov-@b.IdOperacion" role="tabpanel">
+                                            @{
+                                                string[] matrizOrden = { "Marítimo", "Transporte", "Documental", "Gate-Out/In", "Almacenamiento", "Otros" };
+                                                var egresosTotales = b.Transacciones.Where(t => t.TipoMovimiento == "EGRESO").ToList();
+                                            }
+
+                                            @if (!egresosTotales.Any())
+                                            {
+                                                <div class="alert alert-light border text-center text-muted" style="font-size: 11px;">Aún no hay costos operativos generados para este Booking.</div>
+                                            }
+                                            @foreach (var categoria in matrizOrden)
+                                            {
+                                                var grupo = egresosTotales.Where(t => t.GrupoCobro == categoria).ToList();
+                                                
+                                                if (categoria == "Documental") {
+                                                    var dic = new Dictionary<string, int> { {"HONORARIOS",1}, {"LEGAL",2}, {"EMISIÓN",2}, {"ACLARACIÓN",3}, {"ROLEO",4}, {"CANCELACIÓN",5}, {"ORIGEN",6}, {"FITOSANITARIO",7}, {"SANITARIO",7}, {"CAPTURA",8}, {"ISPS",9}, {"SEGURIDAD",9}, {"GATE",10}, {"COURRIER NACIONAL",11}, {"COURRIER INTERNACIONAL",12}, {"CORRECCIÓN",13} };
+                                                    grupo = grupo.OrderBy(t => {
+                                                        var c = (t.Concepto ?? "").ToUpper();
+                                                        if (c.Contains("REEMISIÓN") || c.Contains(" R1") || c.Contains(" R2") || c.Contains(" R3")) {
+                                                            if (c.Contains("ORIGEN")) return 14;
+                                                            if (c.Contains("FITO") || c.Contains("SANI")) return 15;
+                                                            if (c.Contains("CAPTU")) return 16;
+                                                        }
+                                                        foreach (var kv in dic) if (c.Contains(kv.Key)) return kv.Value;
+                                                        return 99;
+                                                    }).ToList();
+                                                }
+                                                if (!grupo.Any()) continue;
+                                                
+                                                string iconCls = categoria == "Marítimo" ? "bi-water text-primary" : (categoria == "Transporte" ? "bi-truck text-success" : (categoria == "Documental" ? "bi-file-earmark-check text-purple" : (categoria == "Gate-Out/In" ? "bi-box-arrow-right text-danger" : (categoria == "Almacenamiento" ? "bi-boxes text-warning" : "bi-box text-secondary"))));
+
+                                                <div class="service-title mt-4 d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <i class="bi @iconCls me-2 fs-5"></i>
+                                                        SERVICIO @categoria.ToUpper()
+                                                    </div>
+                                                </div>
+                                                <table class="pricing-grid">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 40%;">Concepto / Detalle Operativo</th>
+                                                            <th class="text-end" style="width: 15%;">Tarifa Base Automática</th>
+                                                            <th class="text-center" style="width: 15%;">+ IVA</th>
+                                                            <th class="text-end" style="width: 30%; padding-right: 20px;">Acuerdo Excepcional (Costo Real)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var tx in grupo)
+                                                        {
+                                                            <tr>
+                                                                <td style="padding-left: 20px;">
+                                                                    <span class="fw-bold text-dark d-block text-uppercase" style="font-size: 12px; letter-spacing: 0.3px;">@tx.Concepto</span>
+                                                                </td>
+                                                                <td class="text-end align-middle">
+                                                                    @if (tx.MontoNeto == 0m && !tx.TarifaManual)
+                                                                    {
+                                                                        <span class="text-danger fw-bold" style="font-size: 11px; font-style: italic;">Por asignar</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="font-monospace text-muted fw-bold" style="font-size: 13px;">@tx.Moneda @tx.MontoNeto.ToString("N0")</span>
+                                                                    }
+                                                                </td>
+                                                                <td class="text-center align-middle">
+                                                                    @if (tx.Moneda == "USD" || tx.GrupoCobro == "Marítimo" || tx.Concepto.ToUpper().Contains("ISPS"))
+                                                                    {
+                                                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" style="font-size:9px;">EXENTO</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" style="font-size:9px;">SÍ (+19%)</span>
+                                                                    }
+                                                                </td>
+                                                                <td style="padding-right: 20px;">
+                                                                    <div class="input-group input-group-sm shadow-sm" style="border-radius: 6px; overflow: hidden;">
+                                                                        <span class="input-group-text bg-light fw-bold text-dark border-0">@tx.Moneda</span>
+                                                                        <input type="number" class="form-control input-calibrar border-0 tx-input"
+                                                                               data-txid="@tx.Id"
+                                                                               data-base="@tx.MontoNeto.ToString("0", System.Globalization.CultureInfo.InvariantCulture)"
+                                                                               value="@tx.MontoNeto.ToString("0", System.Globalization.CultureInfo.InvariantCulture)"
+                                                                               onkeyup="checkAgreement(this, 'aud-tx-@tx.Id')">
+                                                                    </div>
+                                                                    <div id="aud-tx-@tx.Id" class="audit-box" style="display: @(string.IsNullOrEmpty(tx.Justificacion) ? "none" : "block");">
+                                                                        <input type="text" class="input-auditoria tx-justificacion" value="@tx.Justificacion" placeholder="Detalle el motivo de la variación para Finanzas...">
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            }
+                                        </div>
+
+                                        <!-- ============================================== -->
+                                        <!-- MUNDO CLIENTES (VENTAS / INGRESOS)             -->
+                                        <!-- ============================================== -->
+                                        <div class="tab-pane fade" id="cli-@b.IdOperacion" role="tabpanel">
+                                            @{
+                                                var ingresosPorGrupo = b.Transacciones.Where(t => t.TipoMovimiento == "INGRESO").GroupBy(t => t.GrupoCobro);
+                                            }
+                                            @if (!ingresosPorGrupo.Any())
+                                            {
+                                                <div class="alert alert-light border text-center text-muted" style="font-size: 11px;">Aún no hay ventas generadas para este Booking.</div>
+                                            }
+                                            @foreach (var grupoRaw in ingresosPorGrupo)
+                                            {
+                                                var grupo = grupoRaw.ToList();
+                                                if (grupoRaw.Key == "Documental") {
+                                                    var dic = new Dictionary<string, int> { {"HONORARIOS",1}, {"LEGAL",2}, {"EMISIÓN",2}, {"ACLARACIÓN",3}, {"ROLEO",4}, {"CANCELACIÓN",5}, {"ORIGEN",6}, {"FITOSANITARIO",7}, {"SANITARIO",7}, {"CAPTURA",8}, {"ISPS",9}, {"SEGURIDAD",9}, {"GATE",10}, {"COURRIER NACIONAL",11}, {"COURRIER INTERNACIONAL",12}, {"CORRECCIÓN",13} };
+                                                    grupo = grupo.OrderBy(t => {
+                                                        var c = (t.Concepto ?? "").ToUpper();
+                                                        if (c.Contains("REEMISIÓN") || c.Contains(" R1") || c.Contains(" R2") || c.Contains(" R3")) {
+                                                            if (c.Contains("ORIGEN")) return 14;
+                                                            if (c.Contains("FITO") || c.Contains("SANI")) return 15;
+                                                            if (c.Contains("CAPTU")) return 16;
+                                                        }
+                                                        foreach (var kv in dic) if (c.Contains(kv.Key)) return kv.Value;
+                                                        return 99;
+                                                    }).ToList();
+                                                }
+                                                <div class="service-title mt-4 d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <i class="bi @(grupoRaw.Key == "Marítimo" ? "bi-water text-primary" : (grupoRaw.Key == "Transporte" ? "bi-truck text-success" : (grupoRaw.Key == "Documental" ? "bi-file-earmark-check text-purple" : (grupoRaw.Key == "Almacenamiento" || grupoRaw.Key == "Depósito" ? "bi-boxes text-warning" : "bi-box text-secondary")))) me-2 fs-5"></i>
+                                                        SERVICIO @grupoRaw.Key
+                                                    </div>
+                                                </div>
+                                                <table class="pricing-grid">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 40%;">Concepto a Facturar</th>
+                                                            <th class="text-end" style="width: 15%;">Tarifa Comercial (Base)</th>
+                                                            <th class="text-center" style="width: 15%;">+ IVA</th>
+                                                            <th class="text-end" style="width: 30%; padding-right: 20px;">Acuerdo Comercial (Venta Real)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var tx in grupo)
+                                                        {
+                                                            <tr>
+                                                                <td style="padding-left: 20px;">
+                                                                    <span class="fw-bold text-dark d-block text-uppercase" style="font-size: 12px; letter-spacing: 0.3px;">@tx.Concepto</span>
+                                                                </td>
+                                                                <td class="text-end align-middle">
+                                                                    @if (tx.MontoNeto == 0m && !tx.TarifaManual)
+                                                                    {
+                                                                        <span class="text-danger fw-bold" style="font-size: 11px; font-style: italic;">Por asignar</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="font-monospace text-muted fw-bold" style="font-size: 13px;">@tx.Moneda @tx.MontoNeto.ToString("N0")</span>
+                                                                    }
+                                                                </td>
+                                                                <td class="text-center align-middle">
+                                                                    @if (tx.Moneda == "USD" || tx.GrupoCobro == "Marítimo" || tx.Concepto.ToUpper().Contains("ISPS"))
+                                                                    {
+                                                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" style="font-size:9px;">EXENTO</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" style="font-size:9px;">SÍ (+19%)</span>
+                                                                    }
+                                                                </td>
+                                                                <td style="padding-right: 20px;">
+                                                                    <div class="input-group input-group-sm shadow-sm" style="border-radius: 6px; overflow: hidden;">
+                                                                        <span class="input-group-text bg-success bg-opacity-10 text-success fw-bold border-0">@tx.Moneda</span>
+                                                                        <input type="number" class="form-control input-calibrar border-0 text-success bg-success bg-opacity-10 tx-input"
+                                                                               data-txid="@tx.Id"
+                                                                               data-base="@tx.MontoNeto.ToString("0", System.Globalization.CultureInfo.InvariantCulture)"
+                                                                               value="@tx.MontoNeto.ToString("0", System.Globalization.CultureInfo.InvariantCulture)"
+                                                                               onkeyup="checkAgreement(this, 'aud-tx-@tx.Id')">
+                                                                    </div>
+                                                                    <div id="aud-tx-@tx.Id" class="audit-box" style="display: @(string.IsNullOrEmpty(tx.Justificacion) ? "none" : "block");">
+                                                                        <input type="text" class="input-auditoria tx-justificacion" value="@tx.Justificacion" placeholder="Motivo del descuento o recargo comercial...">
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="3" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
+                            <span class="fw-bold" style="font-size: 13px;">No hay Bookings en la base de datos.</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+@section Scripts {
+    <script>
+        function checkAgreement(input, auditBoxId) {
+            const baseValue = parseFloat(input.getAttribute('data-base'));
+            const currentValue = parseFloat(input.value);
+            const auditBox = document.getElementById(auditBoxId);
+            const auditInput = auditBox.querySelector('input');
+
+            if (!isNaN(currentValue) && currentValue !== baseValue) {
+                input.classList.add('is-modified');
+                auditBox.style.display = 'block';
+                auditInput.required = true;
+            } else {
+                input.classList.remove('is-modified');
+                auditBox.style.display = 'none';
+                auditInput.required = false;
+                auditInput.value = '';
+            }
+        }
+
+        function guardarAcuerdos(idOperacion, btn) {
+            const detailRow = document.getElementById('bkg-' + idOperacion);
+            if (!detailRow) return;
+
+            const payload = [];
+            const inputs = detailRow.querySelectorAll('.tx-input');
+            let faltanJustificaciones = false;
+
+            inputs.forEach(input => {
+                const idTx = input.getAttribute('data-txid');
+                const baseVal = parseFloat(input.getAttribute('data-base'));
+                const currentVal = parseFloat(input.value);
+
+                if (!isNaN(currentVal) && currentVal !== baseVal) {
+                    const justificacionInput = detailRow.querySelector(`#aud-tx-${idTx} .tx-justificacion`);
+                    const justificacionText = justificacionInput ? justificacionInput.value.trim() : '';
+
+                    if (justificacionText === '') {
+                        faltanJustificaciones = true;
+                        justificacionInput.classList.add('border-danger');
+                    }
+
+                    payload.push({ IdTx: parseInt(idTx), NuevoMonto: currentVal, Justificacion: justificacionText });
+                }
+            });
+
+            if (faltanJustificaciones) { Swal.fire('Atención', 'Debes ingresar un comentario justificando el cambio de valor.', 'warning'); return; }
+            if (payload.length === 0) { Swal.fire('Información', 'No has modificado ninguna tarifa.', 'info'); return; }
+
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> GUARDANDO...';
+            btn.disabled = true;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            fetch(`?handler=GuardarAcuerdos&idOperacion=${idOperacion}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    btn.innerHTML = originalBtnText; btn.disabled = false;
+                    if (data.success) { Swal.fire('¡Acuerdos Cerrados!', 'Las calibraciones fueron sobreescritas en Finanzas.', 'success').then(() => window.location.reload()); }
+                    else { Swal.fire('Error', data.message || 'No se pudo guardar', 'error'); }
+                }).catch(err => {
+                    Swal.fire('Error de conexión', 'No se pudo contactar con el servidor.', 'error');
+                    btn.innerHTML = originalBtnText; btn.disabled = false;
+                });
+        }
+
+        function agregarTramoInterplanta(idOperacion, btnElement) {
+            Swal.fire({
+                title: '<i class="bi bi-signpost-split-fill text-warning"></i> Añadir Tarifa Interplanta',
+                html: `
+                            <p style="font-size:13px;" class="text-muted">Se agregará la línea de <strong>Costo (Proveedor)</strong> y <strong>Venta (Cliente)</strong> bajo la categoría Transporte Terrestre.</p>
+                            <select id="swalTipoTramo" class="form-select mb-3 fw-bold">
+                                <option value="TARIFA PLANA INTERPLANTA (<20 KM)">Tarifa Plana Corta (Porteo < 20 KM)</option>
+                                <option value="FLETE TERRESTRE (TRAMO INTERPLANTA ADICIONAL)">Tramo Largo Independiente (> 20 KM)</option>
+                            </select>
+                            <div class="input-group mb-2">
+                                <select id="swalMonedaTramo" class="form-select" style="max-width: 100px;"><option value="CLP">CLP</option><option value="USD">USD</option></select>
+                                <input type="number" id="swalMontoTramo" class="form-control fw-bold" placeholder="Monto Base Proveedor..." />
+                            </div>
+                            <small class="text-muted" style="font-size: 10px;">Podrás calibrar el margen de venta en la tabla del cliente.</small>`,
+                showCancelButton: true, confirmButtonText: 'Añadir a Finanzas', cancelButtonText: 'Cancelar', confirmButtonColor: '#0f172a',
+                preConfirm: () => {
+                    const concepto = document.getElementById('swalTipoTramo').value;
+                    const monto = parseFloat(document.getElementById('swalMontoTramo').value);
+                    const moneda = document.getElementById('swalMonedaTramo').value;
+                    if (!monto || isNaN(monto)) { Swal.showValidationMessage('Ingresa un monto válido'); return false; }
+                    return { concepto, monto, moneda };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    const originalHtml = btnElement.innerHTML;
+                    btnElement.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...'; btnElement.disabled = true;
+
+                    fetch(`?handler=AñadirTramoInterplanta`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                        body: JSON.stringify({ IdOperacion: idOperacion, Concepto: result.value.concepto, MontoNeto: result.value.monto, Moneda: result.value.moneda })
+                    }).then(res => res.json()).then(data => {
+                        if (data.success) {
+                            btnElement.outerHTML = `<span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-2" style="font-size: 10px;"><i class="bi bi-check-circle-fill me-1"></i> Costo y Venta añadidos</span>`;
+                            setTimeout(() => { window.location.reload(); }, 1500);
+                        } else {
+                            btnElement.innerHTML = originalHtml; btnElement.disabled = false; Swal.fire('Error', data.message, 'error');
+                        }
+                    }).catch(() => {
+                        btnElement.innerHTML = originalHtml; btnElement.disabled = false; Swal.fire('Error', 'Fallo de conexión', 'error');
+                    });
+                }
+            });
+        }
+
+        function filterBookings() {
+            const input = document.getElementById('liveSearchInput');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('bookingsTable');
+            const mainRows = table.getElementsByClassName('row-master');
+
+            for (let i = 0; i < mainRows.length; i++) {
+                const bkgCol = mainRows[i].getElementsByTagName("td")[0];
+                const cliCol = mainRows[i].getElementsByTagName("td")[1];
+                if (bkgCol || cliCol) {
+                    const bkgText = bkgCol.textContent || bkgCol.innerText;
+                    const cliText = cliCol.textContent || cliCol.innerText;
+                    if (bkgText.toUpperCase().indexOf(filter) > -1 || cliText.toUpperCase().indexOf(filter) > -1) {
+                        mainRows[i].style.display = "";
+                    } else {
+                        mainRows[i].style.display = "none";
+                        const targetId = mainRows[i].getAttribute('data-bs-target').substring(1);
+                        const detailRow = document.getElementById(targetId);
+                        if (detailRow && detailRow.classList.contains('show')) {
+                            new bootstrap.Collapse(detailRow, { toggle: false }).hide();
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+}

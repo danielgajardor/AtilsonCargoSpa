@@ -4,13 +4,17 @@
     Layout = null;
     var op = Model.Operacion;
     var tr = Model.Terrestre;
+    var txs = Model.TransaccionesTerrestres;
     var culture = new System.Globalization.CultureInfo("es-CL");
 
-    string ocNumber = "OC-" + (op.Id + 3000).ToString();
-    string proveedorNombre = !string.IsNullOrWhiteSpace(tr.EmpresaTransporte) ? tr.EmpresaTransporte.ToUpper() : "PROVEEDOR SIN ASIGNAR";
-    string proveedorRut = !string.IsNullOrWhiteSpace(tr.RutTransporte) ? tr.RutTransporte : "S/R";
+    string ocNumber = Model.NumeroOC;
+
+    // Rescate dinámico del proveedor amarrado a esta OC específica
+    var primerProv = txs.FirstOrDefault(t => t.IdProveedorNavigation != null)?.IdProveedorNavigation;
+    string proveedorNombre = primerProv != null ? primerProv.NombreProveedor.ToUpper() : (!string.IsNullOrWhiteSpace(tr.EmpresaTransporte) ? tr.EmpresaTransporte.ToUpper() : "PROVEEDOR SIN ASIGNAR");
+    string proveedorRut = primerProv != null && !string.IsNullOrWhiteSpace(primerProv.Rut) ? primerProv.Rut : (!string.IsNullOrWhiteSpace(tr.RutTransporte) ? tr.RutTransporte : "S/R");
+
     string proveedorCiudad = !string.IsNullOrWhiteSpace(tr.ZonaCarga) ? tr.ZonaCarga.ToUpper() : "S/C";
-    
     string direccionCarga = !string.IsNullOrWhiteSpace(op.IdClienteNavigation?.RazonSocial) ? op.IdClienteNavigation.RazonSocial.ToUpper() : "S/N";
     string lugarCarga = !string.IsNullOrWhiteSpace(tr.PlantaCarga) ? tr.PlantaCarga.ToUpper() : "S/N";
 }
@@ -22,360 +26,368 @@
     <title>Orden_Compra_@ocNumber</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --purple-deep: #2c1b4d;
-            --purple-mid: #6d2d9e;
-            --purple-light: #ede9f6;
-            --purple-faint: #f7f5fb;
-            --text-main: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --bg-subtle: #f8fafc;
-            --white: #ffffff;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            font-size: 11px;
-            color: var(--text-main);
-            background: var(--white);
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ── LAYOUT ── */
-        .page {
-            max-width: 820px;
-            margin: 0 auto;
-            padding: 0;
-        }
-
-        /* ── CABECERA ── */
-        .header {
-            background: var(--purple-deep);
-            padding: 28px 40px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        .header-left img {
-            height: 38px;
-            filter: brightness(0) invert(1);
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .header-left p {
-            font-size: 8.5px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.45);
-            text-transform: uppercase;
-            letter-spacing: 1.8px;
-        }
-
-        .header-right {
-            text-align: right;
-            display: flex;
-            gap: 18px;
-            align-items: flex-start;
-        }
-
-        .header-right-text h1 {
-            font-size: 10px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.55);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 6px;
-        }
-
-        .booking-number {
-            font-size: 22px;
-            font-weight: 900;
-            color: var(--white);
-            letter-spacing: -0.5px;
-            line-height: 1;
-            margin-bottom: 8px;
-        }
-
-        .issue-date {
-            font-size: 9px;
-            font-weight: 500;
-            color: rgba(255,255,255,0.45);
-        }
-
-        .qr-wrap {
-            background: var(--white);
-            border-radius: 6px;
-            padding: 5px;
-            width: 58px;
-            height: 58px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .qr-wrap img {
-            width: 48px;
-            height: 48px;
-        }
-
-        /* ── BANDA ACCENT ── */
-        .accent-band {
-            height: 4px;
-            background: linear-gradient(90deg, var(--purple-mid) 0%, #a855f7 60%, #c084fc 100%);
-        }
-
-        /* ── CUERPO ── */
-        .body {
-            padding: 32px 40px 40px;
-        }
-
-        /* ── SECCIONES ── */
-        .section {
-            margin-bottom: 28px;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 14px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .section-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--purple-mid);
-            flex-shrink: 0;
-        }
-
-        .section-title {
-            font-size: 9px;
-            font-weight: 800;
-            color: var(--purple-mid);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-
-        /* ── PROVEEDOR CARD ── */
-        .client-card {
-            background: var(--purple-faint);
-            border: 1px solid var(--purple-light);
-            border-left: 3px solid var(--purple-mid);
-            border-radius: 6px;
-            padding: 14px 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 28px;
-        }
-
-        .client-card-left .label {
-            font-size: 8px;
-            font-weight: 700;
-            color: var(--purple-mid);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
-
-        .client-card-left .name {
-            font-size: 16px;
-            font-weight: 900;
-            color: var(--purple-deep);
-            text-transform: uppercase;
-            letter-spacing: -0.3px;
-        }
-
-        .client-card-right {
-            text-align: right;
-            display: flex;
-            gap: 28px;
-        }
-
-        .client-meta .label {
-            font-size: 8px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin-bottom: 3px;
-        }
-
-        .client-meta .value {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-main);
-            text-transform: uppercase;
-        }
-
-        /* ── GRIDS DE DATOS ── */
-        .data-grid {
-            display: flex;
-            flex-wrap: wrap;
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .data-item {
-            display: flex;
-            flex-direction: column;
-            padding-right: 20px;
-            width: 25%;
-        }
-
-        .data-label {
-            font-size: 8px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin-bottom: 3px;
-        }
-
-        .data-value {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-main);
-            text-transform: uppercase;
-            line-height: 1.3;
-        }
-
-        /* ── TABLA ITEMS ── */
-        .cargo-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 28px;
-        }
-
-        .cargo-table thead tr {
-            background: var(--purple-deep);
-        }
-
-        .cargo-table thead th {
-            padding: 10px 14px;
-            font-size: 8.5px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.7);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            text-align: left;
-        }
-
-        .cargo-table tbody tr {
-            border-top: 1px solid var(--border);
-        }
-
-        .cargo-table tbody tr:nth-child(even) {
-            background: var(--bg-subtle);
-        }
-
-        .cargo-table tbody td {
-            padding: 14px 14px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-main);
-            vertical-align: top;
-        }
-
-        .desc-text {
-            font-size: 9.5px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            font-weight: 500;
-        }
-
-        /* ── FOOTER Y TOTALES ── */
-        .summary-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            page-break-inside: avoid;
-        }
-
-        .instructions {
-            width: 55%;
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-        }
-
-        .instructions p {
-            margin-bottom: 6px;
-            color: var(--text-secondary);
-        }
-
-        .totals-box {
-            width: 40%;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 16px;
-            border-bottom: 1px solid var(--border);
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .total-row:last-child {
-            border-bottom: none;
-        }
-
-        .total-row.grand-total {
-            background: var(--purple-mid);
-            color: white;
-            font-size: 16px;
-            font-weight: 900;
-        }
-
-        .print-btn-container {
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .print-btn {
-            background: var(--purple-deep);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        @@media print {
-            .print-btn-container { display: none; }
-            body { background: #fff; }
-            .page { max-width: 100%; }
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+            :root {
+                --purple-deep: #2c1b4d;
+                --purple-mid: #6d2d9e;
+                --purple-light: #ede9f6;
+                --purple-faint: #f7f5fb;
+                --text-main: #0f172a;
+                --text-secondary: #334155;
+                --text-muted: #64748b;
+                --border: #e2e8f0;
+                --bg-subtle: #f8fafc;
+                --white: #ffffff;
             }
-            @@page { margin: 8mm 10mm; }
-        }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Inter', sans-serif;
+                font-size: 11px;
+                color: var(--text-main);
+                background: var(--white);
+                -webkit-font-smoothing: antialiased;
+            }
+
+            .page {
+                max-width: 820px;
+                margin: 0 auto;
+                padding: 0;
+            }
+
+            /* CABECERA */
+            .header {
+                background: var(--purple-deep);
+                padding: 28px 40px 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+
+            .header-left img {
+                height: 38px;
+                filter: brightness(0) invert(1);
+                display: block;
+                margin-bottom: 8px;
+            }
+
+            .header-left p {
+                font-size: 8.5px;
+                font-weight: 600;
+                color: rgba(255,255,255,0.45);
+                text-transform: uppercase;
+                letter-spacing: 1.8px;
+            }
+
+            .header-right {
+                text-align: right;
+                display: flex;
+                gap: 18px;
+                align-items: flex-start;
+            }
+
+            .header-right-text h1 {
+                font-size: 10px;
+                font-weight: 700;
+                color: rgba(255,255,255,0.55);
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                margin-bottom: 6px;
+            }
+
+            .booking-number {
+                font-size: 22px;
+                font-weight: 900;
+                color: var(--white);
+                letter-spacing: -0.5px;
+                line-height: 1;
+                margin-bottom: 8px;
+            }
+
+            .issue-date {
+                font-size: 9px;
+                font-weight: 500;
+                color: rgba(255,255,255,0.45);
+            }
+
+            .qr-wrap {
+                background: var(--white);
+                border-radius: 6px;
+                padding: 5px;
+                width: 58px;
+                height: 58px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+                .qr-wrap img {
+                    width: 48px;
+                    height: 48px;
+                }
+
+            .accent-band {
+                height: 4px;
+                background: linear-gradient(90deg, var(--purple-mid) 0%, #a855f7 60%, #c084fc 100%);
+            }
+
+            .body {
+                padding: 32px 40px 40px;
+            }
+
+            .section {
+                margin-bottom: 28px;
+            }
+
+            .section-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 14px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .section-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--purple-mid);
+                flex-shrink: 0;
+            }
+
+            .section-title {
+                font-size: 9px;
+                font-weight: 800;
+                color: var(--purple-mid);
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+            }
+
+            /* PROVEEDOR CARD */
+            .client-card {
+                background: var(--purple-faint);
+                border: 1px solid var(--purple-light);
+                border-left: 3px solid var(--purple-mid);
+                border-radius: 6px;
+                padding: 14px 18px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 28px;
+            }
+
+            .client-card-left .label {
+                font-size: 8px;
+                font-weight: 700;
+                color: var(--purple-mid);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 4px;
+            }
+
+            .client-card-left .name {
+                font-size: 16px;
+                font-weight: 900;
+                color: var(--purple-deep);
+                text-transform: uppercase;
+                letter-spacing: -0.3px;
+            }
+
+            .client-card-right {
+                text-align: right;
+                display: flex;
+                gap: 28px;
+            }
+
+            .client-meta .label {
+                font-size: 8px;
+                font-weight: 700;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                margin-bottom: 3px;
+            }
+
+            .client-meta .value {
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--text-main);
+                text-transform: uppercase;
+            }
+
+            /* DATOS GENERALES */
+            .data-grid {
+                display: flex;
+                flex-wrap: wrap;
+                background: var(--bg-subtle);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .data-item {
+                display: flex;
+                flex-direction: column;
+                padding-right: 20px;
+                width: 25%;
+            }
+
+            .data-label {
+                font-size: 8px;
+                font-weight: 700;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                margin-bottom: 3px;
+            }
+
+            .data-value {
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--text-main);
+                text-transform: uppercase;
+                line-height: 1.3;
+            }
+
+            /* TABLA ITEMS */
+            .cargo-table {
+                width: 100%;
+                border-collapse: collapse;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                overflow: hidden;
+                margin-bottom: 28px;
+            }
+
+                .cargo-table thead tr {
+                    background: var(--purple-deep);
+                }
+
+                .cargo-table thead th {
+                    padding: 10px 14px;
+                    font-size: 8.5px;
+                    font-weight: 700;
+                    color: rgba(255,255,255,0.7);
+                    text-transform: uppercase;
+                    letter-spacing: 0.8px;
+                    text-align: left;
+                }
+
+                .cargo-table tbody tr {
+                    border-top: 1px solid var(--border);
+                }
+
+                    .cargo-table tbody tr:nth-child(even) {
+                        background: var(--bg-subtle);
+                    }
+
+                .cargo-table tbody td {
+                    padding: 14px 14px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--text-main);
+                    vertical-align: top;
+                }
+
+            .desc-text {
+                font-size: 9.5px;
+                color: var(--text-muted);
+                margin-top: 4px;
+                font-weight: 500;
+            }
+
+            /* FOOTER Y TOTALES */
+            .summary-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                page-break-inside: avoid;
+            }
+
+            .instructions {
+                width: 55%;
+                background: var(--bg-subtle);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 16px;
+            }
+
+                .instructions p {
+                    margin-bottom: 6px;
+                    color: var(--text-secondary);
+                }
+
+            .totals-box {
+                width: 40%;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .total-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 10px 16px;
+                border-bottom: 1px solid var(--border);
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+                .total-row:last-child {
+                    border-bottom: none;
+                }
+
+                .total-row.grand-total {
+                    background: var(--purple-mid);
+                    color: white;
+                    font-size: 16px;
+                    font-weight: 900;
+                }
+
+            .print-btn-container {
+                text-align: center;
+                margin: 20px 0;
+            }
+
+            .print-btn {
+                background: var(--purple-deep);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                font-size: 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: bold;
+            }
+
+            @@media print {
+                .print-btn-container {
+                    display: none;
+                }
+
+                body {
+                    background: #fff;
+                }
+
+                .page {
+                    max-width: 100%;
+                }
+
+                * {
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+
+                @@page {
+                    margin: 8mm 10mm;
+                }
+            }
     </style>
 </head>
 <body>
@@ -453,27 +465,47 @@
                     <thead>
                         <tr>
                             <th style="width:25%;">Servicio</th>
-                            <th style="width:35%;">Descripción de Ruta</th>
+                            <th style="width:35%;">Descripción de Ruta / Detalle</th>
                             <th style="width:15%; text-align:right;">P. Unitario</th>
                             <th style="width:10%; text-align:center;">Cant.</th>
-                            <th style="width:15%; text-align:right;">Total</th>
+                            <th style="width:15%; text-align:right;">Total + IVA</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>
-                                <strong>SERVICIO TRANSPORTE</strong>
-                                <div class="desc-text">Inland Nacional</div>
-                            </td>
-                            <td>
-                                <strong>TRAMO:</strong> @(tr.ZonaCarga?.ToUpper() ?? "ORIGEN") - @(tr.PuertoEntrega?.ToUpper() ?? "PUERTO")
-                                <div class="desc-text">Lugar de Carga: @direccionCarga</div>
-                                <div class="desc-text">Dirección: @lugarCarga</div>
-                            </td>
-                            <td style="text-align:right;">@Model.Neto.ToString("C0", culture)</td>
-                            <td style="text-align:center;">1</td>
-                            <td style="text-align:right; font-weight:800;">@Model.Neto.ToString("C0", culture)</td>
-                        </tr>
+                        @if (txs.Any())
+                        {
+                            foreach (var tx in txs)
+                            {
+                                decimal totalFila = tx.MontoNeto * 1.19m;
+                                <tr>
+                                    <td>
+                                        <strong>@tx.Concepto</strong>
+                                        @if (tx.TarifaManual)
+                                        {
+                                            <div class="desc-text text-danger" style="font-weight:700;">* Ajuste Comercial</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <strong>TRAMO:</strong> @(tr.ZonaCarga?.ToUpper() ?? "ORIGEN") - @(tr.PuertoEntrega?.ToUpper() ?? "DESTINO")
+                                        <div class="desc-text">Lugar de Carga: @direccionCarga</div>
+                                        <div class="desc-text">Planta: @lugarCarga</div>
+                                        @if (!string.IsNullOrWhiteSpace(tx.JustificacionManual))
+                                        {
+                                            <div class="desc-text text-danger" style="margin-top: 4px;">Detalle: @tx.JustificacionManual</div>
+                                        }
+                                    </td>
+                                    <td style="text-align:right;">@(tx.Moneda == "CLP" ? "$" : "USD") @tx.MontoNeto.ToString("N0", culture)</td>
+                                    <td style="text-align:center;">1</td>
+                                    <td style="text-align:right; font-weight:800;">@(tx.Moneda == "CLP" ? "$" : "USD") @totalFila.ToString("N0", culture)</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" style="text-align:center; padding: 20px;">Sin transacciones asignadas</td>
+                            </tr>
+                        }
                         <tr>
                             <td colspan="5" style="height: 40px;"></td>
                         </tr>
@@ -524,12 +556,11 @@
     </div>
 
     <script>
-        // Mágia: Apenas carga la página, abre la ventana de impresión
-        window.onload = function() {
-            if (window.top === window.self) { 
-                window.print(); 
-            }
-        };
+            window.onload = function() {
+                if (window.top === window.self) {
+                    window.print();
+                }
+            };
     </script>
 </body>
 </html>

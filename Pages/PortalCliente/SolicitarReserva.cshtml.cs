@@ -18,9 +18,25 @@ namespace AtilsonCargoSpa.Pages.PortalCliente
         [BindProperty]
         public Cotizacion NuevaCotizacion { get; set; } = new Cotizacion();
 
+        // 1. CAPTURAMOS LOS PARÁMETROS DEL BUSCADOR DE ITINERARIOS
+        [BindProperty(SupportsGet = true)]
+        public string OrigenQ { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string DestinoQ { get; set; }
+
         public void OnGet()
         {
-            // Aquí puedes precargar datos si lo necesitas a futuro
+            // 2. AUTOCOMPLETAMOS EL FORMULARIO PARA AHORRARLE TIEMPO AL CLIENTE
+            if (!string.IsNullOrEmpty(OrigenQ))
+            {
+                NuevaCotizacion.Origen = OrigenQ;
+            }
+
+            if (!string.IsNullOrEmpty(DestinoQ))
+            {
+                NuevaCotizacion.Destino = DestinoQ;
+            }
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -38,12 +54,7 @@ namespace AtilsonCargoSpa.Pages.PortalCliente
                 NuevaCotizacion.Activo = true;
 
                 // TODO: Aquí debes asignar el ID del cliente que está logueado en el portal.
-                // Si usas claims de autenticación, sería algo como:
-                // int idCliente = int.Parse(User.FindFirst("IdCliente")?.Value ?? "0");
-                // NuevaCotizacion.IdCliente = idCliente > 0 ? idCliente : null;
-
-                // Para pruebas, lo dejamos NULL o le pones un ID fijo válido de tu BD
-                NuevaCotizacion.IdCliente = null;
+                NuevaCotizacion.IdCliente = null; // Para pruebas
 
                 // Guardar en la Base de Datos
                 _context.Cotizaciones.Add(NuevaCotizacion);

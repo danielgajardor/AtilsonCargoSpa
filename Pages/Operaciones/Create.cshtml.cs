@@ -170,21 +170,24 @@ namespace AtilsonCargoSpa.Pages.Operaciones
             ViewData["IdNaviera"] = new SelectList(await _context.Navieras.Where(n => n.Activo == 1).OrderBy(n => n.NombreNaviera).ToListAsync(), "Id", "NombreNaviera");
 
             var tipoMovimientos = new List<object>
-            {
-                new { Id = 1, Valor = "CY/CY (Contenedor Completo / FCL)" },
-                new { Id = 2, Valor = "CY/CFS (Consolidado)" },
-                new { Id = 3, Valor = "CFS/CY (Desconsolidado)" },
-                new { Id = 4, Valor = "CFS/CFS (LCL)" },
-                new { Id = 5, Valor = "FO/FO (Free Out)" },
-                new { Id = 6, Valor = "FI/FO (Free In / Free Out)" },
-                new { Id = 7, Valor = "SD/SD (Store Door)" }
-            };
+    {
+        new { Id = 1, Valor = "CY/CY (Contenedor Completo / FCL)" },
+        new { Id = 2, Valor = "CY/CFS (Consolidado)" },
+        new { Id = 3, Valor = "CFS/CY (Desconsolidado)" },
+        new { Id = 4, Valor = "CFS/CFS (LCL)" },
+        new { Id = 5, Valor = "FO/FO (Free Out)" },
+        new { Id = 6, Valor = "FI/FO (Free In / Free Out)" },
+        new { Id = 7, Valor = "SD/SD (Store Door)" }
+    };
             ViewData["IdTipoMovimiento"] = new SelectList(tipoMovimientos, "Id", "Valor");
 
             // Listas completas para autocompletado en el frontend
             ViewData["PlantasList"] = await _context.Plantas.Include(p => p.Ciudad).Where(p => p.Activo).OrderBy(p => p.Nombre).ToListAsync();
             ViewData["PuertosList"] = await _context.Puertos.Where(p => p.Activo == 1).OrderBy(p => p.NombrePuerto).ToListAsync();
             ViewData["DepositosList"] = await _context.Depositos.Where(d => d.Activo == 1).OrderBy(d => d.NombreDeposito).ToListAsync();
+
+            // 👇 NUEVA LISTA DE AGENCIAS DE ADUANA 👇
+            ViewData["AgenciasList"] = await _context.AgenciasAduanas.OrderBy(a => a.NombreAgencia).ToListAsync();
         }
 
         public async Task<IActionResult> OnGetAsync()

@@ -11,11 +11,9 @@ namespace AtilsonCargoSpa.Models
 
         public int IdOperacion { get; set; }
 
-        public string GrupoCobro { get; set; } = null!; // Ej: "Marítimo", "Terrestre", "Documental", "Extracosto"
-        public string TipoMovimiento { get; set; } = null!; // "INGRESO" (Venta) o "EGRESO" (Costo)
+        public string GrupoCobro { get; set; } = null!;
+        public string TipoMovimiento { get; set; } = null!;
 
-        // --- NUEVO: INDICADOR EDMUNDO ("¿Por cuenta de quién?") ---
-        // Valores permitidos: "CLIENTE" (Se le cobra en factura) | "ATILSON" (Pérdida asumida T/A) | "PROVEEDOR"
         [Required, StringLength(20)]
         public string ResponsablePago { get; set; } = "CLIENTE";
 
@@ -28,12 +26,25 @@ namespace AtilsonCargoSpa.Models
 
         public string EstadoFila { get; set; } = "PROVISIÓN";
 
+        // Aquí se guarda la Factura del Proveedor o la Factura/NC al Cliente
         public string? NumeroDocumento { get; set; }
+
+        // --- NUEVO: CONTROL DUAL PARA EGRESOS ---
+        public string? NumeroOrdenCompra { get; set; }
+
         public DateTime? FechaEmision { get; set; }
         public DateTime FechaCreacion { get; set; }
         public string? UsuarioCreador { get; set; }
         public DateTime? FechaModificacion { get; set; }
         public string? UsuarioModificador { get; set; }
+        public string? Responsable { get; set; }
+        public string? RutaFactura { get; set; }
+
+        public bool TarifaManual { get; set; } = false;
+        public string? JustificacionManual { get; set; }
+
+        // --- ESCUDO DE SEGURIDAD ---
+        public string? RutaComprobante { get; set; }
 
         [ForeignKey("IdOperacion")]
         public virtual Operacione IdOperacionNavigation { get; set; } = null!;

@@ -17,15 +17,15 @@ namespace AtilsonCargoSpa.Pages
             _context = context;
         }
 
+        // ==========================================
+        // PROPIEDADES FUERTEMENTE TIPADAS PARA LA VISTA
+        // ==========================================
+
         // KPIs Generales
         public int TotalBookings { get; set; }
         public int TotalClientes { get; set; }
         public int CantidadCriticos { get; set; }
         public List<Operacione> UltimasOperaciones { get; set; } = new();
-
-        // ----------------------------------------------------
-        // NUEVAS PROPIEDADES PARA GRÁFICOS INTERACTIVOS
-        // ----------------------------------------------------
 
         // 1. Mix de Servicios
         public int CountIntegral { get; set; }
@@ -40,6 +40,8 @@ namespace AtilsonCargoSpa.Pages
         // 3. Documental (Matrices)
         public int CountMatricesConfirmadas { get; set; }
         public int CountMatricesPendientes { get; set; }
+        public int TotalMatrices => CountMatricesConfirmadas + CountMatricesPendientes;
+        public double PctConfirmadas => TotalMatrices > 0 ? Math.Round(((double)CountMatricesConfirmadas / TotalMatrices) * 100) : 0;
 
         // 4. Estado de Bookings (Workflow)
         public int CountPendienteNaviera { get; set; }
@@ -50,7 +52,7 @@ namespace AtilsonCargoSpa.Pages
         {
             try
             {
-                // Query base para ignorar los eliminados (Activo == 1 o null)
+                // Query base para ignorar los eliminados
                 var queryActivas = _context.Operaciones.Where(o => o.Activo == 1 || o.Activo == null);
 
                 TotalBookings = await queryActivas.CountAsync();
@@ -70,19 +72,15 @@ namespace AtilsonCargoSpa.Pages
                 CountTerrestre = await queryActivas.CountAsync(o => o.IdTipoServicio == 6 || o.IdTipoServicio == 13);
                 CountDocumental = await queryActivas.CountAsync(o => o.IdTipoServicio == 7 || o.IdTipoServicio == 14);
 
-                // 2. Control LAR (Filtramos solo operaciones que tienen tramo marítimo)
+                // 2. Control LAR (Solo operaciones con tramo marítimo)
                 var queryMaritimas = queryActivas.Where(o => new[] { 1, 2, 3, 5, 8, 9, 10, 12 }.Contains(o.IdTipoServicio ?? 0));
                 int totalMaritimas = await queryMaritimas.CountAsync();
                 CountMaritimoConLAR = await queryMaritimas.CountAsync(o => o.EstadoLar != null && o.EstadoLar.Contains("LAR"));
                 CountMaritimoATiempo = totalMaritimas - CountMaritimoConLAR;
 
                 // 3. Desempeño Documental (Matrices B/L)
-                // Se filtra por los tipos de servicio que requieren gestión marítima o documental
                 var queryConMatriz = queryActivas.Where(o => new[] { 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 14 }.Contains(o.IdTipoServicio ?? 0));
-
-                CountMatricesConfirmadas = await queryConMatriz
-                    .CountAsync(o => o.OperacionesDocumentales.Any(d => d.MatrizPresentada == true));
-
+                CountMatricesConfirmadas = await queryConMatriz.CountAsync(o => o.OperacionesDocumentales.Any(d => d.MatrizPresentada == true));
                 CountMatricesPendientes = await queryConMatriz.CountAsync() - CountMatricesConfirmadas;
 
                 // 4. Estatus de Bookings / Workflow
@@ -97,12 +95,11 @@ namespace AtilsonCargoSpa.Pages
                     .Include(o => o.IdClienteNavigation)
                     .Include(o => o.IdPuertoDestinoNavigation)
                     .OrderByDescending(o => o.Id)
-                    .Take(5)
+                    .Take(6)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                // En caso de que haya una tabla vacía o error de base de datos
                 UltimasOperaciones = new List<Operacione>();
                 Console.WriteLine(ex.Message);
             }

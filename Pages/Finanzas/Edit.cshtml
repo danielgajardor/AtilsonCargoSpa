@@ -2,558 +2,243 @@
 @model AtilsonCargoSpa.Pages.Finanzas.EditModel
 @{
     ViewData["Title"] = "Liquidación Financiera";
-    var o = Model.OperacionBase;
-    var fin = Model.Finanzas;
-    var doc = Model.Doc;
-
-    bool tieneExtracostos = o.ExtracostosOperacions != null && o.ExtracostosOperacions.Any(e => e.Monto > 0);
-    bool isLocked = o.LockFinanzas;
+    bool isLocked = Model.OperacionBase.LockFinanzas;
     string pointerEvents = isLocked ? "pointer-events: none; opacity: 0.7;" : "";
 }
 
 <style>
-    /* PALETA CORPORATIVA - MODO COMPACTO (DATA ENTRY) */
     :root {
         --atilson-dark: #0f172a;
-        --txt-main: #1e293b;
         --txt-muted: #64748b;
-        --border-soft: #cbd5e1;
-        --fin-revenue: #0284c7;
-        --fin-cost: #dc2626;
-        --fin-profit: #10b981;
+        --border-soft: #e2e8f0;
     }
 
     body {
         background-color: #f8fafc;
-        font-family: 'Inter', system-ui, sans-serif;
+        font-family: 'Inter', sans-serif;
     }
 
-    /* CINTA DASHBOARD ULTRA-COMPACTA */
     .fin-ribbon {
         background: linear-gradient(90deg, var(--atilson-dark) 0%, #1e293b 100%);
-        border-radius: 6px;
-        padding: 10px 20px;
+        border-radius: 8px;
+        padding: 15px 25px;
         color: white;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        margin-bottom: 16px;
-    }
-
-    .ribbon-item {
-        display: flex;
-        flex-direction: column;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
     }
 
     .ribbon-label {
-        font-size: 9px;
+        font-size: 10px;
         font-weight: 800;
         color: #94a3b8;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin-bottom: 2px;
     }
 
     .ribbon-val {
         font-size: 18px;
         font-weight: 800;
         font-family: 'SFMono-Regular', Consolas, monospace;
-        letter-spacing: -0.5px;
-        line-height: 1;
     }
 
     .ribbon-divider {
         width: 1px;
-        height: 30px;
+        height: 35px;
         background: rgba(255,255,255,0.15);
     }
 
-    /* TARJETAS DE MÓDULOS FINANCIEROS COMPACTAS */
-    .fin-card {
+    .card-fin {
         background: white;
         border: 1px solid var(--border-soft);
-        border-radius: 6px;
-        padding: 14px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         height: 100%;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
 
-    .fin-card-header {
-        font-size: 11px;
-        font-weight: 800;
+    .card-fin-header {
+        font-size: 12px;
+        font-weight: 900;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        border-bottom: 1px solid #f1f5f9;
-        padding-bottom: 8px;
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-soft);
     }
 
-        .fin-card-header i {
-            margin-right: 6px;
-            font-size: 13px;
+        .card-fin-header.ing {
+            background-color: #f0fdf4;
+            color: #16a34a;
+            border-top: 4px solid #10b981;
         }
 
-    .fin-label {
-        color: var(--txt-muted);
-        font-weight: 700;
-        font-size: 9px;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-        display: block;
+        .card-fin-header.egr {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border-top: 4px solid #ef4444;
+        }
+
+    .table-fin {
+        margin: 0;
+        width: 100%;
+        font-size: 11px;
     }
 
-    /* INPUTS TIPO EXCEL (MÁS FINOS) */
-    .input-group-sm .input-group-text {
-        background-color: #f8fafc;
-        border-color: var(--border-soft);
-        font-weight: 800;
-        font-size: 10px;
-        color: var(--txt-muted);
-        padding: 4px 8px;
-    }
+        .table-fin th {
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-soft);
+        }
 
-    .fin-input {
+        .table-fin td {
+            padding: 10px 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+    .inp-fin {
         font-size: 12px;
         font-weight: 800;
         text-align: right;
         border: 1px solid var(--border-soft);
-        font-family: 'SFMono-Regular', Consolas, monospace;
-        height: 28px;
+        border-radius: 4px;
         padding: 4px 8px;
+        width: 100%;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        transition: 0.2s;
     }
 
-        .fin-input:focus {
+        .inp-fin:focus {
             border-color: var(--atilson-dark);
-            box-shadow: none;
-            outline: 1px solid var(--atilson-dark);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(15,23,42,0.1);
         }
 
-    .input-revenue {
-        color: var(--fin-revenue);
-        background-color: #f0f9ff;
-    }
-
-    .input-cost {
-        color: var(--fin-cost);
-        background-color: #fef2f2;
-    }
-
-    .form-select-sm {
-        height: 28px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        font-size: 11px;
-    }
-
-    /* CAJA DE SUBTOTALES */
-    .subtotal-box {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 4px;
-        padding: 8px 12px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 12px;
-    }
-
-    /* FILAS EXTRACOSTOS MINIMALISTAS */
-    .extra-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 6px 10px;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-        .extra-row:last-child {
-            border-bottom: none;
-        }
-
-    .celda-resp-atilson {
-        background-color: #fff1f2;
-        color: #e11d48;
-        font-weight: 800;
-        border: 1px solid #fecdd3;
-        padding: 2px 6px;
-        border-radius: 4px;
+    .celda-resp {
         font-size: 9px;
-        display: inline-block;
-    }
-
-    .celda-resp-cliente {
-        background-color: #f8fafc;
-        color: var(--txt-muted);
         font-weight: 800;
+        padding: 3px 6px;
+        border-radius: 4px;
+        display: inline-block;
+        background: #f1f5f9;
         border: 1px solid var(--border-soft);
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 9px;
-        display: inline-block;
     }
 </style>
 
-<div class="container-fluid py-3" style="max-width: 1200px;">
-
-    <div class="d-flex justify-content-between align-items-end mb-3 pb-2 border-bottom">
+<div class="container-fluid py-4" style="max-width: 1400px;">
+    <div class="d-flex justify-content-between align-items-end mb-4">
         <div>
-            <h1 style="font-size: 18px; font-weight: 900; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">LIQUIDACIÓN DE OPERACIÓN</h1>
+            <h1 style="font-size: 20px; font-weight: 900; color: var(--atilson-dark); margin: 0;">LIQUIDACIÓN DE OPERACIÓN</h1>
             <div class="d-flex gap-2 mt-2 align-items-center">
-                <span class="badge bg-white text-dark border px-2 py-1" style="font-size: 10px;"><i class="bi bi-bookmark-fill text-primary me-1"></i> BKG: @o.NumeroBooking</span>
-                <span class="badge bg-white text-dark border px-2 py-1" style="font-size: 10px;"><i class="bi bi-building me-1"></i> @(o.IdClienteNavigation?.RazonSocial ?? "Sin Cliente")</span>
+                <span class="badge bg-white text-dark border px-2 py-1"><i class="bi bi-bookmark-fill text-primary me-1"></i> BKG: @Model.OperacionBase.NumeroBooking</span>
+                <span class="badge bg-white text-dark border px-2 py-1"><i class="bi bi-building me-1"></i> @(Model.OperacionBase.IdClienteNavigation?.RazonSocial ?? "Sin Cliente")</span>
                 @if (isLocked)
                 {
-                    <span class="badge bg-danger px-2 py-1 shadow-sm" style="font-size: 10px;"><i class="bi bi-lock-fill me-1"></i> LIQUIDADA</span>
+                    <span class="badge bg-danger px-2 py-1 shadow-sm"><i class="bi bi-lock-fill me-1"></i> LIQUIDADA Y BLOQUEADA</span>
                 }
             </div>
         </div>
-        <a asp-page="./Index" class="btn btn-white border btn-sm fw-bold px-3 py-1 text-muted shadow-sm" style="font-size: 11px;">
-            <i class="bi bi-arrow-left me-1"></i> Volver
-        </a>
+        <a href="/Finanzas/Index" class="btn btn-white border fw-bold text-muted shadow-sm"><i class="bi bi-arrow-left me-1"></i> Volver</a>
     </div>
 
-    <form method="post" id="frmFinanzas">
-        <input type="hidden" asp-for="Finanzas.Id" />
-        <input type="hidden" asp-for="Finanzas.IdOperacion" />
-        <input type="hidden" name="ValorAutoTerrestreOriginal" value="@(fin.CostoTerrestreNeto?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "0")" />
-
-        <div class="fin-ribbon">
-            <div class="ribbon-item">
-                <span class="ribbon-label text-info"><i class="bi bi-graph-up-arrow"></i> Total Venta</span>
-                <span class="ribbon-val text-info" id="liveVenta">@Model.InitialVenta.ToString("C0", new System.Globalization.CultureInfo("en-US"))</span>
-            </div>
-            <div class="ribbon-divider"></div>
-            <div class="ribbon-item">
-                <span class="ribbon-label text-danger"><i class="bi bi-graph-down-arrow"></i> Total Costo</span>
-                <span class="ribbon-val text-danger" id="liveCosto">@Model.InitialCosto.ToString("C0", new System.Globalization.CultureInfo("en-US"))</span>
-            </div>
-            <div class="ribbon-divider"></div>
-            <div class="ribbon-item">
-                <span class="ribbon-label text-success"><i class="bi bi-safe-fill"></i> Profit Neto</span>
-                <span class="ribbon-val text-success" id="liveProfit">@Model.InitialProfit.ToString("C0", new System.Globalization.CultureInfo("en-US"))</span>
-            </div>
-            <div class="ribbon-divider"></div>
-            <div class="ribbon-item align-items-end">
-                <span class="ribbon-label"><i class="bi bi-percent"></i> Margen</span>
-                <span class="ribbon-val" id="liveMargen" style="color: @(Model.InitialMargen > 15 ? "#10b981" : (Model.InitialMargen > 0 ? "#fbbf24" : "#ef4444"))">@Model.InitialMargen.ToString("N1")%</span>
-            </div>
+    <div class="fin-ribbon">
+        <div>
+            <div class="ribbon-label text-success">Total Ingresos (Ventas)</div>
+            <div class="ribbon-val text-success">USD $@Model.IngresosUSD.ToString("N0") <span class="text-muted fw-normal mx-1" style="font-size:12px;">|</span> CLP $@Model.IngresosCLP.ToString("N0")</div>
         </div>
+        <div class="ribbon-divider"></div>
+        <div>
+            <div class="ribbon-label text-danger">Total Egresos (Costos)</div>
+            <div class="ribbon-val text-danger">USD $@Model.EgresosUSD.ToString("N0") <span class="text-muted fw-normal mx-1" style="font-size:12px;">|</span> CLP $@Model.EgresosCLP.ToString("N0")</div>
+        </div>
+    </div>
 
-        <div class="row g-3 mb-4">
+    <form method="post">
+        <input type="hidden" name="id" value="@Model.OperacionBase.Id" />
 
+        <div class="row g-4 mb-4">
             <div class="col-lg-6">
-                <div class="fin-card" style="border-top: 3px solid #0284c7;">
-                    <div class="fin-card-header text-primary"><i class="bi bi-ship"></i> 1. Flete Marítimo (Exento IVA)</div>
-                    <div class="row g-2">
-                        <div class="col-5">
-                            <label class="fin-label">Venta (Ingreso)</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text text-info border-end-0">USD</span>
-                                <input asp-for="Finanzas.VentaMaritimo" class="form-control fin-input input-revenue val-venta border-start-0" type="text" placeholder="0.00" readonly="@isLocked" />
-                            </div>
-                        </div>
-                        <div class="col-5">
-                            <label class="fin-label">Costo (Egreso)</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text text-danger border-end-0">USD</span>
-                                <input asp-for="Finanzas.CostoMaritimoNeto" class="form-control fin-input input-cost val-costo border-start-0" type="text" placeholder="0.00" readonly="@isLocked" />
-                            </div>
-                            @if (Model.TarifaMaritimaEncontrada)
+                <div class="card-fin">
+                    <div class="card-fin-header ing"><i class="bi bi-arrow-down-left-circle me-1"></i> Ingresos / Ventas al Cliente</div>
+                    <table class="table-fin">
+                        <thead><tr><th>Concepto</th><th style="width: 80px;">N° Doc</th><th style="width: 70px;">Moneda</th><th style="width: 120px;" class="text-end">Valor Neto</th></tr></thead>
+                        <tbody style="@pointerEvents">
+                            @foreach (var tx in Model.Ingresos.OrderBy(t => t.GrupoCobro))
                             {
-                                <div class="text-success mt-1" style="font-size:8px; font-weight:800;"><i class="bi bi-robot"></i> Tarifa BD Auto</div>
-                            }
-                        </div>
-                        <div class="col-2">
-                            <label class="fin-label">Cond.</label>
-                            <select asp-for="Finanzas.IdCondicionFlete" class="form-select form-select-sm fw-bold text-center" style="@pointerEvents">
-                                <option value="">N/A</option>
-                                <option value="1">PP</option>
-                                <option value="2">CC</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="fin-card" style="border-top: 3px solid #6d2d9e;">
-                    <div class="fin-card-header" style="color: #6d2d9e;"><i class="bi bi-file-earmark-check"></i> 2. Gestión Documental y Aduanas</div>
-
-                    <div class="row g-2 mb-2">
-                        <div class="col-6">
-                            <label class="fin-label">Venta (Ingreso)</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text text-info border-end-0">USD</span>
-                                <input asp-for="Finanzas.VentaDocumental" class="form-control fin-input input-revenue val-venta border-start-0" type="text" placeholder="0.00" readonly="@isLocked" />
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <label class="fin-label">Costo Agencia (Egreso)</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text text-danger border-end-0">USD</span>
-                                <input asp-for="Finanzas.CostoAgenciaNeto" class="form-control fin-input input-cost val-costo border-start-0" type="text" placeholder="0.00" readonly="@isLocked" />
-                            </div>
-                        </div>
-                    </div>
-
-                    @if (doc != null)
-                    {
-                        <div class="border-top pt-2 mt-2">
-                            <label class="fin-label mb-2">Desglose Trámites (Netos en CLP)</label>
-                            <div class="row g-2">
-                                @if (!string.IsNullOrEmpty(doc.DusDin))
-                                {
-                                    <div class="col-3"><input type="number" name="Doc.ValorDus" class="form-control form-control-sm fin-input val-doc-neto" value="@doc.ValorDus" placeholder="DUS" readonly="@isLocked" title="DUS" /></div>
-                                }
-                                @if (!string.IsNullOrEmpty(doc.Din))
-                                {
-                                    <div class="col-3"><input type="number" name="Doc.ValorDin" class="form-control form-control-sm fin-input val-doc-neto" value="@doc.ValorDin" placeholder="DIN" readonly="@isLocked" title="DIN" /></div>
-                                }
-                                @if (doc.AplicaSag == true)
-                                {
-                                    <div class="col-3"><input type="number" name="Doc.ValFit1" class="form-control form-control-sm fin-input val-doc-neto" value="@doc.ValFit1" placeholder="SAG" readonly="@isLocked" title="Fito SAG" /></div>
-                                }
-                                @if (doc.AplicaSernapesca == true)
-                                {
-                                    <div class="col-3"><input type="number" name="Doc.ValSan1" class="form-control form-control-sm fin-input val-doc-neto" value="@doc.ValSan1" placeholder="Sernap." readonly="@isLocked" title="Sernapesca" /></div>
-                                    <div class="col-3"><input type="number" name="Doc.ValCap1" class="form-control form-control-sm fin-input val-doc-neto" value="@doc.ValCap1" placeholder="Captura" readonly="@isLocked" title="Captura" /></div>
-                                }
-                                @if (doc.CertificadoOrigen == true || !string.IsNullOrEmpty(doc.RemisionOrigen1))
-                                {
-                                    <div class="col-3"><input type="number" name="Doc.ValOri1" class="form-control form-control-sm fin-input val-doc-neto" value="@doc.ValOri1" placeholder="Origen" readonly="@isLocked" title="Origen" /></div>
-                                }
-                            </div>
-                            <div class="subtotal-box py-1 px-2 mt-2">
-                                <span class="text-muted fw-bold" style="font-size: 8px;">PROYECCIÓN TRÁMITES:</span>
-                                <div class="d-flex gap-2 text-end">
-                                    <div><span class="text-muted d-block" style="font-size:7px;">NETO</span><strong id="lblDocNeto" class="font-monospace" style="font-size: 10px;">$0</strong></div>
-                                    <div class="ps-2 border-start"><span class="text-dark d-block" style="font-size:7px;">TOTAL IVA INC</span><strong style="color:#6d2d9e; font-size: 11px;" id="lblDocTotal" class="font-monospace">$0</strong></div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-2 text-muted border border-dashed rounded bg-light mt-2" style="font-size: 10px; font-weight:600;">Sin documentos operativos generados.</div>
-                    }
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="fin-card" style="border-top: 3px solid #d97706;">
-                    <div class="fin-card-header" style="color: #d97706;"><i class="bi bi-truck"></i> 3. Transporte Terrestre (+ 19% IVA)</div>
-                    <div class="row g-2 mb-2">
-                        <div class="col-6">
-                            <label class="fin-label">Venta (Neto)</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text text-info border-end-0">CLP</span>
-                                <input asp-for="Finanzas.VentaTerrestre" class="form-control fin-input input-revenue val-venta border-start-0" type="text" placeholder="0" readonly="@isLocked" />
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <label class="fin-label">Costo (Neto)</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text text-danger border-end-0">CLP</span>
-                                <input asp-for="Finanzas.CostoTerrestreNeto" id="inputCostoTerrestre" class="form-control fin-input input-cost val-costo border-start-0" type="text" placeholder="0" readonly="@isLocked" />
-                            </div>
-                            @if (Model.TarifaTerrestreEncontrada)
-                            {
-                                <div class="text-success mt-1" style="font-size:8px; font-weight:800;"><i class="bi bi-robot"></i> Tarifa BD Auto</div>
-                            }
-                        </div>
-                    </div>
-                    <div class="subtotal-box py-1 px-2">
-                        <span class="text-muted fw-bold" style="font-size: 8px;">TOTAL A PAGAR:</span>
-                        <div class="d-flex gap-2 text-end">
-                            <div><span class="text-muted d-block" style="font-size:7px;">NETO</span><strong id="lblNetoTerrestre" class="font-monospace" style="font-size: 10px;">$0</strong></div>
-                            <div><span class="text-danger d-block" style="font-size:7px;">IVA</span><strong id="lblIvaTerrestre" class="font-monospace" style="font-size: 10px;">$0</strong></div>
-                            <div class="ps-2 border-start"><span class="text-dark d-block" style="font-size:7px;">TOTAL</span><strong style="color:#d97706; font-size: 12px;" id="lblTotalTerrestre" class="font-monospace">$0</strong></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="fin-card" style="border-top: 3px solid #0ea5e9;">
-                    <div class="fin-card-header text-info"><i class="bi bi-box-arrow-in-right"></i> 4. Gate In / Out (Terminal)</div>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <label class="fin-label">Venta Gate</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text text-info border-end-0">CLP</span>
-                                <input asp-for="Finanzas.VentaGate" class="form-control fin-input input-revenue val-venta border-start-0" type="text" placeholder="0" readonly="@isLocked" />
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <label class="fin-label">Costo Gate</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text text-danger border-end-0">CLP</span>
-                                <input asp-for="Finanzas.CostoGateNeto" id="inputCostoGate" class="form-control fin-input input-cost val-costo border-start-0" type="text" placeholder="0" readonly="@isLocked" />
-                            </div>
-                            @if (Model.TarifaGateEncontrada)
-                            {
-                                <div class="text-success mt-1" style="font-size:8px; font-weight:800;"><i class="bi bi-robot"></i> Tarifa BD Auto</div>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12">
-                <div class="fin-card" style="border-top: 3px solid #dc2626;">
-                    <div class="fin-card-header text-danger mb-2 border-bottom-0"><i class="bi bi-exclamation-triangle-fill"></i> 5. Desviaciones y Extracostos</div>
-
-                    @if (tieneExtracostos)
-                    {
-                        <div class="border rounded bg-white overflow-hidden shadow-sm">
-                            @foreach (var costo in o.ExtracostosOperacions!.Where(e => e.Monto > 0).OrderByDescending(c => c.FechaCreacion))
-                            {
-                                <div class="extra-row">
-                                    <div style="flex: 1;">
-                                        <span class="fw-bold text-dark" style="font-size: 11px;">@costo.TipoCosto</span>
-                                        <span class="text-muted ms-1" style="font-size: 9px;">@costo.Motivo</span>
-                                        <div class="mt-1">
-                                            @if ((costo.Responsable ?? "").ToUpper() == "ATILSON")
-                                            {
-                                                <span class="celda-resp-atilson"><i class="bi bi-exclamation-triangle-fill"></i> T/A ATILSON</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="celda-resp-cliente"><i class="bi bi-check2"></i> C. CLIENTE</span>
-                                            }
-                                        </div>
-                                    </div>
-                                    <div class="d-flex gap-1" style="width: 170px;">
-                                        <select name="Moneda_@costo.Id" class="form-select form-select-sm fw-bold text-center" style="width: 60px; @pointerEvents">
-                                            <option value="USD" selected="@(costo.Moneda == "USD")">USD</option>
-                                            <option value="CLP" selected="@(costo.Moneda == "CLP")">CLP</option>
+                                <tr>
+                                    <td><span class="fw-bold d-block" style="font-size:11px; color:#1e293b;">@tx.Concepto</span><span class="text-muted" style="font-size:9px; text-transform:uppercase;">@tx.GrupoCobro</span></td>
+                                    <td><input type="text" name="numdoc_@tx.Id" class="inp-fin text-start" style="font-family: inherit;" value="@tx.NumeroDocumento" placeholder="S/N" /></td>
+                                    <td>
+                                        <select name="moneda_@tx.Id" class="form-select form-select-sm fw-bold" style="font-size:10px; height:28px;">
+                                            <option value="USD" selected="@(tx.Moneda == "USD")">USD</option>
+                                            <option value="CLP" selected="@(tx.Moneda == "CLP")">CLP</option>
                                         </select>
-                                        <input type="text" name="Monto_@costo.Id" class="form-control form-control-sm fin-input val-extra" value="@(costo.Monto > 0 ? costo.Monto.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) : "")" placeholder="0.00" readonly="@isLocked" />
-                                    </div>
-                                </div>
+                                    </td>
+                                    <td><input type="text" name="monto_@tx.Id" class="inp-fin text-success" value="@(tx.MontoNeto > 0 ? tx.MontoNeto.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) : "")" placeholder="0.00" /></td>
+                                </tr>
                             }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-2 bg-success bg-opacity-10 border border-success border-opacity-25 rounded mt-2">
-                            <span class="text-success fw-bold" style="font-size: 10px;"><i class="bi bi-shield-check"></i> Operación sin extracostos.</span>
-                        </div>
-                    }
+                            @if (!Model.Ingresos.Any())
+                            {
+                                <tr><td colspan="4" class="text-center text-muted py-4">No hay ingresos registrados.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card-fin">
+                    <div class="card-fin-header egr"><i class="bi bi-arrow-up-right-circle me-1"></i> Egresos / Costos Logísticos</div>
+                    <table class="table-fin">
+                        <thead><tr><th>Concepto y Proveedor</th><th style="width: 70px;">Moneda</th><th style="width: 120px;" class="text-end">Valor Neto</th></tr></thead>
+                        <tbody style="@pointerEvents">
+                            @foreach (var tx in Model.Egresos.OrderBy(t => t.GrupoCobro))
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="fw-bold d-block" style="font-size:11px; color:#1e293b;">@tx.Concepto</span>
+                                        <div class="d-flex align-items-center gap-2 mt-1">
+                                            <span class="celda-resp" title="Proveedor"><i class="bi bi-building me-1"></i> @(tx.IdProveedorNavigation?.NombreProveedor ?? "Por Asignar")</span>
+                                            <span class="celda-resp" title="Responsable de Pago"><i class="bi bi-person-badge me-1"></i> @(tx.ResponsablePago ?? "ATILSON")</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <select name="moneda_@tx.Id" class="form-select form-select-sm fw-bold" style="font-size:10px; height:28px;">
+                                            <option value="USD" selected="@(tx.Moneda == "USD")">USD</option>
+                                            <option value="CLP" selected="@(tx.Moneda == "CLP")">CLP</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="monto_@tx.Id" class="inp-fin text-danger" value="@(tx.MontoNeto > 0 ? tx.MontoNeto.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) : "")" placeholder="0.00" />
+                                        <input type="hidden" name="numdoc_@tx.Id" value="@tx.NumeroDocumento" />
+                                    </td>
+                                </tr>
+                            }
+                            @if (!Model.Egresos.Any())
+                            {
+                                <tr><td colspan="3" class="text-center text-muted py-4">No hay egresos registrados.</td></tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <div class="d-flex justify-content-end gap-3 pb-3 border-top pt-3">
+        <div class="d-flex justify-content-end gap-3 pb-4 pt-3 border-top">
             @if (isLocked)
             {
-                <button type="submit" name="AccionFinanzas" value="Desbloquear" class="btn btn-sm btn-warning fw-bold px-3 shadow-sm" style="color: #92400e; background-color: #fde68a; border-color: #fcd34d;" onclick="return confirm('¿Desbloquear operación y devolver a control operativo?');">
-                    <i class="bi bi-unlock-fill me-1"></i> Desbloquear Operación
-                </button>
-                <a href="/Finanzas/SetCobro/@o.Id" target="_blank" class="btn btn-sm fw-bold px-4 text-white shadow" style="background-color: var(--atilson-dark);">
-                    <i class="bi bi-file-earmark-pdf me-1 text-danger"></i> Generar Set de Cobro Oficial
-                </a>
+                <button type="submit" name="AccionFinanzas" value="Desbloquear" class="btn btn-warning fw-bold px-4 shadow-sm" onclick="return confirm('¿Desbloquear operación?');"><i class="bi bi-unlock-fill me-1"></i> Desbloquear Operación</button>
+                <a href="/Finanzas/SetCobro/@Model.OperacionBase.Id" target="_blank" class="btn fw-bold px-4 text-white shadow" style="background-color: var(--atilson-dark);"><i class="bi bi-file-earmark-pdf me-1 text-danger"></i> Generar Set de Cobro PDF</a>
             }
             else
             {
-                <button type="submit" name="AccionFinanzas" value="Guardar" class="btn btn-sm btn-white border border-secondary fw-bold px-3 text-dark shadow-sm">
-                    <i class="bi bi-save me-1"></i> Guardar Progreso
-                </button>
-                <button type="submit" name="AccionFinanzas" value="Liquidar" class="btn btn-sm btn-success fw-bold px-4 shadow" style="background-color: var(--fin-profit); border: none;" onclick="return confirm('¿Liquidar operación? Se bloquearán las ediciones operativas.');">
-                    <i class="bi bi-shield-lock-fill me-1"></i> Liquidar y Cerrar Operación
-                </button>
+                <button type="submit" name="AccionFinanzas" value="Guardar" class="btn btn-white border fw-bold px-4 shadow-sm"><i class="bi bi-save me-1"></i> Guardar Borrador</button>
+                <button type="submit" name="AccionFinanzas" value="Liquidar" class="btn btn-success fw-bold px-5 shadow" onclick="return confirm('¿Liquidar y cerrar financieramente?');"><i class="bi bi-shield-lock-fill me-1"></i> Liquidar Operación</button>
             }
         </div>
     </form>
 </div>
-
-@section Scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const inputsVenta = document.querySelectorAll('.val-venta');
-            const inputsCosto = document.querySelectorAll('.val-costo');
-            const inputsExtra = document.querySelectorAll('.val-extra');
-
-            const liveVenta = document.getElementById('liveVenta');
-            const liveCosto = document.getElementById('liveCosto');
-            const liveProfit = document.getElementById('liveProfit');
-            const liveMargen = document.getElementById('liveMargen');
-
-            const inputCostoTerrestre = document.getElementById('inputCostoTerrestre');
-            const lblNetoTerrestre = document.getElementById('lblNetoTerrestre');
-            const lblIvaTerrestre = document.getElementById('lblIvaTerrestre');
-            const lblTotalTerrestre = document.getElementById('lblTotalTerrestre');
-
-            const formatoUSD = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-            const formatoCLP = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
-
-            const inputsDocNeto = document.querySelectorAll('.val-doc-neto');
-            const lblDocNeto = document.getElementById('lblDocNeto');
-            const lblDocTotal = document.getElementById('lblDocTotal');
-
-            function calcularDocumental() {
-                let sumaDoc = 0;
-                inputsDocNeto.forEach(inp => { sumaDoc += (parseFloat(inp.value) || 0); });
-
-                let ivaDoc = sumaDoc * 0.19;
-                let totalDoc = sumaDoc + ivaDoc;
-
-                if(lblDocNeto) lblDocNeto.innerText = formatoCLP.format(sumaDoc);
-                if(lblDocTotal) lblDocTotal.innerText = formatoCLP.format(totalDoc);
-            }
-
-            inputsDocNeto.forEach(input => { input.addEventListener('input', () => { calcularDocumental(); }); });
-            calcularDocumental();
-
-            function calcularTotales() {
-                let sumaVentas = 0;
-                let sumaCostos = 0;
-
-                inputsVenta.forEach(input => {
-                    let val = parseFloat(input.value.replace(',', '.')) || 0;
-                    sumaVentas += val;
-                });
-
-                inputsCosto.forEach(input => {
-                    let val = parseFloat(input.value.replace(',', '.')) || 0;
-                    sumaCostos += val;
-                });
-
-                inputsExtra.forEach(input => {
-                    let val = parseFloat(input.value.replace(',', '.')) || 0;
-                    sumaCostos += val;
-                });
-
-                let profit = sumaVentas - sumaCostos;
-                let margenPct = (sumaVentas > 0) ? (profit / sumaVentas) * 100 : 0;
-
-                liveVenta.innerText = formatoUSD.format(sumaVentas);
-                liveCosto.innerText = formatoUSD.format(sumaCostos);
-                liveProfit.innerText = formatoUSD.format(profit);
-                liveMargen.innerText = margenPct.toFixed(1) + "%";
-
-                liveMargen.style.color = margenPct > 15 ? "var(--fin-profit)" : (margenPct > 0 ? "#fbbf24" : "var(--fin-cost)");
-                liveProfit.className = profit < 0 ? 'ribbon-val text-danger' : 'ribbon-val text-success';
-
-                if(inputCostoTerrestre) {
-                    let netoTerrestre = parseFloat(inputCostoTerrestre.value.replace(',', '.')) || 0;
-                    let ivaTerrestre = netoTerrestre * 0.19;
-                    let totalTerrestre = netoTerrestre + ivaTerrestre;
-
-                    lblNetoTerrestre.innerText = formatoCLP.format(netoTerrestre);
-                    lblIvaTerrestre.innerText = formatoCLP.format(ivaTerrestre);
-                    lblTotalTerrestre.innerText = formatoCLP.format(totalTerrestre);
-                }
-            }
-
-            document.querySelectorAll('.fin-input').forEach(input => {
-                input.addEventListener('input', calcularTotales);
-            });
-
-            calcularTotales();
-        });
-    </script>
-}

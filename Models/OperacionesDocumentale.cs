@@ -19,6 +19,8 @@ namespace AtilsonCargoSpa.Models
         public bool AplicaSernapesca { get; set; }
         public bool AplicaSag { get; set; }
 
+        public int? IdUnidadTecnica { get; set; }
+
         // Trazabilidad Cliente (V°B°)
         public DateTime? FechaEnvioDocsCliente { get; set; }
         public DateTime? FechaVbcliente { get; set; }
@@ -283,5 +285,7 @@ namespace AtilsonCargoSpa.Models
         public bool? Roleo { get; set; }
         public decimal? ValorRoleo { get; set; }
         public bool? GeneracionIvv { get; set; }
+
+        public string? SagModalidad { get; set; }
     }
 }

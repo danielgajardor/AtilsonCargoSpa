@@ -16,875 +16,1012 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
-            :root {
-                /* PALETA CORPORATIVA ATILSON PURA */
-                --atilson-purple: #6d2d9e;
-                --atilson-purple-light: #9b51e0;
-                --atilson-purple-dark: #3b1459;
-                --bg-light: #ffffff;
-                --bg-soft: #f8fafc;
-                --bg-input: #f1f5f9;
-                --bg-dark: #0f172a;
-                --bg-deep: #020617;
-                --text-dark: #0f172a;
-                --text-muted: #64748b;
-                --text-light: #f8fafc;
-                --border-soft: #e2e8f0;
-            }
-
-            body {
-                font-family: 'Inter', sans-serif;
-                background-color: var(--bg-light);
-                color: var(--text-dark);
-                overflow-x: hidden;
-                scroll-behavior: smooth;
-            }
-
-            /* ========================================================= */
-            /* TOP BAR ELEGANTE (LUMINOSA Y SERIA CON TICKER)            */
-            /* ========================================================= */
-            .top-bar {
-                background-color: var(--bg-deep);
-                color: var(--text-muted);
-                font-size: 11px;
-                font-weight: 700;
-                padding: 10px 0;
-                border-bottom: 1px solid rgba(255,255,255,0.05);
-                position: relative;
-                z-index: 1001;
-            }
-
-            .social-links a {
-                color: var(--text-muted);
-                font-size: 14px;
-                margin-right: 15px;
-                transition: color 0.3s;
-            }
-
-                .social-links a:hover {
-                    color: var(--atilson-purple-light);
-                }
-
-            .contact-top-links a {
-                color: var(--text-muted);
-                text-decoration: none;
-                margin-left: 20px;
-                transition: color 0.3s;
-            }
-
-                .contact-top-links a:hover {
-                    color: #ffffff;
-                }
-
-            .contact-top-links i {
-                color: var(--atilson-purple-light);
-                margin-right: 6px;
-                font-size: 13px;
-            }
-
-            .ticker-divider {
-                width: 1px;
-                height: 14px;
-                background-color: rgba(255,255,255,0.15);
-                margin: 0 15px;
-            }
-
-            .news-ticker-text {
-                font-weight: 500;
-                transition: opacity 0.4s ease;
-                text-decoration: none;
-            }
-
-                .news-ticker-text:hover {
-                    color: var(--atilson-purple-light) !important;
-                }
-
-            /* ========================================================= */
-            /* NAVBAR GLASSMORPHISM                                      */
-            /* ========================================================= */
-            .navbar-atilson {
-                position: absolute;
-                width: 100%;
-                top: 40px;
-                z-index: 1000;
-                padding: 20px 0;
-                transition: all 0.4s ease;
-                background: transparent;
-            }
-
-                .navbar-atilson.scrolled {
-                    position: fixed;
-                    background: rgba(255, 255, 255, 0.95);
-                    backdrop-filter: blur(10px);
-                    -webkit-backdrop-filter: blur(10px);
-                    padding: 12px 0;
-                    top: 0;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-                    border-bottom: 1px solid var(--border-soft);
-                }
-
-            .navbar-logo {
-                max-height: 45px;
-                filter: brightness(0) invert(1);
-                transition: all 0.3s ease;
-            }
-
-            .navbar-atilson.scrolled .navbar-logo {
-                filter: none;
-            }
-
-            .navbar-logo:hover {
-                transform: scale(1.02);
-            }
-
-            .nav-link {
-                color: #ffffff !important;
-                font-weight: 700;
-                font-size: 12px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                margin: 0 15px;
-                transition: all 0.3s;
-            }
-
-            .navbar-atilson.scrolled .nav-link {
-                color: var(--text-dark) !important;
-            }
-
-                .nav-link:hover, .navbar-atilson.scrolled .nav-link:hover {
-                    color: var(--atilson-purple) !important;
-                }
-
-            .btn-portal {
-                background-color: var(--atilson-purple);
-                color: white !important;
-                font-weight: 800;
-                font-size: 12px;
-                padding: 10px 24px;
-                border-radius: 50px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                transition: all 0.3s ease;
-                text-decoration: none;
-                border: none;
-                box-shadow: 0 4px 15px rgba(109, 45, 158, 0.3);
-            }
-
-                .btn-portal:hover {
-                    background-color: var(--atilson-purple-dark);
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 20px rgba(109, 45, 158, 0.4);
-                }
-
-            /* ========================================================= */
-            /* HERO CARRUSEL Y WIDGET FIJO                               */
-            /* ========================================================= */
-            .hero-section {
-                position: relative;
-                height: 100vh;
-                min-height: 750px;
-            }
-
-            .hero-carousel, .carousel-inner, .carousel-item {
-                height: 100%;
-                width: 100%;
-                position: absolute;
-                top: 0;
-                left: 0;
-            }
-
-            .carousel-image {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-
-            .carousel-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(109, 45, 158, 0.65) 100%);
-                z-index: 1;
-            }
-
-            .carousel-caption-custom {
-                position: absolute;
-                top: 40%;
-                transform: translateY(-50%);
-                left: 8%;
-                z-index: 2;
-                text-align: left;
-                max-width: 650px;
-            }
-
-            .hero-tag {
-                background: var(--atilson-purple);
-                color: #ffffff;
-                padding: 6px 15px;
-                border-radius: 20px;
-                font-size: 10px;
-                font-weight: 800;
-                letter-spacing: 2px;
-                text-transform: uppercase;
-                display: inline-block;
-                margin-bottom: 20px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            }
-
-            .hero-title {
-                font-size: 64px;
-                font-weight: 900;
-                line-height: 1.1;
-                letter-spacing: -2px;
-                margin-bottom: 20px;
-                color: #ffffff;
-                text-shadow: 0 4px 15px rgba(0,0,0,0.6);
-            }
-
-                .hero-title span {
-                    color: #d8b4fe;
-                }
-
-            .hero-subtitle {
-                font-size: 18px;
-                font-weight: 400;
-                color: #f1f5f9;
-                line-height: 1.6;
-                margin-bottom: 40px;
-                text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-            }
-
-            /* WIDGET FIJO SOBRE EL CARRUSEL */
-            .static-tracking-container {
-                position: absolute;
-                bottom: 20%;
-                left: 50%;
-                transform: translateX(-50%);
-                z-index: 5;
-                width: 100%;
-                max-width: 650px;
-                padding: 0 20px;
-            }
-
-            .tracking-widget {
-                background: #ffffff;
-                padding: 8px;
-                border-radius: 12px;
-                display: flex;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-                width: 100%;
-            }
-
-            .tracking-input {
-                background: transparent;
-                border: none;
-                color: var(--text-dark);
-                padding: 15px 20px;
-                width: 100%;
-                outline: none;
-                font-weight: 600;
-                font-size: 15px;
-            }
-
-                .tracking-input::placeholder {
-                    color: var(--text-muted);
-                    font-weight: 400;
-                }
-
-            .tracking-btn {
-                background: var(--atilson-purple);
-                color: white;
-                border: none;
-                padding: 0 35px;
-                border-radius: 8px;
-                font-weight: 800;
-                text-transform: uppercase;
-                font-size: 13px;
-                transition: all 0.3s;
-            }
-
-                .tracking-btn:hover {
-                    background: var(--atilson-purple-dark);
-                }
-
-            /* ========================================================= */
-            /* BARRA E-SERVICES (BLANCA IMPECABLE)                       */
-            /* ========================================================= */
-            .e-services-bar {
-                background: #ffffff;
-                border-bottom: 1px solid var(--border-soft);
-                box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-                position: relative;
-                z-index: 10;
-                margin-top: -5px;
-            }
-
-            .service-tab {
-                padding: 25px 20px;
-                text-align: center;
-                color: var(--text-dark);
-                text-decoration: none;
-                font-weight: 800;
-                font-size: 12px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                transition: all 0.3s;
-                border-right: 1px solid var(--border-soft);
-                display: block;
-            }
-
-                .service-tab:first-child {
-                    border-left: 1px solid var(--border-soft);
-                }
-
-                .service-tab:hover {
-                    color: var(--atilson-purple);
-                    background: var(--bg-soft);
-                }
-
-                .service-tab i {
-                    display: block;
-                    font-size: 28px;
-                    margin-bottom: 8px;
-                    color: var(--atilson-purple);
-                    transition: transform 0.3s;
-                }
-
-                .service-tab:hover i {
-                    transform: translateY(-3px);
-                }
-
-            /* ========================================================= */
-            /* SECCIONES (SERVICIOS)                                     */
-            /* ========================================================= */
-            .section-padding {
-                padding: 100px 0;
-            }
-
-            .section-header {
-                text-align: center;
-                margin-bottom: 70px;
-            }
-
-            .section-tag {
-                color: var(--atilson-purple);
-                font-size: 11px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 2px;
-                display: block;
-                margin-bottom: 10px;
-            }
-
-            .section-title {
-                font-size: 42px;
-                font-weight: 900;
-                letter-spacing: -1.5px;
-                margin-bottom: 15px;
-                color: var(--text-dark);
-            }
-
-            .service-card {
-                background: #ffffff;
-                border: 1px solid var(--border-soft);
-                border-radius: 16px;
-                padding: 45px 35px;
-                transition: all 0.4s ease;
-                height: 100%;
-                position: relative;
-                overflow: hidden;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            }
-
-                .service-card::before {
-                    content: "";
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 4px;
-                    background: var(--atilson-purple);
-                    transform: scaleX(0);
-                    transform-origin: left;
-                    transition: transform 0.4s ease;
-                }
-
-                .service-card:hover {
-                    transform: translateY(-10px);
-                    box-shadow: 0 20px 40px rgba(109, 45, 158, 0.1);
-                    border-color: var(--atilson-purple-light);
-                }
-
-                    .service-card:hover::before {
-                        transform: scaleX(1);
-                    }
-
-            .service-icon {
-                font-size: 45px;
-                color: var(--atilson-purple);
-                margin-bottom: 25px;
-                display: inline-block;
-                transition: transform 0.3s;
-            }
-
-            .service-card:hover .service-icon {
-                transform: scale(1.05);
-            }
-
-            .service-card h3 {
-                font-size: 20px;
-                font-weight: 800;
-                margin-bottom: 15px;
-                color: var(--text-dark);
-            }
-
-            .service-card p {
-                font-size: 14px;
-                color: var(--text-muted);
-                line-height: 1.7;
-                margin: 0;
-            }
-
-            /* ========================================================= */
-            /* MARKET & NEWS (FONDO GRIS SUAVE)                          */
-            /* ========================================================= */
-            .news-section {
-                background-color: var(--bg-soft);
-                border-top: 1px solid var(--border-soft);
-                position: relative;
-                overflow: hidden;
-            }
-
-            .news-slider-wrapper {
-                position: relative;
-                width: 100%;
-                padding: 20px 0;
-                overflow: hidden;
-            }
-
-            .news-slider-track {
-                display: flex;
-                gap: 24px;
-                transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-                will-change: transform;
-            }
-
-            .slider-btn {
-                position: absolute;
-                top: 45%;
-                transform: translateY(-50%);
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                background: #ffffff;
-                border: 1px solid var(--border-soft);
-                color: var(--atilson-purple);
-                font-size: 22px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
-                z-index: 10;
-                transition: all 0.3s ease;
-            }
-
-                .slider-btn:hover {
-                    background: var(--atilson-purple);
-                    color: #fff;
-                    transform: translateY(-50%) scale(1.1);
-                    box-shadow: 0 10px 25px rgba(109, 45, 158, 0.3);
-                }
-
-            .slider-btn-prev {
-                left: 15px;
-            }
-
-            .slider-btn-next {
-                right: 15px;
-            }
-
-            .news-card {
-                min-width: 380px;
-                max-width: 380px;
-                flex: 0 0 auto;
-                background: #ffffff;
-                border: 1px solid var(--border-soft);
-                border-radius: 16px;
-                height: 100%;
-                transition: all 0.4s ease;
-                display: flex;
-                flex-direction: column;
-                box-shadow: 0 10px 20px rgba(15, 23, 42, 0.03);
-            }
-
-                .news-card:hover {
-                    transform: translateY(-8px);
-                    box-shadow: 0 20px 40px rgba(109, 45, 158, 0.15);
-                    border-color: var(--atilson-purple-light);
-                }
-
-            .img-wrapper {
-                overflow: hidden;
-                border-top-left-radius: 16px;
-                border-top-right-radius: 16px;
-                height: 220px;
-                background-color: var(--border-soft);
-            }
-
-            .news-img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                transition: transform 0.6s ease;
-            }
-
-            .news-card:hover .news-img {
-                transform: scale(1.08);
-            }
-
-            .news-content {
-                padding: 30px;
-                display: flex;
-                flex-direction: column;
-                flex-grow: 1;
-                background: #fff;
-                border-bottom-left-radius: 16px;
-                border-bottom-right-radius: 16px;
-            }
-
-            .news-date {
-                font-size: 11px;
-                color: var(--atilson-purple);
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                margin-bottom: 12px;
-            }
-
-            .news-title {
-                font-size: 18px;
-                font-weight: 800;
-                margin-bottom: 12px;
-                line-height: 1.4;
-                color: var(--text-dark);
-            }
-
-            .news-desc {
-                font-size: 13px;
-                color: var(--text-muted);
-                line-height: 1.6;
-                margin-bottom: 20px;
-                display: -webkit-box;
-                -webkit-line-clamp: 3;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-
-            .news-link {
-                margin-top: auto;
-                font-size: 12px;
-                font-weight: 800;
-                color: var(--atilson-purple);
-                text-decoration: none;
-                text-transform: uppercase;
-                display: inline-flex;
-                align-items: center;
-                transition: all 0.2s;
-            }
-
-                .news-link i {
-                    margin-left: 8px;
-                    transition: margin 0.2s;
-                }
-
-                .news-link:hover {
-                    color: var(--atilson-purple-dark);
-                }
-
-                    .news-link:hover i {
-                        margin-left: 15px;
-                    }
-
-            @@media (max-width: 768px) {
-                .news-card {
-                    min-width: 300px;
-                    max-width: 300px;
-                }
-
-                .slider-btn {
-                    display: none;
-                }
-
-                .news-slider-wrapper {
-                    overflow-x: auto;
-                    scroll-snap-type: x mandatory;
-                    padding: 10px 20px;
-                }
-
-                .news-slider-track {
-                    scroll-snap-align: start;
-                    transition: none;
-                }
-
-                .hero-title {
-                    font-size: 42px;
-                }
-
-                .static-tracking-container {
-                    bottom: 10%;
-                }
-            }
-
-            /* ========================================================= */
-            /* RED GLOBAL (CONTRASTE OSCURO)                             */
-            /* ========================================================= */
-            .global-section {
-                padding: 120px 0;
-                background-color: var(--bg-dark);
-                position: relative;
-                color: white;
-                overflow: hidden;
-                border-top: 1px solid rgba(255,255,255,0.02);
-            }
-
-            .map-container {
-                width: 100%;
-                height: 100%;
-                background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                opacity: 0.05;
-                filter: invert(1);
-                position: absolute;
-                top: 0;
-                left: 0;
-                z-index: 0;
-            }
-
-            .global-content {
-                position: relative;
-                z-index: 1;
-            }
-
-                .global-content .section-title {
-                    color: #ffffff;
-                }
-
-            /* ========================================================= */
-            /* CONTACTO (FORMULARIO ALTO CONTRASTE)                      */
-            /* ========================================================= */
-            .contact-section {
-                background-color: var(--bg-light);
-                border-top: 1px solid var(--border-soft);
-            }
-
-            .contact-card {
-                background: #ffffff;
-                padding: 50px;
-                border-radius: 20px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-                border: 1px solid var(--border-soft);
-            }
-
-            .contact-icon-box {
-                width: 50px;
-                height: 50px;
-                border-radius: 12px;
-                background: rgba(109, 45, 158, 0.1);
-                color: var(--atilson-purple);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 22px;
-            }
-
-            .form-control-custom {
-                background: var(--bg-input);
-                border: 1px solid var(--border-soft);
-                color: var(--text-dark);
-                padding: 15px 20px;
-                border-radius: 8px;
-                font-weight: 500;
-                font-size: 14px;
-                transition: all 0.3s;
-            }
-
-                .form-control-custom:focus {
-                    border-color: var(--atilson-purple);
-                    box-shadow: 0 0 0 3px rgba(109, 45, 158, 0.15);
-                    background: #ffffff;
-                    outline: none;
-                }
-
-                .form-control-custom::placeholder {
-                    color: var(--text-muted);
-                }
-
-            .btn-submit {
-                background: var(--atilson-purple);
-                color: white;
-                border: none;
-                border-radius: 8px;
-                font-weight: 800;
-                padding: 15px;
-                width: 100%;
-                transition: all 0.3s;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-                .btn-submit:hover {
-                    background: var(--atilson-purple-dark);
-                    transform: translateY(-2px);
-                    box-shadow: 0 10px 20px rgba(109, 45, 158, 0.3);
-                }
-
-            /* ========================================================= */
-            /* FOOTER CORPORATIVO                                        */
-            /* ========================================================= */
-            .footer-area {
-                background-color: var(--bg-deep);
-                padding: 80px 0 30px;
-                border-top: 1px solid rgba(255,255,255,0.05);
-            }
-
-            .footer-logo {
-                max-height: 45px;
-                filter: brightness(0) invert(1);
-                margin-bottom: 25px;
-                opacity: 0.9;
-            }
-
-            .footer-title {
-                color: #fff;
-                font-size: 14px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                margin-bottom: 25px;
-            }
-
-            .footer-text {
-                color: #cbd5e1;
-                font-size: 13px;
-                line-height: 1.8;
-                opacity: 0.9;
-            }
-
-            .footer-link {
-                color: #cbd5e1;
-                text-decoration: none;
-                display: block;
-                margin-bottom: 12px;
-                font-size: 13px;
-                transition: all 0.3s;
-                opacity: 0.9;
-            }
-
-                .footer-link:hover {
-                    color: #fff;
-                    padding-left: 5px;
-                    opacity: 1;
-                }
-
-            .footer-icon {
-                color: var(--atilson-purple-light);
-                margin-right: 8px;
-                font-size: 14px;
-            }
-
-            /* BOTÓN WHATSAPP IA (SERIO) */
-            .wapp-float {
-                position: fixed;
-                width: 60px;
-                height: 60px;
-                bottom: 40px;
-                right: 40px;
-                background-color: #25d366;
-                color: #fff;
-                border-radius: 50px;
-                text-align: center;
-                font-size: 30px;
-                box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
-                z-index: 9999;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                text-decoration: none;
-                transition: all 0.3s ease;
-                animation: pulse-wapp 2s infinite;
-            }
-
-                .wapp-float:hover {
-                    background-color: #128c7e;
-                    color: #fff;
-                    transform: scale(1.1);
-                }
-
-            .wapp-tooltip {
-                position: absolute;
-                right: 75px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: white;
-                color: var(--text-dark);
-                padding: 10px 18px;
-                border-radius: 8px;
-                font-size: 12px;
-                font-weight: 800;
-                white-space: nowrap;
-                letter-spacing: 0.5px;
-                box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
-                opacity: 0;
-                pointer-events: none;
-                transition: all 0.3s ease;
-                border: 1px solid var(--border-soft);
-            }
-
-                .wapp-tooltip::after {
-                    content: '';
-                    position: absolute;
-                    right: -6px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    border-width: 6px 0 6px 6px;
-                    border-style: solid;
-                    border-color: transparent transparent transparent white;
-                }
-
-            .wapp-float:hover .wapp-tooltip {
-                opacity: 1;
-                right: 80px;
-            }
-
-            @@keyframes pulse-wapp {
-                0% {
-                    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5);
-                }
-
-                70% {
-                    box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
-                }
-
-                100% {
-                    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
-                }
-            }
-
-            .reveal {
-                opacity: 0;
-                transform: translateY(30px);
-                transition: all 0.8s ease-out;
-            }
-
-                .reveal.active {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
+        :root {
+            /* PALETA CORPORATIVA ATILSON PURA */
+            --atilson-purple: #6d2d9e;
+            --atilson-purple-light: #9b51e0;
+            --atilson-purple-dark: #3b1459;
+            --atilson-purple-glow: rgba(109, 45, 158, 0.25);
+            --bg-light: #ffffff;
+            --bg-soft: #f8fafc;
+            --bg-input: #f1f5f9;
+            --bg-dark: #0f172a;
+            --bg-deep: #020617;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #f8fafc;
+            --border-soft: #e2e8f0;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 10px 25px -3px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+            --shadow-hover: 0 25px 50px -12px rgba(109, 45, 158, 0.15);
+        }
+
+        html {
+            scroll-padding-top: 80px; /* Evita que el menú tape el contenido al hacer clic en enlaces */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        ::selection {
+            background-color: var(--atilson-purple-light);
+            color: white;
+        }
+
+        /* ========================================================= */
+        /* TOP BAR ELEGANTE (LUMINOSA Y SERIA CON TICKER)            */
+        /* ========================================================= */
+        .top-bar {
+            background-color: var(--bg-deep);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-glass);
+            position: relative;
+            z-index: 1001;
+            letter-spacing: 0.5px;
+        }
+
+        .social-links a {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-right: 18px;
+            transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s;
+            display: inline-block;
+        }
+
+        .social-links a:hover {
+            color: var(--atilson-purple-light);
+            transform: translateY(-2px);
+        }
+
+        .contact-top-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 24px;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .contact-top-links a:hover {
+            color: #ffffff;
+        }
+
+        .contact-top-links i {
+            color: var(--atilson-purple-light);
+            margin-right: 8px;
+            font-size: 13px;
+        }
+
+        .ticker-divider {
+            width: 1px;
+            height: 14px;
+            background-color: var(--border-glass);
+            margin: 0 20px;
+        }
+
+        /* Indicador de conexión en vivo (Punto verde parpadeante) */
+        .live-indicator {
+            width: 6px;
+            height: 6px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse-live 2s infinite;
+        }
+
+        @@keyframes pulse-live {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .news-ticker-text {
+            font-weight: 500;
+            transition: opacity 0.4s ease, color 0.3s;
+            text-decoration: none;
+            letter-spacing: 0.2px;
+            color: #cbd5e1 !important;
+        }
+
+        .news-ticker-text:hover {
+            color: var(--atilson-purple-light) !important;
+        }
+
+        /* ========================================================= */
+        /* NAVBAR GLASSMORPHISM AVANZADO                             */
+        /* ========================================================= */
+        .navbar-atilson {
+            position: absolute;
+            width: 100%;
+            top: 45px;
+            z-index: 1000;
+            padding: 24px 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            background: transparent;
+        }
+
+        .navbar-atilson.scrolled {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 16px 0;
+            top: 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .navbar-logo {
+            max-height: 42px;
+            filter: brightness(0) invert(1);
+            transition: all 0.4s ease;
+        }
+
+        .navbar-atilson.scrolled .navbar-logo {
+            filter: brightness(0);
+        }
+
+        .navbar-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-link {
+            color: #ffffff !important;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin: 0 20px;
+            transition: all 0.3s;
+            position: relative;
+            padding-bottom: 5px;
+        }
+
+        .navbar-atilson.scrolled .nav-link {
+            color: var(--text-dark) !important;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--atilson-purple);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link:hover, .navbar-atilson.scrolled .nav-link:hover {
+            color: var(--atilson-purple) !important;
+            opacity: 1;
+        }
+
+        .btn-portal {
+            background: linear-gradient(135deg, var(--atilson-purple) 0%, var(--atilson-purple-light) 100%);
+            color: white !important;
+            font-weight: 800;
+            font-size: 13px;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 8px 16px var(--atilson-purple-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-portal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-portal:hover::before {
+            left: 100%;
+        }
+
+        .btn-portal:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(109, 45, 158, 0.4);
+        }
+
+        /* ========================================================= */
+        /* HERO CARRUSEL & WIDGET                                    */
+        /* ========================================================= */
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            min-height: 800px;
+            overflow: hidden;
+            background-color: var(--bg-deep); /* Previene destellos al cargar */
+        }
+
+        .hero-carousel, .carousel-inner, .carousel-item {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .carousel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Zoom (Ken Burns) eliminado para mayor profesionalismo y claridad visual */
+        }
+
+        .carousel-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(2, 6, 23, 0.95) 0%, rgba(109, 45, 158, 0.5) 100%);
+            z-index: 1;
+        }
+
+        .carousel-caption-custom {
+            position: absolute;
+            top: 45%;
+            transform: translateY(-50%);
+            left: 8%;
+            z-index: 2;
+            text-align: left;
+            max-width: 750px;
+        }
+
+        .hero-tag {
+            background: rgba(109, 45, 158, 0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            color: #ffffff;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .hero-title {
+            font-size: 76px;
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -2px;
+            margin-bottom: 25px;
+            color: #ffffff;
+        }
+
+        .hero-title span {
+            background: linear-gradient(to right, #e9d5ff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            font-weight: 400;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 50px;
+            max-width: 650px;
+        }
+
+        /* WIDGET FIJO SOBRE EL CARRUSEL */
+        .static-tracking-container {
+            position: absolute;
+            bottom: 12%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            width: 100%;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
+        .tracking-widget {
+            background: #ffffff;
+            padding: 8px;
+            border-radius: 12px;
+            display: flex;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            width: 100%;
+            border: 1px solid rgba(255,255,255,0.8);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+        }
+        
+        .tracking-widget:focus-within {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -10px rgba(109, 45, 158, 0.4);
+        }
+
+        .tracking-input-wrapper {
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .tracking-input-wrapper i {
+            position: absolute;
+            left: 24px;
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        .tracking-input {
+            background: transparent;
+            border: none;
+            color: var(--text-dark);
+            padding: 20px 20px 20px 55px;
+            width: 100%;
+            outline: none;
+            font-weight: 600;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+        }
+
+        .tracking-input::placeholder {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .tracking-btn {
+            background: var(--atilson-purple);
+            color: white;
+            border: none;
+            padding: 0 45px;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tracking-btn:hover {
+            background: var(--atilson-purple-dark);
+            box-shadow: 0 8px 20px var(--atilson-purple-glow);
+        }
+
+        /* ========================================================= */
+        /* BARRA E-SERVICES                                          */
+        /* ========================================================= */
+        .e-services-bar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-soft);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            z-index: 10;
+        }
+
+        .service-tab {
+            padding: 35px 20px;
+            text-align: center;
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.4s ease;
+            border-right: 1px solid var(--border-soft);
+            display: block;
+            position: relative;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        .service-tab::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 3px;
+            background: var(--atilson-purple);
+            transform: translateY(3px);
+            transition: transform 0.3s ease;
+        }
+
+        .service-tab:first-child { border-left: 1px solid var(--border-soft); }
+
+        .service-tab:hover {
+            color: var(--atilson-purple);
+            background: var(--bg-soft);
+        }
+        .service-tab:hover::after {
+            transform: translateY(0);
+        }
+
+        .service-tab i {
+            display: block;
+            font-size: 32px;
+            margin-bottom: 14px;
+            color: #94a3b8;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .service-tab:hover i {
+            color: var(--atilson-purple);
+            transform: translateY(-4px) scale(1.1);
+        }
+
+        /* ========================================================= */
+        /* SECCIONES COMUNES                                         */
+        /* ========================================================= */
+        .section-padding { padding: 130px 0; }
+
+        .section-header { text-align: center; margin-bottom: 80px; }
+
+        .section-tag {
+            color: var(--atilson-purple);
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 46px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            margin-bottom: 24px;
+            color: var(--text-dark);
+        }
+
+        .section-subtitle {
+            font-size: 17px;
+            color: var(--text-muted);
+            line-height: 1.8;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* ========================================================= */
+        /* TARJETAS DE SERVICIOS                                     */
+        /* ========================================================= */
+        .service-card {
+            background: #ffffff;
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            padding: 55px 45px;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            z-index: 1;
+        }
+
+        .service-card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--atilson-purple), var(--atilson-purple-light));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+            border-color: transparent;
+        }
+        
+        .service-card:hover::after { transform: scaleX(1); }
+
+        .service-icon {
+            font-size: 46px;
+            color: var(--atilson-purple);
+            margin-bottom: 30px;
+            display: inline-block;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: var(--bg-soft);
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            text-align: center;
+            border-radius: 16px;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.1) translateY(-5px);
+            background: var(--atilson-purple);
+            color: white;
+            box-shadow: 0 10px 20px var(--atilson-purple-glow);
+        }
+
+        .service-card h3 {
+            font-size: 21px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
+            transition: color 0.3s;
+        }
+
+        .service-card p {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        /* ========================================================= */
+        /* MARKET & NEWS                                             */
+        /* ========================================================= */
+        .news-section {
+            background-color: var(--bg-soft);
+            border-top: 1px solid var(--border-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .news-slider-wrapper {
+            position: relative;
+            width: 100%;
+            padding: 30px 0;
+            overflow: hidden;
+        }
+
+        .news-slider-track {
+            display: flex;
+            gap: 30px;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
+        }
+
+        .slider-btn {
+            position: absolute;
+            top: 45%;
+            transform: translateY(-50%);
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid var(--border-soft);
+            color: var(--atilson-purple);
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .slider-btn:hover {
+            background: var(--atilson-purple);
+            color: #fff;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 15px 30px var(--atilson-purple-glow);
+            border-color: var(--atilson-purple);
+        }
+
+        .slider-btn-prev { left: 10px; }
+        .slider-btn-next { right: 10px; }
+
+        .news-card {
+            min-width: 380px;
+            max-width: 380px;
+            flex: 0 0 auto;
+            background: #ffffff;
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            height: 100%;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .news-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+            border-color: transparent;
+        }
+
+        .img-wrapper {
+            overflow: hidden;
+            height: 220px;
+            background-color: var(--border-soft);
+            position: relative;
+        }
+        
+        .img-wrapper::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 60%;
+            background: linear-gradient(to top, rgba(15,23,42,0.6), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .news-card:hover .img-wrapper::after {
+            opacity: 1;
+        }
+
+        .news-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+
+        .news-card:hover .news-img {
+            transform: scale(1.08);
+        }
+
+        .news-content {
+            padding: 35px 30px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            background: #fff;
+        }
+
+        .news-date {
+            font-size: 11px;
+            color: var(--atilson-purple);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .news-date i { margin-right: 6px; font-size: 13px; }
+
+        .news-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            line-height: 1.4;
+            color: var(--text-dark);
+            letter-spacing: -0.3px;
+        }
+
+        .news-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 25px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .news-link {
+            margin-top: auto;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--atilson-purple);
+            text-decoration: none;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .news-link i {
+            margin-left: 8px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .news-link:hover { color: var(--atilson-purple-dark); }
+        .news-link:hover i { transform: translateX(6px); }
+
+        /* ========================================================= */
+        /* RED GLOBAL (FONDO EN MOVIMIENTO)                          */
+        /* ========================================================= */
+        .global-section {
+            padding: 140px 0;
+            background-color: var(--bg-deep);
+            position: relative;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* MAPA CON ANIMACIÓN DE PANEO INFINITO - Mantenido intacto */
+        .map-container {
+            width: 200%;
+            height: 100%;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: repeat-x;
+            opacity: 0.05;
+            filter: invert(1);
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            animation: panMap 60s linear infinite;
+        }
+
+        @@keyframes panMap {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .global-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .global-content .section-title {
+            color: #ffffff;
+            font-size: 52px;
+        }
+        
+        .stat-box h4 {
+            font-weight: 900; 
+            font-size: 56px; 
+            color: white;
+            margin-bottom: 5px;
+            letter-spacing: -2px;
+        }
+
+        /* ========================================================= */
+        /* CONTACTO (FORMULARIO ALTO CONTRASTE)                      */
+        /* ========================================================= */
+        .contact-section {
+            background-color: var(--bg-light);
+            border-top: 1px solid var(--border-soft);
+        }
+
+        .contact-card {
+            background: #ffffff;
+            padding: 55px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-soft);
+        }
+
+        .contact-icon-box {
+            width: 55px;
+            height: 55px;
+            border-radius: 12px;
+            background: var(--bg-soft);
+            color: var(--atilson-purple);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s;
+            border: 1px solid var(--border-soft);
+        }
+        
+        .contact-icon-box:hover {
+            background: var(--atilson-purple);
+            color: white;
+            transform: scale(1.05);
+            border-color: transparent;
+        }
+
+        .form-control-custom {
+            background: var(--bg-input);
+            border: 1px solid transparent;
+            color: var(--text-dark);
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-control-custom:focus {
+            border-color: var(--atilson-purple-light);
+            box-shadow: 0 0 0 4px rgba(109, 45, 158, 0.1);
+            background: #ffffff;
+            outline: none;
+        }
+
+        .form-control-custom::placeholder { color: #94a3b8; }
+
+        .btn-submit {
+            background: var(--atilson-purple);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            padding: 18px;
+            width: 100%;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-submit:hover {
+            background: var(--atilson-purple-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px var(--atilson-purple-glow);
+        }
+
+        /* ========================================================= */
+        /* FOOTER CORPORATIVO                                        */
+        /* ========================================================= */
+        .footer-area {
+            background-color: var(--bg-deep);
+            padding: 100px 0 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .footer-logo {
+            max-height: 45px;
+            filter: brightness(0) invert(1);
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .footer-title {
+            color: #fff;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+        }
+
+        .footer-text {
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+
+        .footer-link {
+            color: #94a3b8;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .footer-link:hover {
+            color: #fff;
+            transform: translateX(6px);
+        }
+
+        .footer-icon {
+            color: var(--atilson-purple-light);
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        /* BOTÓN WHATSAPP IA */
+        .wapp-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 40px;
+            right: 40px;
+            background-color: #25d366;
+            color: #fff;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: pulse-wapp 2s infinite;
+        }
+
+        .wapp-float:hover {
+            background-color: #128c7e;
+            color: #fff;
+            transform: scale(1.1) rotate(-10deg);
+            animation: none;
+        }
+
+        .wapp-tooltip {
+            position: absolute;
+            right: 80px;
+            top: 50%;
+            transform: translateY(-50%) translateX(10px);
+            background: var(--text-dark);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .wapp-tooltip::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 6px 0 6px 6px;
+            border-style: solid;
+            border-color: transparent transparent transparent var(--text-dark);
+        }
+
+        .wapp-float:hover .wapp-tooltip {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        @@keyframes pulse-wapp {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+
+        /* ANIMACIONES REVEAL SUPERIORES */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @@media (max-width: 768px) {
+            .news-card { min-width: 320px; max-width: 320px; }
+            .slider-btn { display: none; }
+            .news-slider-wrapper { overflow-x: auto; scroll-snap-type: x mandatory; padding: 20px 0; }
+            .news-slider-track { scroll-snap-align: start; transition: none; gap: 20px;}
+            .hero-title { font-size: 42px; }
+            .static-tracking-container { bottom: 8%; padding: 0 15px;}
+            .section-title { font-size: 32px; }
+            .stat-box h4 { font-size: 42px; }
+            .service-tab { padding: 25px 10px;}
+            .contact-card { padding: 30px;}
+        }
     </style>
 </head>
 <body>
@@ -893,7 +1030,7 @@
         <div class="container d-flex justify-content-between align-items-center">
 
             <div class="social-links d-flex align-items-center">
-                <span class="me-3" style="color: #64748b;">Redes:</span>
+                <span class="me-3 text-muted">Redes:</span>
                 <a href="https://www.linkedin.com/company/atilson-cargo/?originalSubdomain=cl" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
                 <a href="#" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>
                 <a href="#" target="_blank" title="Facebook"><i class="bi bi-facebook"></i></a>
@@ -901,17 +1038,17 @@
 
             <div class="d-flex align-items-center flex-grow-1 justify-content-center mx-3" style="font-size: 11px;">
                 <div class="d-flex align-items-center" title="Tipo de Cambio Banco Central">
-                    <span class="text-muted me-2"><i class="bi bi-graph-up-arrow"></i></span>
-                    <span style="color: var(--atilson-purple-light);" class="me-1">UF:</span> <span id="top-uf" class="text-white me-3">...</span>
-                    <span style="color: var(--atilson-purple-light);" class="me-1">USD:</span> <span id="top-usd" class="text-white me-3">...</span>
+                    <span class="live-indicator"></span>
+                    <span style="color: var(--atilson-purple-light);" class="me-1">UF:</span> <span id="top-uf" class="text-white me-4">...</span>
+                    <span style="color: var(--atilson-purple-light);" class="me-1">USD:</span> <span id="top-usd" class="text-white me-4">...</span>
                     <span style="color: var(--atilson-purple-light);" class="me-1">EUR:</span> <span id="top-eur" class="text-white">...</span>
                 </div>
 
                 <div class="ticker-divider"></div>
 
-                <div class="d-flex align-items-center text-truncate" style="max-width: 400px;" title="Última Noticia">
+                <div class="d-flex align-items-center text-truncate" style="max-width: 350px;" title="Última Noticia">
                     <i class="bi bi-newspaper text-muted me-2"></i>
-                    <a href="#noticias" id="top-news-ticker" class="text-white news-ticker-text text-truncate">Sincronizando feed en vivo...</a>
+                    <a href="#noticias" id="top-news-ticker" class="news-ticker-text text-truncate">Sincronizando feed en vivo...</a>
                 </div>
             </div>
 
@@ -941,10 +1078,9 @@
     <!-- SECCIÓN HERO -->
     <section class="hero-section">
 
-        <!-- Carrusel que rota títulos e imágenes -->
         <div id="heroCarousel" class="carousel slide carousel-fade hero-carousel" data-bs-ride="carousel" data-bs-pause="false">
             <div class="carousel-inner h-100">
-                <div class="carousel-item active h-100" data-bs-interval="5000">
+                <div class="carousel-item active h-100" data-bs-interval="6000">
                     <img src="https://images.unsplash.com/photo-1494412651409-8963ce7935a7?auto=format&fit=crop&w=1920&q=80" class="carousel-image" alt="Global Logistics">
                     <div class="carousel-overlay"></div>
                     <div class="container h-100">
@@ -955,7 +1091,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="carousel-item h-100" data-bs-interval="5000">
+                <div class="carousel-item h-100" data-bs-interval="6000">
                     <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80" class="carousel-image" alt="Transporte Terrestre">
                     <div class="carousel-overlay"></div>
                     <div class="container h-100">
@@ -966,9 +1102,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="carousel-item h-100" data-bs-interval="5000">
-                    <!-- Imagen corregida para que cargue perfectamente -->
-                    <img src="https://images.unsplash.com/photo-1616156027751-fc9a850fdc9b?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="carousel-image" alt="Tecnología ERP">
+                <div class="carousel-item h-100" data-bs-interval="6000">
+                    <img src="https://images.unsplash.com/photo-1616156027751-fc9a850fdc9b?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0" class="carousel-image" alt="Tecnología ERP">
                     <div class="carousel-overlay"></div>
                     <div class="container h-100">
                         <div class="carousel-caption-custom">
@@ -990,10 +1125,12 @@
             </button>
         </div>
 
-        <!-- Widget FIJO, fuera del carrusel, para que no parpadee al cambiar la foto -->
         <div class="static-tracking-container">
             <div class="tracking-widget">
-                <input type="text" class="tracking-input" placeholder="Ingresa tu N° de Booking o BL para rastrear tu carga...">
+                <div class="tracking-input-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="tracking-input" placeholder="Ingresa N° de Booking o BL para rastrear carga...">
+                </div>
                 <button class="tracking-btn">Rastrear</button>
             </div>
         </div>
@@ -1013,7 +1150,7 @@
                     <i class="bi bi-newspaper"></i> Noticias del Sector
                 </a>
                 <a href="/Login" class="col-3 service-tab reveal active" style="transition-delay: 0.3s;">
-                    <i class="bi bi-pc-display"></i> Acceso Portal Privado
+                    <i class="bi bi-pc-display"></i> Portal Privado
                 </a>
             </div>
         </div>
@@ -1024,34 +1161,34 @@
             <div class="section-header reveal">
                 <span class="section-tag">Nuestra Experiencia</span>
                 <h2 class="section-title">Soluciones Logísticas Integrales</h2>
-                <p class="text-muted mx-auto" style="max-width: 600px;">Operamos en todos los modos de transporte bajo una única plataforma de gestión, brindando control total a tu cadena de suministro.</p>
+                <p class="section-subtitle">Operamos en todos los modos de transporte bajo una única plataforma de gestión, brindando control total a tu cadena de suministro.</p>
             </div>
 
             <div class="row g-4">
                 <div class="col-md-6 col-lg-3">
                     <div class="service-card reveal">
-                        <i class="bi bi-water service-icon"></i>
+                        <div class="service-icon"><i class="bi bi-water"></i></div>
                         <h3>Flete Marítimo</h3>
                         <p>Alianzas con las principales navieras globales. Manejo experto y dedicado de carga Dry y contenedores Reefer.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="service-card reveal" style="transition-delay: 0.1s;">
-                        <i class="bi bi-truck service-icon"></i>
+                        <div class="service-icon"><i class="bi bi-truck"></i></div>
                         <h3>Logística Terrestre</h3>
                         <p>Coordinación exacta desde depósitos a plantas. Control de stacking y late arrival completamente monitoreado.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="service-card reveal" style="transition-delay: 0.2s;">
-                        <i class="bi bi-shield-check service-icon"></i>
+                        <div class="service-icon"><i class="bi bi-shield-check"></i></div>
                         <h3>Aduanas & Seguros</h3>
                         <p>Tramitación ágil de documentación, DUS/DIN, matrices y pólizas de seguro para proteger tu patrimonio.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="service-card reveal" style="transition-delay: 0.3s;">
-                        <i class="bi bi-cpu service-icon"></i>
+                        <div class="service-icon"><i class="bi bi-cpu"></i></div>
                         <h3>Tecnología ERP</h3>
                         <p>Acceso a nuestro portal de clientes para trazabilidad 24/7 de tus operaciones, hitos documentales y costos.</p>
                     </div>
@@ -1092,25 +1229,25 @@
     <section class="global-section" id="global">
         <div class="map-container"></div>
         <div class="container global-content text-center reveal stats-box">
-            <i class="bi bi-globe-americas mb-4" style="font-size: 50px; color: var(--atilson-accent);"></i>
+            <i class="bi bi-globe-americas mb-4" style="font-size: 60px; color: var(--atilson-purple-light);"></i>
             <h2 class="section-title text-white">Conectando Origen y Destino</h2>
-            <p class="mx-auto" style="max-width: 600px; font-size: 16px; line-height: 1.8; color: rgba(255,255,255,0.8);">
+            <p class="section-subtitle text-white opacity-75">
                 Desde San Antonio a Yantian, desde Valparaíso a Rotterdam. Nuestra red operativa no tiene fronteras. Manejamos transbordos y rutas directas con la precisión de un reloj suizo.
             </p>
-            <div class="mt-5 d-flex justify-content-center gap-4 flex-wrap">
+            <div class="mt-5 pt-4 d-flex justify-content-center gap-5 flex-wrap stat-box">
                 <div class="text-center">
-                    <h4 style="font-weight: 900; font-size: 42px; color: white;">+<span class="counter" data-target="50">0</span></h4>
-                    <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: var(--atilson-accent);">PUERTOS ACTIVOS</span>
+                    <h4>+<span class="counter" data-target="50">0</span></h4>
+                    <span style="font-size: 12px; font-weight: 800; letter-spacing: 2px; color: var(--atilson-purple-light);">PUERTOS ACTIVOS</span>
                 </div>
-                <div class="d-none d-md-block" style="width: 1px; background: rgba(255,255,255,0.2);"></div>
+                <div class="d-none d-md-block" style="width: 1px; background: rgba(255,255,255,0.15);"></div>
                 <div class="text-center">
-                    <h4 style="font-weight: 900; font-size: 42px; color: white;"><span class="counter" data-target="24">0</span>/7</h4>
-                    <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: var(--atilson-accent);">MONITOREO CONTINUO</span>
+                    <h4><span class="counter" data-target="24">0</span>/7</h4>
+                    <span style="font-size: 12px; font-weight: 800; letter-spacing: 2px; color: var(--atilson-purple-light);">MONITOREO CONTINUO</span>
                 </div>
-                <div class="d-none d-md-block" style="width: 1px; background: rgba(255,255,255,0.2);"></div>
+                <div class="d-none d-md-block" style="width: 1px; background: rgba(255,255,255,0.15);"></div>
                 <div class="text-center">
-                    <h4 style="font-weight: 900; font-size: 42px; color: white;"><span class="counter" data-target="100">0</span>%</h4>
-                    <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: var(--atilson-accent);">DIGITALIZADOS</span>
+                    <h4><span class="counter" data-target="100">0</span>%</h4>
+                    <span style="font-size: 12px; font-weight: 800; letter-spacing: 2px; color: var(--atilson-purple-light);">DIGITALIZADOS</span>
                 </div>
             </div>
         </div>
@@ -1122,28 +1259,28 @@
                 <div class="col-lg-5 reveal">
                     <span class="section-tag">Hablemos Hoy</span>
                     <h2 class="section-title">¿Listo para optimizar tu logística?</h2>
-                    <p class="text-muted mb-5">Comunícate con nuestros expertos. Evaluaremos tus rutas actuales y te mostraremos cómo la tecnología de Atilson puede reducir tus costos operativos.</p>
+                    <p class="section-subtitle text-start ms-0 mb-5">Comunícate con nuestros expertos. Evaluaremos tus rutas actuales y te mostraremos cómo la tecnología de Atilson puede reducir tus costos operativos.</p>
 
                     <div class="d-flex align-items-center mb-4">
                         <div class="contact-icon-box me-4"><i class="bi bi-geo-alt"></i></div>
                         <div>
-                            <h6 class="mb-1 fw-bold text-dark">Oficina Central</h6>
-                            <span class="text-muted" style="font-size: 13px;">A Prat 814 Of. 503, Valparaíso, V Región</span>
+                            <h6 class="mb-1 fw-bold text-dark" style="font-size: 16px;">Oficina Central</h6>
+                            <span class="text-muted" style="font-size: 14px;">A Prat 814 Of. 503, Valparaíso, V Región</span>
                         </div>
                     </div>
                     <div class="d-flex align-items-center mb-4">
                         <div class="contact-icon-box me-4"><i class="bi bi-envelope"></i></div>
                         <div>
-                            <h6 class="mb-1 fw-bold text-dark">Correo Comercial</h6>
-                            <span class="text-muted" style="font-size: 13px;">contacto@atilson.com</span>
+                            <h6 class="mb-1 fw-bold text-dark" style="font-size: 16px;">Correo Comercial</h6>
+                            <span class="text-muted" style="font-size: 14px;">contacto@atilson.com</span>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-6 offset-lg-1 reveal" style="transition-delay: 0.2s;">
                     <div class="contact-card">
-                        <h4 class="fw-bold mb-4 text-dark">Envíanos un mensaje</h4>
+                        <h4 class="fw-bold mb-4 text-dark" style="letter-spacing: -0.5px;">Envíanos un mensaje</h4>
                         <form>
-                            <div class="row g-3">
+                            <div class="row g-4">
                                 <div class="col-md-6"><input type="text" class="form-control form-control-custom" placeholder="Nombre completo"></div>
                                 <div class="col-md-6"><input type="text" class="form-control form-control-custom" placeholder="Empresa"></div>
                                 <div class="col-12"><input type="email" class="form-control form-control-custom" placeholder="Correo corporativo"></div>
@@ -1164,7 +1301,7 @@
             <div class="row g-4 mb-5">
                 <div class="col-lg-4 pe-lg-5">
                     <img src="~/img/Atilson.png" alt="Atilson Cargo" class="footer-logo" asp-append-version="true" />
-                    <p class="footer-text">Digital Freight Forwarder. Conectando origen y destino con tecnología, transparencia y eficiencia operativa.</p>
+                    <p class="footer-text">Digital Freight Forwarder. Conectando origen y destino con tecnología, transparencia y eficiencia operativa de nivel mundial.</p>
                 </div>
                 <div class="col-lg-2 col-md-4">
                     <h5 class="footer-title">Plataforma</h5>
@@ -1185,7 +1322,7 @@
                     <a href="https://www.linkedin.com/company/atilson-cargo/?originalSubdomain=cl" target="_blank" class="footer-link mt-3" title="LinkedIn"><i class="bi bi-linkedin footer-icon"></i> LinkedIn Oficial</a>
                 </div>
             </div>
-            <div class="text-center pt-4 border-top border-secondary border-opacity-25" style="color: #64748b; font-size: 12px;">
+            <div class="text-center pt-4 border-top border-secondary border-opacity-25" style="color: #64748b; font-size: 13px;">
                 <p class="mb-0">© @DateTime.Now.Year Atilson Cargo SpA. Todos los derechos reservados. | Software ERP Interno</p>
             </div>
         </div>
@@ -1201,212 +1338,209 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-        // 1. SCROLL NAVBAR FIX
-        window.addEventListener('scroll', function() {
-        const navbar = document.getElementById('navbar');
-        const logo = document.getElementById('logo-img');
+            // 1. SCROLL NAVBAR FIX
+            window.addEventListener('scroll', function() {
+                const navbar = document.getElementById('navbar');
+                const logo = document.getElementById('logo-img');
 
-        if (window.scrollY > 40) {
-        navbar.classList.add('scrolled');
-        if(logo) logo.style.filter = "none";
-        } else {
-        navbar.classList.remove('scrolled');
-        if(logo) logo.style.filter = "brightness(0) invert(1)";
-        }
-        });
+                if (window.scrollY > 40) {
+                    navbar.classList.add('scrolled');
+                    if(logo) logo.style.filter = "brightness(0)";
+                } else {
+                    navbar.classList.remove('scrolled');
+                    if(logo) logo.style.filter = "brightness(0) invert(1)";
+                }
+            });
 
-        // 2. ANIMACIÓN REVEAL Y CONTADORES
-        function animateValue(obj, start, end, duration) {
-        let startTimestamp = null;
-        const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        obj.innerHTML = Math.floor(progress * (end - start) + start);
-        if (progress < 1) window.requestAnimationFrame(step);
-        else obj.innerHTML = end;
-        };
-        window.requestAnimationFrame(step);
-        }
+            // 2. ANIMACIÓN REVEAL Y CONTADORES
+            function animateValue(obj, start, end, duration) {
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    obj.innerHTML = Math.floor(progress * (end - start) + start);
+                    if (progress < 1) window.requestAnimationFrame(step);
+                    else obj.innerHTML = end;
+                };
+                window.requestAnimationFrame(step);
+            }
 
-        function reveal() {
-        var reveals = document.querySelectorAll(".reveal");
-        for (var i = 0; i < reveals.length; i++) {
-        var windowHeight = window.innerHeight;
-        var elementTop = reveals[i].getBoundingClientRect().top;
-        if (elementTop < windowHeight - 50) {
-        if (!reveals[i].classList.contains("active")) {
-        reveals[i].classList.add("active");
-        if (reveals[i].classList.contains("stats-box")) {
-        let counters = reveals[i].querySelectorAll(".counter");
-        counters.forEach(c => animateValue(c, 0, parseInt(c.getAttribute("data-target")), 2000));
-        }
-        }
-        }
-        }
-        }
-        window.addEventListener("scroll", reveal);
-        reveal();
+            function reveal() {
+                var reveals = document.querySelectorAll(".reveal");
+                for (var i = 0; i < reveals.length; i++) {
+                    var windowHeight = window.innerHeight;
+                    var elementTop = reveals[i].getBoundingClientRect().top;
+                    if (elementTop < windowHeight - 100) {
+                        if (!reveals[i].classList.contains("active")) {
+                            reveals[i].classList.add("active");
+                            if (reveals[i].classList.contains("stats-box")) {
+                                let counters = reveals[i].querySelectorAll(".counter");
+                                counters.forEach(c => animateValue(c, 0, parseInt(c.getAttribute("data-target")), 2500));
+                            }
+                        }
+                    }
+                }
+            }
+            window.addEventListener("scroll", reveal);
+            reveal(); // Trigger on load
 
-        // ========================================================
-        // 3. API FINANCIERA (AHORA CON UF INCLUIDA)
-        // ========================================================
-        fetch('https://mindicador.cl/api')
-        .then(response => response.json())
-        .then(data => {
-        const formatNum = (num) => new Intl.NumberFormat('es-CL').format(num);
-        document.getElementById('top-uf').innerText = '$' + formatNum(data.uf.valor);
-        document.getElementById('top-usd').innerText = '$' + formatNum(data.dolar.valor);
-        document.getElementById('top-eur').innerText = '$' + formatNum(data.euro.valor);
-        })
-        .catch(error => {
-        console.error("Error cargando indicadores:", error);
-        document.getElementById('top-uf').innerText = 'N/D';
-        document.getElementById('top-usd').innerText = 'N/D';
-        document.getElementById('top-eur').innerText = 'N/D';
-        });
+            // ========================================================
+            // 3. API FINANCIERA (UF, USD, EUR)
+            // ========================================================
+            fetch('https://mindicador.cl/api')
+                .then(response => response.json())
+                .then(data => {
+                    const formatNum = (num) => new Intl.NumberFormat('es-CL').format(num);
+                    document.getElementById('top-uf').innerText = '$' + formatNum(data.uf.valor);
+                    document.getElementById('top-usd').innerText = '$' + formatNum(data.dolar.valor);
+                    document.getElementById('top-eur').innerText = '$' + formatNum(data.euro.valor);
+                })
+                .catch(error => {
+                    console.error("Error cargando indicadores:", error);
+                    document.getElementById('top-uf').innerText = 'N/D';
+                    document.getElementById('top-usd').innerText = 'N/D';
+                    document.getElementById('top-eur').innerText = 'N/D';
+                });
 
-        // ========================================================
-        // 4. API NOTICIAS (MUNDO MARÍTIMO) CON SLIDER Y TICKER
-        // ========================================================
-        const newsTrack = document.getElementById('news-track');
-        const topTicker = document.getElementById('top-news-ticker');
-        const rssUrl = 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.mundomaritimo.cl%2Fnoticias%2Ffeed';
+            // ========================================================
+            // 4. API NOTICIAS (MUNDO MARÍTIMO) CON SLIDER Y TICKER
+            // ========================================================
+            const newsTrack = document.getElementById('news-track');
+            const topTicker = document.getElementById('top-news-ticker');
+            const rssUrl = 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.mundomaritimo.cl%2Fnoticias%2Ffeed';
 
-        const fallbackImages = [
-        'https://images.unsplash.com/photo-1551281442-f8c5b96791b8?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1586528116311-ad8ed7c83a50?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1494412651409-8963ce7935a7?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1577705998148-ebad79550ee6?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=800&q=80'
-        ];
+            const fallbackImages = [
+                'https://images.unsplash.com/photo-1551281442-f8c5b96791b8?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1586528116311-ad8ed7c83a50?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1494412651409-8963ce7935a7?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1577705998148-ebad79550ee6?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=800&q=80'
+            ];
 
-        fetch(rssUrl)
-        .then(res => res.json())
-        .then(data => {
-        if (data.status === 'ok' && data.items.length > 0) {
-        renderNews(data.items.slice(0, 9));
-        startTopTicker(data.items.slice(0, 5));
-        } else {
-        throw new Error("No items");
-        }
-        })
-        .catch(error => {
-        console.error('Error RSS, usando Fallback:', error);
-        const defaultNews = [
-        { title: "Atilson Cargo presenta su ecosistema ERP.", pubDate: "Hoy", description: "Lanzamiento oficial de la plataforma para potenciar el comercio exterior.", link: "#", imgIndex: 0 },
-        { title: "Impacto tecnológico en fletes marítimos.", pubDate: "Ayer", description: "Cómo la IA y la automatización están reduciendo costos operativos globales.", link: "#", imgIndex: 1 },
-        { title: "Trazabilidad 24/7 en la cadena de frío.", pubDate: "Hace 3 días", description: "Control total de temperatura para resguardar la fruta de exportación.", link: "#", imgIndex: 3 },
-        { title: "Nuevas regulaciones aduaneras 2026.", pubDate: "Hace 1 semana", description: "La digitalización documental y su rol en la agilidad portuaria.", link: "#", imgIndex: 4 }
-        ];
-        renderFallbackNews(defaultNews);
-        startTopTicker(defaultNews);
-        });
+            fetch(rssUrl)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok' && data.items.length > 0) {
+                        renderNews(data.items.slice(0, 9));
+                        startTopTicker(data.items.slice(0, 5));
+                    } else {
+                        throw new Error("No items");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error RSS, usando Fallback:', error);
+                    const defaultNews = [
+                        { title: "Atilson Cargo presenta su ecosistema ERP.", pubDate: "Hoy", description: "Lanzamiento oficial de la plataforma para potenciar el comercio exterior.", link: "#", imgIndex: 0 },
+                        { title: "Impacto tecnológico en fletes marítimos.", pubDate: "Ayer", description: "Cómo la IA y la automatización están reduciendo costos operativos globales.", link: "#", imgIndex: 1 },
+                        { title: "Trazabilidad 24/7 en la cadena de frío.", pubDate: "Hace 3 días", description: "Control total de temperatura para resguardar la fruta de exportación.", link: "#", imgIndex: 3 },
+                        { title: "Nuevas regulaciones aduaneras 2026.", pubDate: "Hace 1 semana", description: "La digitalización documental y su rol en la agilidad portuaria.", link: "#", imgIndex: 4 }
+                    ];
+                    renderFallbackNews(defaultNews);
+                    startTopTicker(defaultNews);
+                });
 
-        function startTopTicker(articles) {
-        if(!topTicker || articles.length === 0) return;
-        let tickerIndex = 0;
-        topTicker.innerText = articles[0].title;
-        topTicker.href = articles[0].link;
+            function startTopTicker(articles) {
+                if(!topTicker || articles.length === 0) return;
+                let tickerIndex = 0;
+                topTicker.innerText = articles[0].title;
+                topTicker.href = articles[0].link;
 
-        setInterval(() => {
-        topTicker.style.opacity = 0;
-        setTimeout(() => {
-        tickerIndex = (tickerIndex + 1) % articles.length;
-        topTicker.innerText = articles[tickerIndex].title;
-        topTicker.href = articles[tickerIndex].link;
-        topTicker.style.opacity = 1;
-        }, 400);
-        }, 6000);
-        }
+                setInterval(() => {
+                    topTicker.style.opacity = 0;
+                    setTimeout(() => {
+                        tickerIndex = (tickerIndex + 1) % articles.length;
+                        topTicker.innerText = articles[tickerIndex].title;
+                        topTicker.href = articles[tickerIndex].link;
+                        topTicker.style.opacity = 1;
+                    }, 400);
+                }, 6000);
+            }
 
-        function renderNews(articles) {
-        newsTrack.innerHTML = '';
+            function renderNews(articles) {
+                newsTrack.innerHTML = '';
+                articles.forEach((article, index) => {
+                    let dateStr = article.pubDate.substring(0, 10);
+                    let imgUrl = "";
+                    if (article.thumbnail && article.thumbnail !== "") {
+                        imgUrl = article.thumbnail;
+                    } else if (article.enclosure && article.enclosure.link) {
+                        imgUrl = article.enclosure.link;
+                    } else {
+                        let tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = article.description || article.content;
+                        let imgTag = tempDiv.querySelector('img');
+                        if (imgTag && imgTag.src) { imgUrl = imgTag.src; }
+                        else { imgUrl = fallbackImages[index % fallbackImages.length]; }
+                    }
 
-        articles.forEach((article, index) => {
-        let dateStr = article.pubDate.substring(0, 10);
+                    let tempText = document.createElement('div');
+                    tempText.innerHTML = article.description || "";
+                    let cleanDesc = tempText.textContent || tempText.innerText || "";
+                    let shortDesc = cleanDesc.length > 120 ? cleanDesc.substring(0, 120) + "..." : cleanDesc;
 
-        let imgUrl = "";
-        if (article.thumbnail && article.thumbnail !== "") {
-        imgUrl = article.thumbnail;
-        } else if (article.enclosure && article.enclosure.link) {
-        imgUrl = article.enclosure.link;
-        } else {
-        let tempDiv = document.createElement('div');
-        tempDiv.innerHTML = article.description || article.content;
-        let imgTag = tempDiv.querySelector('img');
-        if (imgTag && imgTag.src) { imgUrl = imgTag.src; }
-        else { imgUrl = fallbackImages[index % fallbackImages.length]; }
-        }
+                    const html = `
+                        <div class="news-card">
+                            <div class="img-wrapper">
+                                <img src="${imgUrl}" alt="Noticia Logística" class="news-img" onerror="this.src='${fallbackImages[index % fallbackImages.length]}'">
+                            </div>
+                            <div class="news-content">
+                                <span class="news-date"><i class="bi bi-calendar3"></i> ${dateStr}</span>
+                                <h3 class="news-title">${article.title}</h3>
+                                <p class="news-desc">${shortDesc}</p>
+                                <a href="${article.link}" target="_blank" class="news-link">LEER ARTÍCULO <i class="bi bi-arrow-right"></i></a>
+                            </div>
+                        </div>`;
+                    newsTrack.insertAdjacentHTML('beforeend', html);
+                });
+                initSlider();
+            }
 
-        let tempText = document.createElement('div');
-        tempText.innerHTML = article.description || "";
-        let cleanDesc = tempText.textContent || tempText.innerText || "";
-        let shortDesc = cleanDesc.length > 120 ? cleanDesc.substring(0, 120) + "..." : cleanDesc;
+            function renderFallbackNews(articles) {
+                newsTrack.innerHTML = '';
+                articles.forEach(article => {
+                    const html = `
+                        <div class="news-card">
+                            <div class="img-wrapper">
+                                <img src="${fallbackImages[article.imgIndex]}" alt="Noticia Logística" class="news-img">
+                            </div>
+                            <div class="news-content">
+                                <span class="news-date"><i class="bi bi-calendar3"></i> ${article.pubDate}</span>
+                                <h3 class="news-title">${article.title}</h3>
+                                <p class="news-desc">${article.description}</p>
+                                <a href="${article.link}" class="news-link">MÁS INFORMACIÓN <i class="bi bi-arrow-right"></i></a>
+                            </div>
+                        </div>`;
+                    newsTrack.insertAdjacentHTML('beforeend', html);
+                });
+                initSlider();
+            }
 
-        const html = `
-        <div class="news-card">
-        <div class="img-wrapper">
-        <img src="${imgUrl}" alt="Noticia Logística" class="news-img" onerror="this.src='${fallbackImages[index % fallbackImages.length]}'">
-        </div>
-        <div class="news-content">
-        <span class="news-date"><i class="bi bi-calendar3"></i> ${dateStr}</span>
-        <h3 class="news-title">${article.title}</h3>
-        <p class="news-desc">${shortDesc}</p>
-        <a href="${article.link}" target="_blank" class="news-link">LEER ARTÍCULO <i class="bi bi-arrow-right"></i></a>
-        </div>
-        </div>`;
-        newsTrack.insertAdjacentHTML('beforeend', html);
-        });
-        initSlider();
-        }
+            function initSlider() {
+                const btnNextNews = document.getElementById('btn-next-news');
+                const btnPrevNews = document.getElementById('btn-prev-news');
+                let currentScrollPosition = 0;
+                const cardWidth = 380 + 30; // Ancho + Gap actualizados
 
-        function renderFallbackNews(articles) {
-        newsTrack.innerHTML = '';
-        articles.forEach(article => {
-        const html = `
-        <div class="news-card">
-        <div class="img-wrapper">
-        <img src="${fallbackImages[article.imgIndex]}" alt="Noticia Logística" class="news-img">
-        </div>
-        <div class="news-content">
-        <span class="news-date"><i class="bi bi-calendar3"></i> ${article.pubDate}</span>
-        <h3 class="news-title">${article.title}</h3>
-        <p class="news-desc">${article.description}</p>
-        <a href="${article.link}" class="news-link">MÁS INFORMACIÓN <i class="bi bi-arrow-right"></i></a>
-        </div>
-        </div>`;
-        newsTrack.insertAdjacentHTML('beforeend', html);
-        });
-        initSlider();
-        }
+                if (btnNextNews && btnPrevNews && newsTrack) {
+                    btnNextNews.addEventListener('click', () => {
+                        const maxScroll = newsTrack.scrollWidth - newsTrack.parentElement.clientWidth;
+                        if (currentScrollPosition < maxScroll) {
+                            currentScrollPosition += cardWidth;
+                            if (currentScrollPosition > maxScroll) currentScrollPosition = maxScroll;
+                            newsTrack.style.transform = `translateX(-${currentScrollPosition}px)`;
+                        }
+                    });
 
-        function initSlider() {
-        const btnNextNews = document.getElementById('btn-next-news');
-        const btnPrevNews = document.getElementById('btn-prev-news');
-
-        let currentScrollPosition = 0;
-        const cardWidth = 380 + 24;
-
-        if (btnNextNews && btnPrevNews && newsTrack) {
-        btnNextNews.addEventListener('click', () => {
-        const maxScroll = newsTrack.scrollWidth - newsTrack.parentElement.clientWidth;
-        if (currentScrollPosition < maxScroll) {
-        currentScrollPosition += cardWidth;
-        if (currentScrollPosition > maxScroll) currentScrollPosition = maxScroll;
-        newsTrack.style.transform = `translateX(-${currentScrollPosition}px)`;
-        }
-        });
-
-        btnPrevNews.addEventListener('click', () => {
-        if (currentScrollPosition > 0) {
-        currentScrollPosition -= cardWidth;
-        if (currentScrollPosition < 0) currentScrollPosition = 0;
-        newsTrack.style.transform = `translateX(-${currentScrollPosition}px)`;
-        }
-        });
-        }
-        }
+                    btnPrevNews.addEventListener('click', () => {
+                        if (currentScrollPosition > 0) {
+                            currentScrollPosition -= cardWidth;
+                            if (currentScrollPosition < 0) currentScrollPosition = 0;
+                            newsTrack.style.transform = `translateX(-${currentScrollPosition}px)`;
+                        }
+                    });
+                }
+            }
         });
     </script>
 </body>

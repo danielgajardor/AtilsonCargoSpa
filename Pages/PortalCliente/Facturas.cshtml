@@ -1,0 +1,392 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.PortalCliente.FacturasModel
+@{
+    ViewData["Title"] = "Mis Facturas y Pagos";
+    Layout = "_LayoutCliente";
+}
+
+<style>
+    /* ESTETICA ERP FINANCIERO - MINIMALISTA */
+    :root {
+        --atilson-dark: #0f172a;
+        --text-main: #334155;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --atilson-purple: #6d2d9e;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', system-ui, sans-serif;
+        color: var(--text-main);
+    }
+
+    /* KPI CARDS ELEGANTES */
+    .kpi-minimal {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .kpi-minimal::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--kpi-color);
+        }
+
+    .kpi-icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        background: var(--bg-light);
+    }
+
+    .kpi-title-min {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .kpi-value-min {
+        font-size: 26px;
+        font-weight: 900;
+        color: var(--atilson-dark);
+        letter-spacing: -0.5px;
+        line-height: 1;
+    }
+
+    /* BARRA DE FILTROS UNIFICADA */
+    .erp-filter-bar {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 6px;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        flex-wrap: wrap;
+    }
+
+    .filter-item {
+        display: flex;
+        align-items: center;
+        background: var(--bg-light);
+        border-radius: 6px;
+        padding: 6px 12px;
+        flex-grow: 1;
+        border: 1px solid transparent;
+        transition: border 0.2s;
+    }
+
+        .filter-item:focus-within {
+            border-color: var(--atilson-purple);
+            background: #ffffff;
+        }
+
+        .filter-item i {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-right: 8px;
+        }
+
+        .filter-item input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+            width: 100%;
+        }
+
+    .btn-filter {
+        background: var(--atilson-dark);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 8px 24px;
+        border-radius: 6px;
+        border: none;
+        transition: background 0.2s;
+        letter-spacing: 0.5px;
+    }
+
+        .btn-filter:hover {
+            background: #1e293b;
+        }
+
+    /* TABLA ERP ALTA DENSIDAD */
+    .table-container {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .table-erp {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+        .table-erp th {
+            background: var(--bg-light);
+            color: var(--text-muted);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        .table-erp td {
+            padding: 14px 20px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: background 0.2s;
+        }
+
+    .row-clickable {
+        cursor: pointer;
+    }
+
+        .row-clickable:hover td {
+            background-color: var(--bg-light);
+        }
+
+    /* ESTADOS HOLLOW (HUECOS) */
+    .badge-hollow {
+        font-size: 9px;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        background: transparent;
+    }
+
+    .badge-ok {
+        color: #059669;
+        border: 1px solid #a7f3d0;
+    }
+
+    .badge-warn {
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
+
+    /* DETALLE FACTURA (ESTILO RECIBO) */
+    .row-detail td {
+        padding: 0 !important;
+        background-color: #fafbfd;
+        border-bottom: 2px solid var(--border-color) !important;
+    }
+
+    .receipt-box {
+        padding: 24px 30px;
+    }
+
+    .receipt-title {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        border-bottom: 1px dashed var(--border-color);
+        padding-bottom: 8px;
+    }
+
+    .receipt-table {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+        .receipt-table th {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .receipt-table td {
+            padding: 10px 0;
+            font-size: 12px;
+            border-bottom: 1px dashed #f1f5f9;
+            color: var(--text-main);
+        }
+
+    .font-mono {
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-weight: 700;
+    }
+</style>
+
+<div class="container-fluid py-4" style="max-width: 1200px;">
+
+    <div class="d-flex justify-content-between align-items-end mb-4 pb-2 border-bottom">
+        <div>
+            <h1 style="font-size: 22px; font-weight: 900; color: var(--atilson-dark); margin: 0; letter-spacing: -0.5px;">ESTADO DE CUENTA</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Control financiero, facturas emitidas y saldos pendientes.</p>
+        </div>
+    </div>
+
+    <!-- KPIs Minimalistas -->
+    <div class="row g-4 mb-4 reveal">
+        <div class="col-md-6">
+            <div class="kpi-minimal" style="--kpi-color: #10b981;">
+                <div class="kpi-icon-box text-success"><i class="bi bi-check2-circle"></i></div>
+                <div>
+                    <span class="kpi-title-min">Total Facturado (USD)</span>
+                    <div class="kpi-value-min">$@Model.TotalFacturadoGlobal.ToString("N0")</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="kpi-minimal" style="--kpi-color: var(--atilson-purple);">
+                <div class="kpi-icon-box" style="color: var(--atilson-purple);"><i class="bi bi-wallet2"></i></div>
+                <div>
+                    <span class="kpi-title-min">Saldo Pendiente (USD)</span>
+                    <div class="kpi-value-min">$@Model.TotalPendienteGlobal.ToString("N0")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de Filtros Integrada -->
+    <form method="get" class="erp-filter-bar mb-4 reveal">
+        <div class="filter-item" style="max-width: 160px;">
+            <i class="bi bi-calendar"></i>
+            <input type="date" asp-for="FechaDesde" title="Fecha Desde">
+        </div>
+        <div class="filter-item" style="max-width: 160px;">
+            <i class="bi bi-calendar"></i>
+            <input type="date" asp-for="FechaHasta" title="Fecha Hasta">
+        </div>
+        <div class="filter-item" style="max-width: 300px;">
+            <i class="bi bi-search"></i>
+            <input type="text" asp-for="SearchString" placeholder="Booking o Referencia...">
+        </div>
+        <button type="submit" class="btn-filter ms-auto">FILTRAR</button>
+        <a href="/PortalCliente/Facturas" class="btn btn-sm btn-light border fw-bold text-muted px-3 ms-2" style="font-size: 11px;"><i class="bi bi-eraser-fill"></i></a>
+    </form>
+
+    <!-- Grilla ERP Alta Densidad -->
+    <div class="table-container reveal mb-5">
+        <table class="table-erp">
+            <thead>
+                <tr>
+                    <th class="ps-4">Booking / Referencia</th>
+                    <th>Fecha Operación</th>
+                    <th class="text-end">Total Facturado</th>
+                    <th class="text-center">Estado General</th>
+                    <th class="pe-4"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.OperacionesFinancieras.Any())
+                {
+                    @foreach (var op in Model.OperacionesFinancieras)
+                    {
+                        var ingresos = op.TransaccionesFinancieras.Where(t => t.TipoMovimiento == "INGRESO").ToList();
+                        decimal totalUSD = ingresos.Where(t => t.Moneda == "USD").Sum(t => t.MontoNeto);
+                        bool tienePendientes = ingresos.Any(t => t.EstadoFila != "PAGADO" && t.EstadoFila != "CONCILIADO");
+
+                        <tr class="row-clickable" data-bs-toggle="collapse" data-bs-target="#fact-@op.Id">
+                            <td class="ps-4" style="color: var(--atilson-purple); font-weight: 800;"><i class="bi bi-receipt me-2"></i>@(op.NumeroBooking ?? "S/N")</td>
+                            <td class="font-mono text-muted" style="font-size: 12px;">@(op.FechaCreacion?.ToString("dd/MM/yyyy") ?? "-")</td>
+                            <td class="text-end font-mono text-dark" style="font-size: 14px;">USD $@totalUSD.ToString("N0")</td>
+                            <td class="text-center">
+                                <span class="badge-hollow @(tienePendientes ? "badge-warn" : "badge-ok")">
+                                    <i class="bi bi-circle-fill me-1" style="font-size: 5px;"></i> @(tienePendientes ? "CON SALDO" : "PAGADO")
+                                </span>
+                            </td>
+                            <td class="text-end pe-4"><i class="bi bi-chevron-down text-muted"></i></td>
+                        </tr>
+
+                        <!-- Detalle Recibo -->
+                        <tr class="collapse row-detail" id="fact-@op.Id">
+                            <td colspan="5">
+                                <div class="receipt-box">
+                                    <div class="receipt-title"><i class="bi bi-list-check me-2 text-primary"></i> Desglose de Cobros y Facturas Emitidas</div>
+                                    <table class="receipt-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-2">Concepto Cobrado</th>
+                                                <th class="text-center">N° Documento</th>
+                                                <th class="text-center">Moneda</th>
+                                                <th class="text-end">Valor Neto</th>
+                                                <th class="text-center pe-2">Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var tx in ingresos)
+                                            {
+                                                <tr>
+                                                    <td class="ps-2 fw-bold">@tx.Concepto</td>
+                                                    <td class="text-center font-mono text-muted">@(string.IsNullOrWhiteSpace(tx.NumeroDocumento) ? "-" : tx.NumeroDocumento)</td>
+                                                    <td class="text-center">@tx.Moneda</td>
+                                                    <td class="text-end font-mono">@tx.MontoNeto.ToString("N2")</td>
+                                                    <td class="text-center pe-2">
+                                                        <span class="badge-hollow @(tx.EstadoFila == "PAGADO" || tx.EstadoFila == "CONCILIADO" ? "badge-ok" : "badge-warn")" style="font-size: 8px;">@(tx.EstadoFila ?? "PENDIENTE")</span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    <div class="text-end mt-3">
+                                        <button class="btn btn-sm btn-light border fw-bold text-dark px-3" style="font-size: 11px;"><i class="bi bi-file-earmark-pdf me-1"></i> Descargar Factura(s)</button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-2 opacity-25 d-block mb-2"></i> No se registran facturas en este periodo.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                reveals[i].classList.add("active"); // Simple fade in si tienes la clase .reveal.active en el layout
+            }
+        });
+    </script>
+}

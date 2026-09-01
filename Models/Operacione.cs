@@ -168,6 +168,7 @@ public partial class Operacione
     public virtual ICollection<Unidadestecnica> Unidadestecnicas { get; set; } = new List<Unidadestecnica>();
 
     public virtual ICollection<TransaccionesFinanciera> TransaccionesFinancieras { get; set; } = new List<TransaccionesFinanciera>();
+    public virtual ICollection<OperacionesAlmacenamiento> OperacionesAlmacenamientos { get; set; } = new List<OperacionesAlmacenamiento>();
 
     public bool LockFinanzas { get; set; }
     public string? EstadoFinanzas { get; set; }

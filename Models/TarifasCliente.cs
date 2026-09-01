@@ -22,6 +22,8 @@ namespace AtilsonCargoSpa.Models
         public string? TipoContenedor { get; set; }
         public bool EsServicioGratuito { get; set; }
         public string? Comentarios { get; set; }
+        // ... otras propiedades ...
+        public bool AplicaIva { get; set; } 
 
         // ================= NUEVOS CAMPOS MARÍTIMOS =================
         public int? IdNaviera { get; set; }
@@ -31,6 +33,7 @@ namespace AtilsonCargoSpa.Models
         public int? DiasLibresDestino { get; set; }
         public decimal? ValorBL { get; set; }
         public decimal? ProfitHandling { get; set; }
+        public string? Clasificacion { get; set; }
         // ===========================================================
 
         // Le indicamos explícitamente a C# cuáles son las columnas reales de SQL

@@ -25,9 +25,8 @@ namespace AtilsonCargoSpa.Pages.App.Clientes
                 return NotFound();
             }
 
-            // AQUI ESTA LA MAGIA: Agregamos el .Include para traer sus tarifas
             var cliente = await _context.Clientes
-                .Include(c => c.TarifasClientes) // <--- Agrega esta línea
+                .Include(c => c.TarifasClientes) // Trae los Cierres de Negocio
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (cliente == null)
@@ -36,7 +35,6 @@ namespace AtilsonCargoSpa.Pages.App.Clientes
             }
             Cliente = cliente;
 
-            // Cargamos las ciudades para el desplegable
             ViewData["IdCiudad"] = new SelectList(_context.Ciudades, "Id", "Nombre");
             return Page();
         }
@@ -45,12 +43,10 @@ namespace AtilsonCargoSpa.Pages.App.Clientes
         {
             if (!ModelState.IsValid) return Page();
 
-            // Marcamos el objeto como modificado
             _context.Attach(Cliente).State = EntityState.Modified;
 
-            // Actualizamos auditoría
             Cliente.FechaModificacion = DateTime.Now;
-            Cliente.UsuarioModificador = "Admin Atilson";
+            Cliente.UsuarioModificador = User.Identity?.Name ?? "Admin Atilson";
 
             try
             {

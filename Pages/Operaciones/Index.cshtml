@@ -1640,6 +1640,7 @@ select.inline-field:not(:disabled), select.banner-input:not(:disabled), select.e
     .pro-nav-btn { width: 100%; text-align: left; padding: 12px 16px; margin-bottom: 6px; border-radius: 8px; border: none; background: transparent; font-size: 12px; font-weight: 600; color: #4b5563; transition: all 0.2s ease; display: flex; align-items: center; }
     .pro-nav-btn:hover { background: #f3f4f6; color: #111827; }
     .pro-nav-btn.active { background: #ffffff; color: #111827; font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; }
+.pro-nav-btn.disabled { opacity: 0.35 !important; pointer-events: none !important; cursor: not-allowed !important; }
     .pro-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; }
     
     /* Contenido */
@@ -1779,6 +1780,87 @@ select.inline-field:not(:disabled), select.banner-input:not(:disabled), select.e
     }
     /* Ocultar el botón de 3ra planta si ya existe */
     .hide-if-has-p3 { display: none !important; }
+    /* =========================================================
+   REDISEÑO PRO V4 — NIVEL DASHBOARD (Notion/Linear style)
+   ========================================================= */
+
+/* Wrapper general: más presencia, sombra más elegante */
+.pro-wrapper {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 12px 24px -8px rgba(15,23,42,0.08) !important;
+}
+
+/* Sidebar: jerarquía clara entre "Requerimientos" y "Certificados" */
+.pro-sidebar {
+  background: linear-gradient(180deg, #fbfbfd 0%, #f6f7f9 100%) !important;
+  padding: 18px 12px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pro-sidebar .pro-label {
+  font-size: 9.5px !important;
+  color: #9ca3af !important;
+  margin: 14px 4px 8px !important;
+  padding-top: 14px;
+  border-top: 1px solid #eceef1;
+}
+.pro-sidebar .pro-label:first-child {
+  margin-top: 2px;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Botones de navegación: indicador lateral tipo app premium */
+.pro-nav-btn {
+  position: relative;
+  border-radius: 8px !important;
+  padding: 10px 14px 10px 16px !important;
+  font-size: 12px !important;
+  transition: background 0.15s ease, transform 0.15s ease !important;
+}
+.pro-nav-btn::before {
+  content: '';
+  position: absolute;
+  left: -10px; top: 50%;
+  width: 3px; height: 0;
+  background: var(--atilson-purple);
+  border-radius: 0 3px 3px 0;
+  transform: translateY(-50%);
+  transition: height 0.2s ease;
+}
+.pro-nav-btn:hover { background: #f1f2f4 !important; transform: translateX(1px); }
+.pro-nav-btn.active {
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.06), 0 4px 10px -4px rgba(15,23,42,0.08) !important;
+}
+.pro-nav-btn.active::before { height: 18px; }
+
+/* Contenido: transición suave al cambiar de pestaña (sin saltos) */
+.pro-content-area { padding: 28px 36px !important; }
+.tab-pane { animation: proFadeIn 0.18s ease; }
+@@keyframes proFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Cards: bordes más suaves, look menos "cuadrado" */
+.pro-card, .pro-card-gray, .pro-card-red { border-radius: 12px !important; }
+.pro-card { box-shadow: 0 1px 2px rgba(15,23,42,0.03) !important; }
+.pro-card-red { background: #fef8f8 !important; border-color: #fde2e2 !important; }
+
+/* Checkboxes: feedback visual más claro al marcar */
+.pro-check { width: 19px !important; height: 19px !important; border-width: 1.5px !important; }
+.pro-check:checked { box-shadow: 0 0 0 3px rgba(15,23,42,0.08); }
+
+/* Íconos de títulos de sección: color e tamaño uniforme */
+.section-title-sm i, .pro-title i {
+  font-size: 14px !important;
+  color: var(--atilson-purple) !important;
+  margin-right: 6px;
+}
+
 </style>
 
 <div class="container-fluid py-4">
@@ -1994,8 +2076,9 @@ var d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault();
                             return tc;
                         }
 
-                        // --- FILA PRINCIPAL (VISIBLE EN LA TABLA) ---
+                        <!-- --- FILA PRINCIPAL (VISIBLE EN LA TABLA) --- -->
                         <tr class="row-main op-row @filaAlertaClass row-clickable"
+                            data-op-id="@op.Id"
                             data-matriz-pend="@isMatrizPend"
                             data-stacking-pend="@isStackingPend"
                             data-date-matriz="@(op.CutOffMatriz?.ToString("yyyy-MM-ddTHH:mm:ss"))"
@@ -2597,54 +2680,64 @@ var d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault();
     </div>
 
     <div id="interplanta-box-@op.Id" style="display: @(t?.AplicaInterplanta == true ? "block" : "none"); background: #fffbeb; border: 1px dashed #fde68a; padding: 15px; border-radius: 8px; margin-top: 10px;">
-        <p class="text-muted mb-3" style="font-size: 10px;"><i class="bi bi-info-circle me-1"></i> Si la distancia entre plantas supera los <strong>20 kilómetros</strong>, el ERP calculará automáticamente dos tarifas terrestres independientes en Finanzas. Para distancias cortas, aplicará la tarifa plana de porteo.</p>
-        
-        <div class="row g-3 align-items-end">
-            <div class="col-md-6">
-                <label class="mod-label">Segunda Planta de Carga</label>
-                <select name="PlantaCarga2" class="form-select inline-field text-uppercase" disabled>
-                    <option value="">-- Seleccionar Planta 2 --</option>
-                    @if (ViewData["PlantasList"] != null)
+    <p class="text-muted mb-3" style="font-size: 10px;"><i class="bi bi-info-circle me-1"></i> Si la distancia entre plantas supera los <strong>20 kilómetros</strong>, el ERP calculará automáticamente dos tarifas terrestres independientes en Finanzas. Para distancias cortas, aplicará la tarifa plana de porteo.</p>
+    
+    <div class="row g-3 align-items-end">
+        <div class="col-md-6">
+            <label class="mod-label">Segunda Planta de Carga</label>
+            <select name="PlantaCarga2" class="form-select inline-field text-uppercase" disabled onchange="procesarCambioInterplanta(this, '@op.Id', 2)">
+                <option value="">-- Seleccionar Planta 2 --</option>
+                @if (ViewData["PlantasList"] != null)
+                {
+                    foreach (var planta in (IEnumerable<AtilsonCargoSpa.Models.Planta>)ViewData["PlantasList"])
                     {
-                        foreach (var planta in (IEnumerable<AtilsonCargoSpa.Models.Planta>)ViewData["PlantasList"])
-                        {
-                            <option value="@planta.Nombre" selected="@(t?.PlantaCarga2 == planta.Nombre ? "selected" : null)">@planta.Nombre</option>
-                        }
+                        <option value="@planta.Nombre" data-ciudad="@planta.Ciudad?.Nombre" data-url="@planta.UrlGoogleMaps" selected="@(t?.PlantaCarga2 == planta.Nombre ? "selected" : null)">@planta.Nombre</option>
                     }
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label class="mod-label text-danger"><i class="bi bi-geo-alt me-1"></i> Coordenadas Maps (Planta 2)</label>
-                <input type="url" name="LinkMaps2" class="form-control inline-field" value="@t?.LinkMaps2" placeholder="https://maps.google.com/..." readonly />
-            </div>
-
-            <div class="col-12 edit-only-block @(!string.IsNullOrEmpty(t?.PlantaCarga3) ? "hide-if-has-p3" : "")" id="btn-add-p3-@op.Id" style="display: none; margin-top: 10px;">
-                <button type="button" class="btn btn-sm btn-outline-warning fw-bold w-100" style="font-size: 10px; border-style: dashed; color: #d97706;" onclick="document.getElementById('planta3-box-@op.Id').style.display='flex'; this.classList.add('hide-if-has-p3');">
-                    <i class="bi bi-plus-circle me-1"></i> Añadir 3ra Planta (Opcional)
-                </button>
-            </div>
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="mod-label text-danger"><i class="bi bi-geo-alt me-1"></i> Coordenadas Maps (Planta 2)</label>
+            <input type="url" name="LinkMaps2" class="form-control inline-field" value="@t?.LinkMaps2" placeholder="https://maps.google.com/..." readonly />
         </div>
 
-        <div class="row g-3 mt-1" id="planta3-box-@op.Id" style="display: @(!string.IsNullOrEmpty(t?.PlantaCarga3) ? "flex" : "none");">
-            <div class="col-md-6 mt-2">
-                <label class="mod-label">Tercera Planta de Carga</label>
-                <select name="PlantaCarga3" class="form-select inline-field text-uppercase" disabled>
-                    <option value="">-- Seleccionar Planta 3 --</option>
-                    @if (ViewData["PlantasList"] != null)
-                    {
-                        foreach (var planta in (IEnumerable<AtilsonCargoSpa.Models.Planta>)ViewData["PlantasList"])
-                        {
-                            <option value="@planta.Nombre" selected="@(t?.PlantaCarga3 == planta.Nombre ? "selected" : null)">@planta.Nombre</option>
-                        }
-                    }
-                </select>
-            </div>
-            <div class="col-md-6 mt-2">
-                <label class="mod-label text-danger"><i class="bi bi-geo-alt me-1"></i> Coordenadas Maps (Planta 3)</label>
-                <input type="url" name="LinkMaps3" class="form-control inline-field" value="@t?.LinkMaps3" placeholder="https://maps.google.com/..." readonly />
-            </div>
+        <div class="col-12 edit-only-block @(!string.IsNullOrEmpty(t?.PlantaCarga3) ? "hide-if-has-p3" : "")" id="btn-add-p3-@op.Id" style="display: none; margin-top: 10px;">
+            <button type="button" class="btn btn-sm btn-outline-warning fw-bold w-100" style="font-size: 10px; border-style: dashed; color: #d97706;" onclick="document.getElementById('planta3-box-@op.Id').style.display='flex'; this.classList.add('hide-if-has-p3');">
+                <i class="bi bi-plus-circle me-1"></i> Añadir 3ra Planta (Opcional)
+            </button>
         </div>
     </div>
+
+    <div class="row g-3 mt-1" id="planta3-box-@op.Id" style="display: @(!string.IsNullOrEmpty(t?.PlantaCarga3) ? "flex" : "none");">
+        <div class="col-md-6 mt-2">
+            <label class="mod-label">Tercera Planta de Carga</label>
+            <select name="PlantaCarga3" class="form-select inline-field text-uppercase" disabled onchange="procesarCambioInterplanta(this, '@op.Id', 3)">
+                <option value="">-- Seleccionar Planta 3 --</option>
+                @if (ViewData["PlantasList"] != null)
+                {
+                    foreach (var planta in (IEnumerable<AtilsonCargoSpa.Models.Planta>)ViewData["PlantasList"])
+                    {
+                        <option value="@planta.Nombre" data-ciudad="@planta.Ciudad?.Nombre" data-url="@planta.UrlGoogleMaps" selected="@(t?.PlantaCarga3 == planta.Nombre ? "selected" : null)">@planta.Nombre</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-6 mt-2">
+            <label class="mod-label text-danger"><i class="bi bi-geo-alt me-1"></i> Coordenadas Maps (Planta 3)</label>
+            <input type="url" name="LinkMaps3" class="form-control inline-field" value="@t?.LinkMaps3" placeholder="https://maps.google.com/..." readonly />
+        </div>
+    </div>
+
+    <!-- BOTÓN CANCELAR (Se muestra solo si no estaba guardado como 'true' previamente) -->
+    @if (t?.AplicaInterplanta != true)
+    {
+        <div class="mt-3 text-end edit-only-block">
+            <button type="button" class="btn btn-sm btn-outline-danger fw-bold shadow-sm" onclick="cancelarInterplanta('@op.Id')">
+                <i class="bi bi-x-circle me-1"></i> Cancelar Despliegue
+            </button>
+        </div>
+    }
+</div>
 </div>
 
                                                     <ul class="nav nav-pills mb-3 border-top pt-3" role="tablist">
@@ -2820,13 +2913,31 @@ var d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault();
 
             <div class="pro-wrapper">
                 
-                <div class="pro-sidebar">
+                <div class="pro-sidebar d-flex flex-column">
+                <div class="mb-4 pb-3 border-bottom" style="border-color: #e5e7eb;">
+                    <label class="pro-label text-dark mb-3"><i class="bi bi-gear-fill me-1 text-muted"></i> Requerimientos</label>
+                    <div class="d-flex flex-column gap-2 px-1">
+                        <label class="d-flex align-items-center gap-2 m-0 cursor-pointer p-1 rounded" style="transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                            <input class="pro-check inline-field" type="checkbox" id="chkSag-v3-@op.Id" name="docUpdates.AplicaSag" value="true" @(d?.AplicaSag == true ? "checked" : "") onchange="handleTipoTramite('v3-@op.Id', 'sag')">
+                            <span class="fw-bold text-success" style="font-size:10px; text-transform:uppercase; margin-top:1px;">Aplica SAG</span>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 m-0 cursor-pointer p-1 rounded" style="transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                            <input class="pro-check inline-field" type="checkbox" id="chkSerna-v3-@op.Id" name="docUpdates.AplicaSernapesca" value="true" @(d?.AplicaSernapesca == true ? "checked" : "") onchange="handleTipoTramite('v3-@op.Id', 'sernapesca')">
+                            <span class="fw-bold text-info" style="font-size:10px; text-transform:uppercase; margin-top:1px;">Aplica Sernapesca</span>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 m-0 cursor-pointer p-1 rounded" style="transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                            <input class="pro-check inline-field" type="checkbox" id="chkTerr-v3-@op.Id" value="true" @(reqTerrestre ? "checked" : "") onchange="handleTipoTramite('v3-@op.Id', 'terrestre')">
+                            <span class="fw-bold text-secondary" style="font-size:10px; text-transform:uppercase; margin-top:1px;">Servicio Terrestre</span>
+                        </label>
+                    </div>
+                </div>
+
+                                <label class="pro-label text-dark mb-2"><i class="bi bi-file-earmark-check me-1 text-muted"></i> Certificados</label>
                 <button type="button" class="pro-nav-btn pro-nav-btn-@op.Id active" id="btn-aduana-@op.Id" onclick="openProTab('@op.Id', 'aduana')"><div class="pro-dot @dAd"></div> Aduana y Trámites</button>
                 <button type="button" class="pro-nav-btn pro-nav-btn-@op.Id" id="btn-origen-@op.Id" onclick="openProTab('@op.Id', 'origen')"><div class="pro-dot @dOr"></div> Origen / TLC</button>
                 <button type="button" class="pro-nav-btn pro-nav-btn-@op.Id" id="sidebar-btn-fito-@op.Id" onclick="openProTab('@op.Id', 'fito')" style="display: @(d?.AplicaSag == true ? "flex" : "none");">
                     <div class="pro-dot @dFi"></div> Fitosanitario (SAG)
                 </button>
-                
                 <button type="button" class="pro-nav-btn pro-nav-btn-@op.Id" id="sidebar-btn-sani-@op.Id" onclick="openProTab('@op.Id', 'sani')" style="display: @(d?.AplicaSernapesca == true ? "flex" : "none");">
                     <div class="pro-dot @dSa"></div> Sanitario (Sernap.)
                 </button>
@@ -2837,7 +2948,12 @@ var d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault();
                 <button type="button" class="pro-nav-btn pro-nav-btn-@op.Id" id="btn-base-@op.Id" onclick="openProTab('@op.Id', 'base')"><div class="pro-dot @dBa"></div> Documentos Base</button>
             </div>
 
-            <div class="pro-content-area" style="overflow-y: auto; max-height: 600px;">
+
+
+
+
+
+            <div class="pro-content-area" style="overflow-y: auto; height: 600px; transition: none;">
                 
                 <div class="pro-pane-@op.Id" id="pane-aduana-@op.Id" style="display: block;">
                     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-light">
@@ -2854,26 +2970,11 @@ var d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault();
                         </div>
                     </div>
 
-                    <div class="pro-card d-flex gap-4 align-items-center mb-4">
-                        <label class="d-flex align-items-center gap-2 m-0 cursor-pointer">
-                            <input class="pro-check inline-field" type="checkbox" id="chkSag-v3-@op.Id" name="docUpdates.AplicaSag" value="true" @(d?.AplicaSag == true ? "checked" : "") disabled onchange="handleTipoTramite('v3-@op.Id', 'sag')">
-                            <span class="fw-bold text-success" style="font-size:12px; text-transform:uppercase;">Aplica SAG</span>
-                        </label>
-                        <label class="d-flex align-items-center gap-2 m-0 cursor-pointer">
-                            <input class="pro-check inline-field" type="checkbox" id="chkSerna-v3-@op.Id" name="docUpdates.AplicaSernapesca" value="true" @(d?.AplicaSernapesca == true ? "checked" : "") disabled onchange="handleTipoTramite('v3-@op.Id', 'sernapesca')">
-                            <span class="fw-bold text-info" style="font-size:12px; text-transform:uppercase;">Aplica SERNAPESCA</span>
-                        </label>
-                        <label class="d-flex align-items-center gap-2 m-0 cursor-pointer">
-                            <input class="pro-check inline-field" type="checkbox" id="chkTerr-v3-@op.Id" value="true" @(reqTerrestre ? "checked" : "") disabled>
-                            <span class="fw-bold text-secondary" style="font-size:12px; text-transform:uppercase;">TERRESTRE</span>
-                        </label>
-                    </div>
-
                     <div class="row g-4 mb-4">
                         <div class="col-md-5">
                             <label class="pro-label">Agencia de Aduanas</label>
-                            <select name="docUpdates.IdAgenciaAduana" class="pro-input fw-bold mb-4" disabled>
-                                <option value="">-- Seleccionar Agencia --</option>
+                            <select name="docUpdates.IdAgenciaAduana" class="pro-input fw-bold mb-4" disabled onchange="validarBloqueoAgencia('v3-@op.Id')">
+    <option value="">-- Seleccionar Agencia --</option>
                                 @if (ViewBag.IdAgenciaAduana != null) {
                                     foreach (var item in (SelectList)ViewBag.IdAgenciaAduana) {
                                         if (d != null && d.IdAgenciaAduana?.ToString() == item.Value) { <option value="@item.Value" selected>@item.Text</option> }
@@ -2910,43 +3011,28 @@ var d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault();
                     </div>
 
                     <div class="pro-card-red m-0">
-                        <label class="pro-label text-danger mb-3"><i class="bi bi-exclamation-triangle-fill me-1"></i> Trámites de Corrección / Extracostos</label>
-                        <div class="row g-3 align-items-end">
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center gap-2">
-                                    <input class="pro-check inline-field" type="checkbox" id="chkLeg-v3-@op.Id" name="docUpdates.MatrizPresentada" value="true" @(d?.MatrizPresentada == true ? "checked" : "") disabled onchange="toggleExclusionTramites('v3-@op.Id')">
-                                    <label class="form-check-label fw-bold" style="font-size:12px; color:#991b1b;" for="chkLeg-v3-@op.Id">Legalización</label>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <input class="pro-check inline-field" type="checkbox" id="chkAcl-v3-@op.Id" name="docUpdates.ExtensionDocumental" value="true" @(d?.ExtensionDocumental == true ? "checked" : "") disabled onchange="toggleValorTramite(this, 'val-acl-v3-@op.Id'); toggleExclusionTramites('v3-@op.Id');">
-                                    <label class="form-check-label fw-bold" style="font-size:12px; color:#991b1b;" for="chkAcl-v3-@op.Id">Aclaración</label>
-                                </div>
-                                <div id="val-acl-v3-@op.Id" style="display: @(d?.ExtensionDocumental == true ? "block" : "none");">
-                                    <input type="text" inputmode="decimal" name="docUpdates.ValorAclaracion" class="pro-input doc-val-input text-danger fw-bold bg-white" placeholder="Valor $" value="@d?.ValorAclaracion" readonly />
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <input class="pro-check inline-field" type="checkbox" id="chkCan-v3-@op.Id" name="docUpdates.GuiaVisado" value="true" @(d?.GuiaVisado == true ? "checked" : "") disabled onchange="toggleValorTramite(this, 'val-can-v3-@op.Id'); toggleExclusionTramites('v3-@op.Id');">
-                                    <label class="form-check-label fw-bold" style="font-size:12px; color:#991b1b;" for="chkCan-v3-@op.Id">Cancelación</label>
-                                </div>
-                                <div id="val-can-v3-@op.Id" style="display: @(d?.GuiaVisado == true ? "block" : "none");">
-                                    <input type="text" inputmode="decimal" name="docUpdates.ValorCancelacion" class="pro-input doc-val-input text-danger fw-bold bg-white" placeholder="Valor $" value="@d?.ValorCancelacion" readonly />
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <input class="pro-check inline-field" type="checkbox" id="chkRol-v3-@op.Id" name="docUpdates.Roleo" value="true" @(d?.Roleo == true ? "checked" : "") disabled onchange="toggleValorTramite(this, 'val-rol-v3-@op.Id');">
-                                    <label class="form-check-label fw-bold" style="font-size:12px; color:#991b1b;" for="chkRol-v3-@op.Id">Roleo</label>
-                                </div>
-                                <div id="val-rol-v3-@op.Id" style="display: @(d?.Roleo == true ? "block" : "none");">
-                                    <input type="text" inputmode="decimal" name="docUpdates.ValorRoleo" class="pro-input doc-val-input text-danger fw-bold bg-white" placeholder="Valor $" value="@d?.ValorRoleo" readonly />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <label class="pro-label text-danger mb-3"><i class="bi bi-exclamation-triangle-fill me-1"></i> Trámites de Corrección / Extracostos</label>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="d-flex align-items-center gap-2 m-0 cursor-pointer">
+                <input class="pro-check inline-field" type="checkbox" id="chkAcl-v3-@op.Id" name="docUpdates.ExtensionDocumental" value="true" @(d?.ExtensionDocumental == true ? "checked" : "") onchange="toggleExclusionTramites('v3-@op.Id');">
+                <span class="fw-bold" style="font-size:12px; color:#991b1b;">Aclaración</span>
+            </label>
+        </div>
+        <div class="col-md-4">
+            <label class="d-flex align-items-center gap-2 m-0 cursor-pointer">
+                <input class="pro-check inline-field" type="checkbox" id="chkCan-v3-@op.Id" name="docUpdates.GuiaVisado" value="true" @(d?.GuiaVisado == true ? "checked" : "") onchange="toggleExclusionTramites('v3-@op.Id');">
+                <span class="fw-bold" style="font-size:12px; color:#991b1b;">Cancelación</span>
+            </label>
+        </div>
+        <div class="col-md-4">
+            <label class="d-flex align-items-center gap-2 m-0 cursor-pointer">
+                <input class="pro-check inline-field" type="checkbox" id="chkRol-v3-@op.Id" name="docUpdates.Roleo" value="true" @(d?.Roleo == true ? "checked" : "")>
+                <span class="fw-bold" style="font-size:12px; color:#991b1b;">Roleo</span>
+            </label>
+        </div>
+    </div>
+</div>
 
                     <div class="pro-card m-0 mt-3 p-3" id="ivv-container-v3-@op.Id" style="background-color: #f8fafc; border-color: #cbd5e1; opacity: @(d?.GeneracionIvv == true ? "1" : "0.5"); transition: opacity 0.3s;">
                         <div class="d-flex align-items-center gap-2">
@@ -2979,10 +3065,7 @@ var d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault();
                             <p class="pro-subtitle m-0">Documentación y reemisiones de origen.</p>
                         </div>
                         <div class="d-flex align-items-center gap-3">
-                            <label class="d-flex align-items-center gap-2 m-0 cursor-pointer">
-                                <input class="pro-check inline-field" type="checkbox" id="v3-aplica-ori-@op.Id" name="aplica_ori_v3_@op.Id" value="si" checked onchange="togglePanelPro('v3-ori-wrapper-@op.Id', this.checked)">
-                                <span class="fw-bold text-purple" style="font-size:12px; text-transform:uppercase;">Habilitar Certificado</span>
-                            </label>
+                            <input type="hidden" name="aplica_ori_v3_@op.Id" value="si" />
                             <div class="text-end">
     <a class="btn-edit-inline" style="font-size:11px;" onclick="toggleEditCert('ori', 'v3-@op.Id', this)"><i class="bi bi-pencil me-1"></i> Editar</a>
     <div class="btn-save-wrapper d-none d-flex gap-1 mt-1">
@@ -3157,10 +3240,7 @@ var d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault();
                             <p class="pro-subtitle m-0">Aprobación y visación ante el SAG.</p>
                         </div>
                         <div class="d-flex align-items-center gap-3">
-                            <label class="d-flex align-items-center gap-2 m-0 cursor-pointer">
-                                <input class="pro-check inline-field" type="checkbox" id="v3-aplica-fit-@op.Id" name="aplica_fit_v3_@op.Id" value="si" @(d?.AplicaSag == true ? "checked" : "") onchange="togglePanelPro('v3-fit-wrapper-@op.Id', this.checked)">
-                                <span class="fw-bold text-success" style="font-size:12px; text-transform:uppercase;">Habilitar Certificado</span>
-                            </label>
+                            <input type="hidden" name="aplica_fit_v3_@op.Id" value="si" />
                             <div class="text-end">
     <a class="btn-edit-inline" style="font-size:11px;" onclick="toggleEditCert('fit', 'v3-@op.Id', this)"><i class="bi bi-pencil me-1"></i> Editar</a>
     <div class="btn-save-wrapper d-none d-flex gap-1 mt-1">
@@ -3183,6 +3263,19 @@ var d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault();
                             bool aprFitV3 = idxAprFitV3 != -1 && (idxRechFitV3 == -1 || idxAprFitV3 < idxRechFitV3);
                             bool rechFitV3 = idxRechFitV3 != -1 && (idxAprFitV3 == -1 || idxRechFitV3 < idxAprFitV3);
                         }
+                        
+                        <div class="d-flex align-items-center gap-4 mb-3 p-3 rounded bg-light border border-success border-opacity-25 edit-only-flex">
+                            <label class="mod-label text-success m-0"><i class="bi bi-geo-alt-fill me-1"></i> Lugar Inspección SAG</label>
+                            <label class="form-check d-flex align-items-center gap-2 m-0 cursor-pointer">
+                                <input class="form-check-input cuadradito-check inline-field" type="radio" name="docUpdates.SagModalidad" value="Planta" @(d?.SagModalidad == "Planta" ? "checked" : "") disabled>
+                                <span class="fw-bold" style="font-size:11px; color:#1e293b;">SAG en Planta (Costo $0)</span>
+                            </label>
+                            <label class="form-check d-flex align-items-center gap-2 m-0 cursor-pointer">
+                                <input class="form-check-input cuadradito-check inline-field" type="radio" name="docUpdates.SagModalidad" value="Puerto" @(d?.SagModalidad == "Puerto" ? "checked" : "") disabled>
+                                <span class="fw-bold" style="font-size:11px; color:#1e293b;">Fuera de Planta (Aplica Tarifa)</span>
+                            </label>
+                        </div>
+
                         <div class="pro-stepper" id="stepper-fit-v3-@op.Id">
                             <div class="pro-step @(envCliFitV3 ? "completed" : "")"><div class="pro-step-icon"><i class="bi bi-check-lg"></i></div><div class="pro-step-text">Envío Cli.</div></div>
                             <div class="pro-step @(recCliFitV3 ? "completed" : "")"><div class="pro-step-icon"><i class="bi bi-check-lg"></i></div><div class="pro-step-text">Recep. Cli.</div></div>
@@ -3340,10 +3433,7 @@ var d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault();
                             <p class="pro-subtitle m-0">Aprobación y visación ante Sernapesca.</p>
                         </div>
                         <div class="d-flex align-items-center gap-3">
-                            <label class="d-flex align-items-center gap-2 m-0 cursor-pointer">
-                                <input class="pro-check inline-field" type="checkbox" id="v3-aplica-san-@op.Id" name="aplica_san_v3_@op.Id" value="si" @(d?.AplicaSernapesca == true ? "checked" : "") onchange="togglePanelPro('v3-san-wrapper-@op.Id', this.checked)">
-                                <span class="fw-bold text-info" style="font-size:12px; text-transform:uppercase;">Habilitar Certificado</span>
-                            </label>
+                            <input type="hidden" name="aplica_san_v3_@op.Id" value="si" />
                             <div class="text-end">
     <a class="btn-edit-inline" style="font-size:11px;" onclick="toggleEditCert('san', 'v3-@op.Id', this)"><i class="bi bi-pencil me-1"></i> Editar</a>
     <div class="btn-save-wrapper d-none d-flex gap-1 mt-1">
@@ -3557,10 +3647,7 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                             <p class="pro-subtitle m-0">Aprobación, pago y visación Sernapesca.</p>
                         </div>
                         <div class="d-flex align-items-center gap-3">
-                            <label class="d-flex align-items-center gap-2 m-0 cursor-pointer">
-                                <input class="pro-check inline-field" type="checkbox" id="v3-aplica-cap-@op.Id" name="aplica_cap_v3_@op.Id" value="si" @(d?.AplicaSernapesca == true ? "checked" : "") onchange="togglePanelPro('v3-cap-wrapper-@op.Id', this.checked); toggleSubcertsDependientes('v3-@op.Id', this.checked);">
-                                <span class="fw-bold text-danger" style="font-size:12px; text-transform:uppercase;">Habilitar Certificado</span>
-                            </label>
+                            <input type="hidden" name="aplica_cap_v3_@op.Id" value="si" />
                             <div class="text-end">
     <a class="btn-edit-inline" style="font-size:11px;" onclick="toggleEditCert('cap', 'v3-@op.Id', this)"><i class="bi bi-pencil me-1"></i> Editar</a>
     <div class="btn-save-wrapper d-none d-flex gap-1 mt-1">
@@ -3730,6 +3817,11 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                         <div>
                             <h3 class="pro-title"><i class="bi bi-folder2-open me-2 text-dark"></i>Documentos Base y Anexos</h3>
                             <p class="pro-subtitle m-0">Consolidación de documentos internos, certificados de agencia y despachos al cliente.</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="text-end">
+                                <a class="btn-edit-inline" style="font-size:11px;" onclick="toggleEditMode('pane-base-@op.Id', this)"><i class="bi bi-pencil me-1"></i> Editar Panel</a>
+                            </div>
                         </div>
                     </div>
 
@@ -4745,6 +4837,7 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                         @foreach (var u in op.Unidadestecnicas)
                         {
                             <tr class="row-sub op-row @filaAlertaClass"
+                                data-op-id="@op.Id"
                                 data-matriz-pend="@isMatrizPend" data-stacking-pend="@isStackingPend"
                                 data-date-matriz="@(op.CutOffMatriz?.ToString("yyyy-MM-ddTHH:mm:ss"))"
                                 data-date-stacking="@((op.LateArrival ?? op.CutOffMatriz)?.ToString("yyyy-MM-ddTHH:mm:ss"))"
@@ -4855,6 +4948,7 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                                     <form method="post" action="/Operaciones/Index?handler=QuickEditGenerales" enctype="multipart/form-data">
                                         <input type="hidden" name="__RequestVerificationToken" value="" class="anti-forgery-token-input" />
                                         <input type="hidden" name="IdOperacion" value="@op.Id" />
+                                        
 
                                         <div class="atilson-banner" id="gen-form-sub-@u.Id">
                                             <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-light border-opacity-25">
@@ -5119,11 +5213,6 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                                                                     <div class="col-md-12">
     <label class="mod-label mb-2 text-danger">Trámites de Corrección / Extracosto</label>
 <div class="d-flex flex-wrap gap-4">
-    
-    <div class="d-flex align-items-center gap-2" style="transition: opacity 0.3s;">
-        <input class="form-check-input cuadradito-check chk-costo inline-field" type="checkbox" id="chkLeg-sub-@u.Id" name="docUpdates.MatrizPresentada" value="true" @(d?.MatrizPresentada == true ? "checked" : "") disabled onchange="toggleExclusionTramites('sub-@u.Id')">
-        <label class="form-check-label style-xs mb-0" for="chkLeg-sub-@u.Id" style="width: 80px;">Legalización</label>
-    </div>
 
     <div class="d-flex align-items-center gap-2" style="transition: opacity 0.3s;">
         <input class="form-check-input cuadradito-check chk-costo inline-field" type="checkbox" id="chkAcl-sub-@u.Id" name="docUpdates.ExtensionDocumental" value="true" @(d?.ExtensionDocumental == true ? "checked" : "") disabled onchange="toggleValorTramite(this, 'val-acl-sub-@u.Id'); toggleExclusionTramites('sub-@u.Id');">
@@ -5135,10 +5224,11 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
             </div>
         </div>
     </div>
+<!-- Continúa normal con Cancelación y Roleo -->
 
     <div class="d-flex align-items-center gap-2" style="transition: opacity 0.3s;">
         <input class="form-check-input cuadradito-check chk-costo inline-field" type="checkbox" id="chkCan-sub-@u.Id" name="docUpdates.GuiaVisado" value="true" @(d?.GuiaVisado == true ? "checked" : "") disabled onchange="toggleValorTramite(this, 'val-can-sub-@u.Id'); toggleExclusionTramites('sub-@u.Id');">
-        <label class="form-check-label style-xs mb-0" for="chkCan-sub-@u.Id" style="width: 80px;">Cancelación</label>
+        <label class="form-check-label style-xs mb-0" for="chkCan-sub-@u.Id" style="width: 80px;">toggleExclusionTramitesCancelación</label>
         <div id="val-can-sub-@u.Id" style="display: @(d?.GuiaVisado == true ? "block" : "none");">
             <div class="input-group input-group-sm" style="width: 120px;">
                 <span class="input-group-text py-0 style-xs bg-light text-danger border-end-0">$</span>
@@ -5183,17 +5273,16 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-    <tr class="border-bottom row-cert bg-white" id="row-ori-sub-@u.Id" style="opacity: 0.5;">
-        <td colspan="2" class="py-2 ps-3 border-start border-3 border-purple align-middle" data-bs-toggle="collapse" data-bs-target="#panel-ori-sub-@u.Id" style="cursor: pointer; pointer-events: none;">
-            <div class="fw-bold text-dark style-sm"><i class="bi bi-chevron-right me-2 text-muted chevron-icon"></i><i class="bi bi-globe me-2"></i> Origen / TLC</div>
-        </td>
-        <td class="text-center align-middle pe-3" onclick="event.stopPropagation();">
-            <div class="d-flex justify-content-center gap-3">
-                <div class="form-check m-0 d-flex align-items-center gap-1"><input class="form-check-input m-0" type="radio" name="aplica_ori_sub_@u.Id" id="no_ori_sub_@u.Id" value="no" checked onchange="toggleAplicaCert('ori', 'sub-@u.Id', this.value)"><label class="form-check-label style-xs fw-bold text-muted mb-0" style="cursor: pointer;" for="no_ori_sub_@u.Id">NO</label></div>
-                <div class="form-check m-0 d-flex align-items-center gap-1"><input class="form-check-input m-0" type="radio" name="aplica_ori_sub_@u.Id" id="si_ori_sub_@u.Id" value="si" onchange="toggleAplicaCert('ori', 'sub-@u.Id', this.value)"><label class="form-check-label style-xs fw-bold text-success mb-0" style="cursor: pointer;" for="si_ori_sub_@u.Id">SÍ</label></div>
-            </div>
-        </td>
-    </tr>
+    <tr class="border-bottom row-cert bg-white" id="row-ori-sub-@u.Id" style="opacity: 1;">
+    <td colspan="2" class="py-2 ps-3 border-start border-3 border-purple align-middle" data-bs-toggle="collapse" data-bs-target="#panel-ori-sub-@u.Id" style="cursor: pointer;">
+        <div class="fw-bold text-dark style-sm">
+            <i class="bi bi-chevron-right me-2 text-muted chevron-icon"></i><i class="bi bi-globe me-2"></i> Origen / TLC
+        </div>
+    </td>
+    <td class="text-center align-middle pe-3" onclick="event.stopPropagation();">
+        <span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold" style="font-size: 9px; letter-spacing: 0.5px;">AUTOMÁTICO</span>
+    </td>
+</tr>
     <tr id="panel-ori-sub-@u.Id" class="collapse tr-collapse bg-light">
         <td colspan="3" class="p-0 border-bottom">
             <div class="m-2 p-3 bg-white border-start border-purple border-2 rounded shadow-sm d-flex gap-3 flex-wrap">
@@ -5375,6 +5464,19 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                 </div>
                 <div class="flex-fill border-start border-light ps-3" style="min-width: 250px;">
                     <h6 class="mod-label text-success fw-bold mb-2"><i class="bi bi-diagram-3 me-1"></i> TRAZABILIDAD</h6>
+                    
+                    <div class="d-flex align-items-center gap-4 mb-3 p-3 rounded bg-light border border-success border-opacity-25 edit-only-flex">
+                        <label class="mod-label text-success m-0"><i class="bi bi-geo-alt-fill me-1"></i> Lugar Inspección SAG</label>
+                        <label class="form-check d-flex align-items-center gap-2 m-0 cursor-pointer">
+                            <input class="form-check-input cuadradito-check inline-field" type="radio" name="docUpdates.SagModalidad" value="Planta" @(d?.SagModalidad == "Planta" ? "checked" : "") disabled>
+                            <span class="fw-bold" style="font-size:11px; color:#1e293b;">SAG en Planta (Costo $0)</span>
+                        </label>
+                        <label class="form-check d-flex align-items-center gap-2 m-0 cursor-pointer">
+                            <input class="form-check-input cuadradito-check inline-field" type="radio" name="docUpdates.SagModalidad" value="Puerto" @(d?.SagModalidad == "Puerto" ? "checked" : "") disabled>
+                            <span class="fw-bold" style="font-size:11px; color:#1e293b;">Fuera de Planta (Aplica Tarifa)</span>
+                        </label>
+                    </div>
+
                     <div class="stepper-trazabilidad mb-3" id="stepper-fit-sub-@u.Id">
                         <div class="step-item" onclick="toggleDocStep(this)"><div class="step-circle"><i class="bi bi-check"></i></div><div class="step-title">Envío Cli.</div></div>
                         <div class="step-item" onclick="toggleDocStep(this)"><div class="step-circle"><i class="bi bi-check"></i></div><div class="step-title">Recep. Cli.</div></div>
@@ -5742,33 +5844,34 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                         </div>
                     </div>
                 </div>
+            </div>
+        </td>
+    </tr>
 
-               <div class="col-12 mt-3 pt-3 border-top w-100">
-    <label class="mod-label text-danger mb-2"><i class="bi bi-link-45deg me-1"></i> Subcertificados Asociados</label>
-    <div class="d-flex gap-3 flex-wrap">
-        <div class="form-check form-check-inline m-0">
-            <input class="form-check-input cuadradito-check inline-field" type="checkbox" id="chkCoa-sub-@u.Id" onchange="toggleSubCert('row-coa-sub-@u.Id', this)">
-            <label class="form-check-label style-xs fw-bold text-warning" for="chkCoa-sub-@u.Id">COA</label>
-        </div>
-        <div class="form-check form-check-inline m-0">
-            <input class="form-check-input cuadradito-check inline-field" type="checkbox" id="chkDt-sub-@u.Id" onchange="toggleSubCert('row-dt-sub-@u.Id', this)">
-            <label class="form-check-label style-xs fw-bold text-secondary" for="chkDt-sub-@u.Id">DT</label>
-        </div>
-        <div class="form-check form-check-inline m-0">
-            <input class="form-check-input cuadradito-check inline-field" type="checkbox" id="chkCod-sub-@u.Id" onchange="toggleSubCert('row-cod-sub-@u.Id', this)">
-            <label class="form-check-label style-xs fw-bold text-danger" for="chkCod-sub-@u.Id">CODAUT</label>
-        </div>
-        <div class="form-check form-check-inline m-0">
-            <input class="form-check-input cuadradito-check inline-field" type="checkbox" id="chkCla-sub-@u.Id" onchange="toggleSubCert('row-cla-sub-@u.Id', this)">
-            <label class="form-check-label style-xs fw-bold text-danger" for="chkCla-sub-@u.Id">CLAVE</label>
-        </div>
-        <div class="form-check form-check-inline m-0">
-            <input class="form-check-input cuadradito-check inline-field" type="checkbox" id="chkNep-sub-@u.Id" onchange="toggleSubCert('row-nep-sub-@u.Id', this)">
-            <label class="form-check-label style-xs fw-bold text-danger" for="chkNep-sub-@u.Id">NEPPEX</label>
-        </div>
-    </div>
-</div>
-
+    <tr class="bg-light border-bottom">
+        <td colspan="3" class="py-3 ps-3">
+            <label class="mod-label text-dark mb-2"><i class="bi bi-link-45deg me-1 text-danger"></i> Subcertificados Asociados</label>
+            <div class="d-flex gap-3 flex-wrap">
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input cuadradito-check inline-field" type="checkbox" id="chkCoa-sub-@u.Id" onchange="toggleSubCert('row-coa-sub-@u.Id', this)">
+                    <label class="form-check-label style-xs fw-bold text-warning" for="chkCoa-sub-@u.Id">COA</label>
+                </div>
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input cuadradito-check inline-field" type="checkbox" id="chkDt-sub-@u.Id" onchange="toggleSubCert('row-dt-sub-@u.Id', this)">
+                    <label class="form-check-label style-xs fw-bold text-secondary" for="chkDt-sub-@u.Id">DT</label>
+                </div>
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input cuadradito-check inline-field" type="checkbox" id="chkCod-sub-@u.Id" onchange="toggleSubCert('row-cod-sub-@u.Id', this)">
+                    <label class="form-check-label style-xs fw-bold text-danger" for="chkCod-sub-@u.Id">CODAUT</label>
+                </div>
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input cuadradito-check inline-field" type="checkbox" id="chkCla-sub-@u.Id" onchange="toggleSubCert('row-cla-sub-@u.Id', this)">
+                    <label class="form-check-label style-xs fw-bold text-danger" for="chkCla-sub-@u.Id">CLAVE</label>
+                </div>
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input cuadradito-check inline-field" type="checkbox" id="chkNep-sub-@u.Id" onchange="toggleSubCert('row-nep-sub-@u.Id', this)">
+                    <label class="form-check-label style-xs fw-bold text-danger" for="chkNep-sub-@u.Id">NEPPEX</label>
+                </div>
             </div>
         </td>
     </tr>
@@ -6260,22 +6363,23 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
             </div>
 
             <div class="d-flex justify-content-between align-items-center mt-2">
-                <input type="hidden" name="docUpdates.LogDhl" value="@d?.LogDhl" />
-                <div class="text-muted log-incidencias-wrap w-100 me-2" style="font-size:9px;" id="log-dhl-txt-sub-@u.Id">@Html.Raw(!string.IsNullOrEmpty(d?.LogDhl) ? d.LogDhl : "Sin registros.")</div>
-                <div class="d-flex flex-column gap-1 edit-only-flex align-items-end">
-                    <button type="button" class="btn btn-sm btn-outline-warning py-1 px-3 style-xs fw-bold shadow-sm text-dark text-nowrap" style="background-color: #fefce8;" onclick="abrirGeneradorCorreos('sub-@u.Id', 'dhlCliente')">
-                        <i class="bi bi-envelope-check me-1"></i> Enviar a Cliente
-                    </button>
-                </div>
-            </div>
-        </div>
+                                <input type="hidden" name="docUpdates.LogDhl" value="@d?.LogDhl" />
+                                <div class="text-muted log-incidencias-wrap w-100 me-2" style="font-size:9px;" id="log-dhl-txt-v3-@op.Id">@Html.Raw(!string.IsNullOrEmpty(d?.LogDhl) ? d.LogDhl : "Sin registros.")</div>
+                                <div class="d-flex flex-column gap-1 edit-only-flex align-items-end">
+                                    <button type="button" class="btn btn-sm btn-outline-warning py-1 px-3 style-xs fw-bold shadow-sm text-dark text-nowrap" style="background-color: #fefce8;" onclick="abrirGeneradorCorreos('v3-@op.Id', 'dhlCliente')">
+                                        <i class="bi bi-envelope-check me-1"></i> Enviar a Cliente
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
-        <div class="btn-save-wrapper d-none text-end mt-3 border-top pt-3">
-            <button type="button" class="btn btn-sm btn-outline-secondary fw-bold me-2 px-3" onclick="cancelEditMode('doc-base-form-sub-@u.Id')">Cancelar</button>
-            <button type="button" class="btn btn-sm btn-dark fw-bold btn-save-cert px-4" onclick="sincronizarLogsAntesDeGuardar(this.closest('form'))"><i class="bi bi-save me-1"></i> Guardar Base</button>
-        </div>
-    </div>
-</div>
+                        <div class="btn-save-wrapper d-none text-end mt-4 pt-3 border-top">
+                            <button type="button" class="btn btn-sm btn-outline-secondary fw-bold px-4 me-2" onclick="cancelEditMode('pane-base-@op.Id')">Cancelar</button>
+                            <button type="button" class="btn btn-sm btn-dark fw-bold px-5" onclick="sincronizarLogsAntesDeGuardar(this.closest('form')); guardarFormularioModal(this.closest('form'), this);"><i class="bi bi-save me-1"></i> Guardar Base</button>
+                        </div>
+                        
+                    </div>
+                </div>
           
             
         </div>
@@ -6623,12 +6727,17 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                                             @(string.IsNullOrEmpty(cot.Mercancia) ? "NO ESPECIFICADO" : cot.Mercancia)
                                         </td>
                                         <td class="text-end pe-4">
-                                            <button type="button" class="btn btn-sm btn-dark fw-bold px-3 py-1" 
-                                                    onclick="verDetalleCotizacion(@cot.Id, '@cot.TipoServicio', '@cot.TipoCarga', '@cot.Origen', '@cot.Destino', '@(cot.Mercancia?.Replace("'","\\'") ?? "")', '@(cot.Comentarios?.Replace("\n", " ").Replace("\r", " ").Replace("'","\\'") ?? "")')" 
-                                                    style="font-size: 10px;">
-                                                <i class="bi bi-eye-fill me-1"></i> Revisar
-                                            </button>
-                                        </td>
+    <button type="button" class="btn btn-sm btn-dark fw-bold px-3 py-1" 
+            onclick="verDetalleCotizacion(@cot.Id, '@cot.TipoServicio', '@cot.TipoCarga', '@cot.Origen', '@cot.Destino', '@(cot.Mercancia?.Replace("'","\\'") ?? "")', '@(cot.Comentarios?.Replace("\n", " ").Replace("\r", " ").Replace("'","\\'") ?? "")')" 
+            style="font-size: 10px;">
+        <i class="bi bi-eye-fill me-1"></i> Revisar
+    </button>
+    <button type="button" class="btn btn-sm btn-outline-danger fw-bold px-2 py-1 ms-1" 
+            onclick="archivarSolicitudCotizacion(@cot.Id, this, event)" 
+            title="Descartar solicitud">
+        <i class="bi bi-trash3"></i>
+    </button>
+</td>
                                     </tr>
                                 }
                             </tbody>
@@ -6641,6 +6750,103 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
 </div>
 
 <script>
+
+// ==========================================
+    // FIX 1: BOTÓN PEN / ING (Control Stacking)
+    // ==========================================
+    window.toggleIngreso = function(elemento, idOp, event) {
+        if(event) { event.stopPropagation(); event.preventDefault(); }
+
+        // Si actualmente dice ING, pasará a falso (Pendiente) y viceversa
+        let isIng = elemento.innerText.trim() === "ING";
+        let nuevoEstado = !isIng;
+
+        let token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        let formData = new FormData();
+        formData.append('id', idOp);
+        formData.append('ingresado', nuevoEstado);
+
+        fetch('?handler=ToggleIngreso', {
+            method: 'POST',
+            headers: { 'RequestVerificationToken': token },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                // Cambio visual inmediato
+                elemento.innerText = nuevoEstado ? "ING" : "PEN";
+                elemento.classList.toggle("ing", nuevoEstado);
+                elemento.classList.toggle("pen", !nuevoEstado);
+                
+                Swal.fire({ icon: 'success', title: 'Ingreso Actualizado', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+                
+                // Recargamos rápido para que el backend recalcule y borre la alerta roja de "Atraso a puerto"
+                setTimeout(() => window.location.reload(), 800); 
+            } else {
+                Swal.fire('Error', 'No se pudo actualizar el estado de ingreso.', 'error');
+            }
+        }).catch(err => Swal.fire('Error', 'Fallo de conexión.', 'error'));
+    };
+
+    // ==========================================
+    // FIX 2: CAMBIAR ESTADO DE WORKFLOW
+    // ==========================================
+    window.cambiarEstadoOperacion = function(elemento, idOp, nuevoEstado, requiereFecha, event) {
+        if(event) { event.stopPropagation(); event.preventDefault(); }
+
+        let ejecutarCambio = (fechaVal) => {
+            let token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            let formData = new FormData();
+            formData.append('id', idOp);
+            formData.append('estado', nuevoEstado);
+            if (fechaVal) formData.append('fechaAsociada', fechaVal);
+
+            fetch('?handler=UpdateWorkflow', {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': token },
+                body: formData
+            }).then(res => res.json()).then(data => {
+                if (data.success) {
+                    Swal.fire({ icon: 'success', title: 'Estado Workflow Actualizado', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    Swal.fire('Error', 'No se pudo actualizar el estado.', 'error');
+                }
+            }).catch(() => Swal.fire('Error', 'Fallo de conexión al servidor', 'error'));
+        };
+
+        // Si el estado necesita marcar una fecha (ej: Arribo a Planta, Entregado a Stacking)
+        if (requiereFecha) {
+            Swal.fire({
+                title: 'Confirmar Evento',
+                text: `Ingrese la fecha y hora para: ${nuevoEstado}`,
+                input: 'datetime-local',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-save"></i> Guardar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed && result.value) ejecutarCambio(result.value);
+            });
+        } 
+        // Si el estado es de cancelación, advertimos del extracosto automático
+        else if (nuevoEstado.includes('Cancelado')) {
+            Swal.fire({
+                title: '¿Cancelar Operación?',
+                text: 'Esta acción generará un reporte de extracosto automático por cancelación (Falso Flete). ¿Proceder?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'Sí, Cancelar'
+            }).then(res => {
+                if (res.isConfirmed) ejecutarCambio(null);
+            });
+        } 
+        // Estados normales sin fecha
+        else {
+            ejecutarCambio(null);
+        }
+    };
     window.verDetalleCotizacion = function(id, servicio, carga, origen, destino, mercancia, comentarios) {
         let modalObj = bootstrap.Modal.getInstance(document.getElementById('modalSolicitudesCotizacion'));
         if (modalObj) modalObj.hide(); // Ocultamos el modal de la tabla para que el SweetAlert tome foco
@@ -6858,6 +7064,12 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                                 <option value="">Seleccione Costo / Incidencia...</option>
 
                                 <optgroup label="⚓ COSTOS MARÍTIMOS (Naviera)">
+                                    <option value="Late Arrival (LAR)">Late Arrival (LAR)</option>
+                                    <option value="Extra Late Arrival (ELAR)">Extra Late Arrival (ELAR)</option>
+                                    <option value="Corrector B/L">Corrector B/L</option>
+                                    <option value="Plug (Reefer)">Plug (Reefer)</option>
+                                    <option value="Demurrage">Demurrage</option>
+                                    <option value="Matriz fuera de plazo">Matriz fuera de plazo</option>
                                     @if (ViewData["TarifasMaritimo"] != null) {
                                         foreach(var item in (IEnumerable<AtilsonCargoSpa.Models.TarifasMaestra>)ViewData["TarifasMaritimo"]) {
                                             <option value="@item.Concepto">@item.Concepto</option>
@@ -6866,6 +7078,14 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                                 </optgroup>
 
                                 <optgroup label="🚚 COSTOS TERRESTRES (Transporte)">
+                                    <option value="Falso Flete Planta">Falso Flete Planta</option>
+                                    <option value="Falso Flete en Ruta">Falso Flete en Ruta</option>
+                                    <option value="Falso Flete Depósito">Falso Flete Depósito</option>
+                                    <option value="Porteo">Porteo</option>
+                                    <option value="Interplanta">Interplanta</option>
+                                    <option value="Sobreestadía Planta">Sobreestadía Planta</option>
+                                    <option value="Sobreestadía Puerto">Sobreestadía Puerto</option>
+                                    <option value="Almacenamiento por aforo u otro motivo">Almacenamiento por aforo u otro motivo</option>
                                     @if (ViewData["TarifasTerrestre"] != null) {
                                         foreach(var item in (IEnumerable<AtilsonCargoSpa.Models.TarifasMaestra>)ViewData["TarifasTerrestre"]) {
                                             <option value="@item.Concepto">@item.Concepto</option>
@@ -6874,6 +7094,10 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
                                 </optgroup>
 
                                 <optgroup label="🏢 COSTOS DOCUMENTALES (Aduana / Eventos)">
+                                    <option value="Scanner">Escáner de Aduana</option>
+                                    <option value="Costo de Terminal Aforo fisico o retiro contenedor">Aforo Físico / Retiro Contenedor</option>
+                                    <option value="Gestion Providencia Aduanera">Gestión Providencia Aduanera</option>
+                                    <option value="Gestion retiro sello naviera">Gestión Retiro Sello Naviera</option>
                                     @if (ViewData["TarifasDocumental"] != null) {
                                         foreach(var item in (IEnumerable<AtilsonCargoSpa.Models.TarifasMaestra>)ViewData["TarifasDocumental"]) {
                                             <option value="@item.Concepto">@item.Concepto</option>
@@ -7078,6 +7302,43 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
     }
 
     // ==========================================
+    // 0.5 AVISO SERVICIO FINALIZADO
+    // ==========================================
+    window.abrirModalFinalizar = function(idOp, booking, reqTerrestre, cutOff, _, llegadaPlanta, salidaPlanta, llegadaPuerto, salidaPuerto, event) {
+        if(event) { event.preventDefault(); event.stopPropagation(); }
+        
+        // Si hay otro modal abierto, lo cerramos para evitar cruces
+        let megaModalEl = document.getElementById('megaModal');
+        if (megaModalEl && megaModalEl.classList.contains('show')) { 
+            let megaModalObj = bootstrap.Modal.getInstance(megaModalEl); 
+            if (megaModalObj) megaModalObj.hide(); 
+        }
+
+        document.getElementById('finOpId').value = idOp;
+        document.getElementById('finBookingTitle').innerText = booking;
+        document.getElementById('finCutOff').value = cutOff;
+
+        // Limpiar inputs
+        document.getElementById('fsCorreoCliente').value = "";
+        
+        // Llenar fechas si existen
+        if (document.getElementById('fsLlegadaPlanta')) document.getElementById('fsLlegadaPlanta').value = llegadaPlanta || "";
+        if (document.getElementById('fsSalidaPlanta')) document.getElementById('fsSalidaPlanta').value = salidaPlanta || "";
+        if (document.getElementById('fsLlegadaPuerto')) document.getElementById('fsLlegadaPuerto').value = llegadaPuerto || "";
+        if (document.getElementById('fsSalidaPuerto')) document.getElementById('fsSalidaPuerto').value = salidaPuerto || "";
+
+        // Mostrar o esconder el bloque terrestre según requerimiento
+        let secTerrestre = document.getElementById('fs-sec-terrestre');
+        if (secTerrestre) {
+            if (reqTerrestre) secTerrestre.classList.remove('d-none');
+            else secTerrestre.classList.add('d-none');
+        }
+
+        let modalObj = new bootstrap.Modal(document.getElementById('modalFinalizarServicio'));
+        modalObj.show();
+    };
+
+    // ==========================================
     // 1. SINCRONIZACIÓN DE ESTADOS LAR / ELAR
     // ==========================================
     window.syncEstadoLar = function(selectElement, elementId) {
@@ -7238,12 +7499,7 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
         const row = element.closest('tr');
         if (!row) return;
 
-        const template = row.querySelector('.modal-data');
-        let idOp = null;
-        if (template) {
-            let inputId = template.content.querySelector('input[name="IdOperacion"]');
-            if (inputId) idOp = inputId.value;
-        }
+        let idOp = row.getAttribute('data-op-id');
         if (!idOp) return;
 
         const booking = row.getAttribute('data-booking') || 'S/N';
@@ -7303,9 +7559,9 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
         }
         document.getElementById('global-alert-box').style.display = 'none';
 
-        let allInputs = document.querySelectorAll(`tr.row-main template.modal-data input[name="IdOperacion"][value="${idOp}"]`);
-        if (allInputs.length > 0) {
-            let mainRow = allInputs[0].closest('tr.row-main');
+        // Buscamos directamente la fila por el data-op-id que agregamos
+        let mainRow = document.querySelector(`tr.op-row[data-op-id="${idOp}"]`);
+        if (mainRow) {
             let cell = mainRow.querySelector('td');
             abrirModal(cell);
             setTimeout(() => {
@@ -7400,23 +7656,31 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
 
             // Re-ejecutar lógicas visuales guardadas
             const idOpForm = ctx.querySelector('input[name="IdOperacion"]')?.value;
-            if(idOpForm) {
+if(idOpForm) {
+    validarBloqueoAgencia('v3-' + idOpForm);
                 ['coa', 'dt', 'cod', 'cla', 'nep'].forEach(sub => {
-                    [idOpForm, `sub-${idOpForm}`].forEach(idRef => {
+                    [`v3-${idOpForm}`, `sub-${idOpForm}`].forEach(idRef => {
                         let subRow = ctx.querySelector(`#row-${sub}-${idRef}`);
-                        if (subRow && subRow.nextElementSibling) {
-                            let hasSubData = false;
-                            subRow.nextElementSibling.querySelectorAll('input.inline-field').forEach(inp => {
-                                if (inp.value && inp.value.trim() !== "" && inp.value !== "0") hasSubData = true;
-                            });
-                            if (subRow.nextElementSibling.querySelector('a.btn-outline-info')) hasSubData = true;
+                        if (subRow) {
+                            // Para 'sub-XX' buscamos en el nextElementSibling (es una tabla), 
+                            // pero para 'v3-XX' el contenido está dentro del mismo div.
+                            let isSub = idRef.startsWith('sub-');
+                            let containerToCheck = isSub ? subRow.nextElementSibling : subRow;
                             
-                            if (hasSubData) {
-                                let chkNombre = sub.charAt(0).toUpperCase() + sub.slice(1);
-                                let chk = ctx.querySelector(`#chk${chkNombre}-${idRef}`);
-                                if (chk && !chk.checked) {
-                                    chk.checked = true;
-                                    window.toggleSubCert(`row-${sub}-${idRef}`, chk);
+                            if (containerToCheck) {
+                                let hasSubData = false;
+                                containerToCheck.querySelectorAll('input.inline-field, input.pro-input').forEach(inp => {
+                                    if (inp.value && inp.value.trim() !== "" && inp.value !== "0") hasSubData = true;
+                                });
+                                if (containerToCheck.querySelector('a.btn-outline-info, a.btn-light.border')) hasSubData = true;
+                                
+                                if (hasSubData) {
+                                    let chkNombre = sub.charAt(0).toUpperCase() + sub.slice(1);
+                                    let chk = ctx.querySelector(`#chk${chkNombre}-${idRef}`);
+                                    if (chk && !chk.checked) {
+                                        chk.checked = true;
+                                        window.toggleSubCert(`row-${sub}-${idRef}`, chk);
+                                    }
                                 }
                             }
                         }
@@ -7491,6 +7755,17 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
         } catch(e) { console.error("Fallo al abrir el modal:", e); }
     };
 
+    document.addEventListener('input', function(e) {
+    if (e.target.name === 'docUpdates.Dus' || e.target.name === 'docUpdates.Din') {
+        const form = e.target.closest('form');
+        if (!form) return;
+        const chkLeg = form.querySelector('input[id^="chkLeg-"]');
+        if (chkLeg && e.target.value.trim() !== '' && !chkLeg.checked) {
+            chkLeg.checked = true;
+            chkLeg.dispatchEvent(new Event('change'));
+        }
+    }
+});
     window.toggleEditMode = function(formId, btnTrigger) {
         let formContainer = mq(`#${formId}`);
         if (!formContainer) return;
@@ -7532,7 +7807,7 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
             chk.removeAttribute('disabled');
         });
 
-        formContainer.querySelectorAll('.edit-only-file').forEach(el => {
+        formContainer.querySelectorAll('.edit-only-file, input[type="file"]').forEach(el => {
             el.removeAttribute('disabled');
         });
 
@@ -7599,7 +7874,7 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
             chk.setAttribute('disabled', true);
         });
 
-        formContainer.querySelectorAll('.edit-only-file').forEach(el => {
+        formContainer.querySelectorAll('.edit-only-file, input[type="file"]').forEach(el => {
             el.setAttribute('disabled', true);
         });
 
@@ -7695,7 +7970,7 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
 
     window.handleTipoTramite = function(idOp, tipoModificado) {
         const ctx = modalCtx() || document;
-        let baseId = idOp.replace('v3-', '');
+        let baseId = idOp.replace('v3-', '').replace('sub-', '');
         
         const chkSag   = ctx.querySelector(`#chkSag-${idOp}`);
         const chkSerna = ctx.querySelector(`#chkSerna-${idOp}`);
@@ -7709,7 +7984,7 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
         const sagActivo   = chkSag   && chkSag.checked;
         const sernaActivo = chkSerna && chkSerna.checked;
 
-        if (idOp.includes('v3-')) {
+        if (idOp.includes('v3-') || idOp.includes('sub-')) {
             const btnFito = ctx.querySelector(`#sidebar-btn-fito-${baseId}`);
             if (btnFito) btnFito.style.display = sagActivo ? 'flex' : 'none';
 
@@ -7726,49 +8001,21 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
             togglePanelPro(`v3-fit-wrapper-${baseId}`, sagActivo);
             togglePanelPro(`v3-san-wrapper-${baseId}`, sernaActivo);
             togglePanelPro(`v3-cap-wrapper-${baseId}`, sernaActivo);
+            
+            // REGLA: SELECCIÓN AUTOMÁTICA ORIGEN
+            if (sagActivo || sernaActivo) {
+                 let radioSiOri = ctx.querySelector(`#si_ori_${idOp}`);
+                 if (radioSiOri && !radioSiOri.checked) {
+                     radioSiOri.checked = true;
+                     radioSiOri.dispatchEvent(new Event('change'));
+                     if (typeof window.toggleAplicaCert === 'function') {
+                         window.toggleAplicaCert('ori', idOp, 'si');
+                     }
+                 }
+            }
             return;
         }
-
-        const getEl = (id) => ctx.querySelector(`#${id}`);
-        const ocultarFilaYPanel = (rowId, panelId) => {
-            const row = getEl(rowId);
-            if (row) row.style.display = 'none';
-            const panel = getEl(panelId);
-            if (panel && panel.classList.contains('show')) {
-                const bsCol = bootstrap.Collapse.getInstance(panel);
-                if (bsCol) bsCol.hide();
-                else panel.classList.remove('show');
-            }
-        };
-
-        const ocultarTodosSubcertCaptura = () => {
-            ['coa', 'dt', 'cod', 'cla', 'nep'].forEach(tipo => {
-                const row = getEl(`row-${tipo}-${baseId}`);
-                if (row) row.style.display = 'none';
-                const panel = getEl(`panel-${tipo}-${baseId}`);
-                if (panel && panel.classList.contains('show')) {
-                    const bsCol = bootstrap.Collapse.getInstance(panel);
-                    if (bsCol) bsCol.hide();
-                    else panel.classList.remove('show');
-                }
-                const chkNombre = tipo.charAt(0).toUpperCase() + tipo.slice(1);
-                const chk = getEl(`chk${chkNombre}-${baseId}`);
-                if (chk) chk.checked = false;
-            });
-        };
-
-        if (!sagActivo) { ocultarFilaYPanel(`row-fit-${baseId}`, `panel-fit-${baseId}`); }
-        else { const rowFit = getEl(`row-fit-${baseId}`); if (rowFit) rowFit.style.display = 'table-row'; }
-
-        if (!sernaActivo) {
-            ocultarFilaYPanel(`row-san-${baseId}`, `panel-san-${baseId}`);
-            ocultarFilaYPanel(`row-cap-${baseId}`, `panel-cap-${baseId}`);
-            ocultarTodosSubcertCaptura();
-        } else {
-            const rowSan = getEl(`row-san-${baseId}`); if (rowSan) rowSan.style.display = 'table-row';
-            const rowCap = getEl(`row-cap-${baseId}`); if (rowCap) rowCap.style.display = 'table-row';
-        }
-    };
+    }; // <--- ESTA ES LA LLAVE DE CIERRE QUE FALTABA
 
     window.toggleSubcertsDependientes = function(idOp, isChecked) {
         const subCerts = ['chkCoa', 'chkDt', 'chkCod', 'chkCla', 'chkNep'];
@@ -7880,29 +8127,28 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
 
     window.toggleExclusionTramites = function(idBase) {
         const ctx = modalCtx() || document;
-        const chkLeg = ctx.querySelector(`#chkLeg-${idBase}`);
         const chkAcl = ctx.querySelector(`#chkAcl-${idBase}`);
         const chkCan = ctx.querySelector(`#chkCan-${idBase}`);
-        if (!chkLeg || !chkAcl || !chkCan) return;
+        if (!chkAcl || !chkCan) return;
 
-        const formContainer = chkLeg.closest('.form-section');
+        const formContainer = chkAcl.closest('.form-section') || chkAcl.closest('.pro-card-red');
         const isEditMode = formContainer && formContainer.classList.contains('edit-mode');
 
         if (chkCan.checked) {
-            chkLeg.checked = false; chkAcl.checked = false;
-            chkLeg.closest('.d-flex').style.opacity = '0.4'; chkAcl.closest('.d-flex').style.opacity = '0.4'; chkCan.closest('.d-flex').style.opacity = '1';
-            if (isEditMode) { chkLeg.disabled = true; chkAcl.disabled = true; chkCan.disabled = false; }
+            chkAcl.checked = false;
+            chkAcl.closest('.d-flex').style.opacity = '0.4'; chkCan.closest('.d-flex').style.opacity = '1';
+            if (isEditMode) { chkAcl.disabled = true; chkCan.disabled = false; }
             const valAcl = ctx.querySelector(`#val-acl-${idBase}`);
             if (valAcl) { valAcl.style.display = 'none'; const valAclInput = valAcl.querySelector('input'); if (valAclInput) { valAclInput.value = ''; valAclInput.setAttribute('readonly', true); } }
-        } else if (chkLeg.checked || chkAcl.checked) {
+        } else if (chkAcl.checked) {
             chkCan.checked = false;
-            chkCan.closest('.d-flex').style.opacity = '0.4'; chkLeg.closest('.d-flex').style.opacity = '1'; chkAcl.closest('.d-flex').style.opacity = '1';
-            if (isEditMode) { chkCan.disabled = true; chkLeg.disabled = false; chkAcl.disabled = false; }
+            chkCan.closest('.d-flex').style.opacity = '0.4'; chkAcl.closest('.d-flex').style.opacity = '1';
+            if (isEditMode) { chkCan.disabled = true; chkAcl.disabled = false; }
             const valCan = ctx.querySelector(`#val-can-${idBase}`);
             if (valCan) { valCan.style.display = 'none'; const valCanInput = valCan.querySelector('input'); if (valCanInput) { valCanInput.value = ''; valCanInput.setAttribute('readonly', true); } }
         } else {
-            chkLeg.closest('.d-flex').style.opacity = '1'; chkAcl.closest('.d-flex').style.opacity = '1'; chkCan.closest('.d-flex').style.opacity = '1';
-            if (isEditMode) { chkLeg.disabled = false; chkAcl.disabled = false; chkCan.disabled = false; }
+            chkAcl.closest('.d-flex').style.opacity = '1'; chkCan.closest('.d-flex').style.opacity = '1';
+            if (isEditMode) { chkAcl.disabled = false; chkCan.disabled = false; }
         }
     };
 
@@ -7910,11 +8156,59 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
     // 5. PANEL PRO V3 (NAVEGACIÓN)
     // ==========================================
     window.openProTab = function(opId, tabName) {
-        document.querySelectorAll('.pro-pane-' + opId).forEach(el => el.style.display = 'none');
-        document.getElementById('pane-' + tabName + '-' + opId).style.display = 'block';
-        document.querySelectorAll('.pro-nav-btn-' + opId).forEach(el => el.classList.remove('active'));
-        document.getElementById('btn-' + tabName + '-' + opId).classList.add('active');
-    };
+    if (tabName !== 'aduana') {
+        const ctx = modalCtx() || document;
+        const paneAduana = ctx.querySelector(`#pane-aduana-${opId}`);
+        const selAgencia = paneAduana ? paneAduana.querySelector('select[name="docUpdates.IdAgenciaAduana"]') : null;
+        const tieneAgencia = selAgencia && selAgencia.value && selAgencia.value.trim() !== "";
+        if (!tieneAgencia) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Falta Agencia de Aduanas',
+                text: 'Debe seleccionar primero la Agencia de Aduanas para poder acceder a los certificados y trámites.',
+                confirmButtonColor: '#0f172a',
+                target: document.getElementById('megaModal')
+            });
+            return;
+        }
+    }
+
+    document.querySelectorAll('.pro-pane-' + opId).forEach(el => el.style.display = 'none');
+    document.getElementById('pane-' + tabName + '-' + opId).style.display = 'block';
+    document.querySelectorAll('.pro-nav-btn-' + opId).forEach(el => el.classList.remove('active'));
+
+    // Fix: algunos botones usan el prefijo "sidebar-btn-" (fito, sani, cap)
+    let btnActivo = document.getElementById('btn-' + tabName + '-' + opId) || document.getElementById('sidebar-btn-' + tabName + '-' + opId);
+    if (btnActivo) btnActivo.classList.add('active');
+};
+
+window.validarBloqueoAgencia = function(idBase) {
+    const ctx = modalCtx() || document;
+    const paneAduana = ctx.querySelector(`#pane-aduana-${idBase}`);
+    if (!paneAduana) return;
+
+    const selAgencia = paneAduana.querySelector('select[name="docUpdates.IdAgenciaAduana"]');
+    const tieneAgencia = selAgencia && selAgencia.value && selAgencia.value.trim() !== "";
+
+    ['origen', 'fito', 'sani', 'cap', 'sub', 'base'].forEach(tab => {
+        let btn = ctx.querySelector(`#btn-${tab}-${idBase}`) || ctx.querySelector(`#sidebar-btn-${tab}-${idBase}`);
+        if (btn) btn.classList.toggle('disabled', !tieneAgencia);
+    });
+
+    let aviso = paneAduana.querySelector('.aviso-sin-agencia');
+    if (!tieneAgencia) {
+        if (!aviso) {
+            aviso = document.createElement('div');
+            aviso.className = 'aviso-sin-agencia alert alert-warning py-2 px-3 mb-3';
+            aviso.style.cssText = 'font-size:11px; font-weight:700; border-left:4px solid #f59e0b; border-radius:6px;';
+            aviso.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i> Seleccione la Agencia de Aduanas para habilitar el resto de los trámites documentales.';
+            const header = paneAduana.querySelector('.d-flex.justify-content-between.align-items-center.mb-4.pb-3');
+            if (header) header.insertAdjacentElement('afterend', aviso);
+        }
+    } else if (aviso) {
+        aviso.remove();
+    }
+};
 
     window.togglePanelPro = function(wrapperId, isChecked) {
         let wrapper = document.getElementById(wrapperId);
@@ -7976,16 +8270,16 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
         .then(res => res.json()).then(data => {
             if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
             if (data.success) {
-                if (typeof syncFormToTemplate === 'function') syncFormToTemplate(form);
-                if (formContainerId && typeof cancelEditMode === 'function') cancelEditMode(formContainerId);
-                const idOpMarcado = form.querySelector('input[name="IdOperacion"]')?.value;
-                if (idOpMarcado && typeof marcarBookingComoModificado === 'function') marcarBookingComoModificado(idOpMarcado);
-                Swal.fire({ icon: 'success', title: 'Guardado correctamente', toast: true, position: 'top-end', timer: 1800, showConfirmButton: false });
+                // ESTA ES LA LÍNEA QUE FALTABA PARA RECARGAR
+                window.location.reload(); 
             } else {
                 Swal.fire('Error', data.message || 'No se pudo guardar la información.', 'error');
             }
         })
-        .catch(() => { if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; } Swal.fire('Error', 'Fallo de conexión al guardar.', 'error'); });
+        .catch(() => { 
+            if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; } 
+            window.location.reload(); // También recargar si hay un error de conexión para limpiar la vista
+        });
     };
 
     window.guardarTransporteAjax = function(btn, idOp) {
@@ -8034,36 +8328,50 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
     };
 
     window.ejecutarGuardadoCertificado = function(pane, certKey, idBase, enviarFinanzas, sinNumero, btn) {
-        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-        const idOperacionReal = idBase.toString().replace('sub-', '').replace('v3-', '');
-        const formData = new FormData();
-        formData.append('IdOperacion', idOperacionReal); formData.append('CertKey', certKey);
-        formData.append('EnviarFinanzas', enviarFinanzas); formData.append('SinNumero', sinNumero);
+    const ctx = modalCtx() || document;
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    const idOperacionReal = idBase.toString().replace('sub-', '').replace('v3-', '');
+    const formData = new FormData();
+    
+    formData.append('IdOperacion', idOperacionReal); 
+    formData.append('CertKey', certKey);
+    formData.append('EnviarFinanzas', enviarFinanzas); 
+    formData.append('SinNumero', sinNumero);
 
-        const slotActivoBtn = pane.querySelector('.slot-btn.active');
-        let slotActivo = '1';
-        if (slotActivoBtn) { const m = slotActivoBtn.getAttribute('onclick')?.match(/'(\d)'\)/); if (m) slotActivo = m[1]; }
-        formData.append('SlotActivo', slotActivo);
+    const slotActivoBtn = pane.querySelector('.slot-btn.active');
+    let slotActivo = '1';
+    if (slotActivoBtn) { const m = slotActivoBtn.getAttribute('onclick')?.match(/'(\d)'\)/); if (m) slotActivo = m[1]; }
+    formData.append('SlotActivo', slotActivo);
 
-        pane.querySelectorAll('input[name^="docUpdates."], textarea[name^="docUpdates."], select[name^="docUpdates."]').forEach(el => {
-            if (el.type === 'checkbox' || el.type === 'radio') { if (el.checked) formData.append(el.name, el.value); } 
-            else if (el.type === 'file') { if (el.files.length > 0) formData.append('UploadCertA1', el.files[0]); } 
-            else { formData.append(el.name, el.value); }
-        });
+    // Solo mandamos el estado de los switches que sí existen
+    const chkSag = ctx.querySelector(`#chkSag-${idBase}`);
+    if (chkSag) formData.append('docUpdates.AplicaSag', chkSag.checked ? 'true' : 'false');
 
-        const original = btn ? btn.innerHTML : null;
-        if (btn) { btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...'; btn.disabled = true; }
+    const chkSerna = ctx.querySelector(`#chkSerna-${idBase}`);
+    if (chkSerna) formData.append('docUpdates.AplicaSernapesca', chkSerna.checked ? 'true' : 'false');
 
-        fetch('?handler=GuardarCertificado', { method: 'POST', headers: { 'RequestVerificationToken': token }, body: formData })
-        .then(r => r.json()).then(data => {
-            if (btn) { btn.innerHTML = original; btn.disabled = false; }
-            if (data.success) {
-                cancelEditMode(PANE_ID_MAP[certKey](idBase));
-                if (data.bloqueado) aplicarBloqueoNuevasReemisiones(certKey, idBase);
-                Swal.fire({ icon: 'success', title: data.bloqueado ? 'Guardado y enviado a Finanzas' : 'Borrador guardado', toast: true, position: 'top-end', timer: 1800, showConfirmButton: false });
-            } else { Swal.fire('Atención', data.message || 'No se pudo guardar.', 'warning'); }
-        }).catch(() => { if (btn) { btn.innerHTML = original; btn.disabled = false; } Swal.fire('Error', 'Fallo de conexión.', 'error'); });
-    };
+    pane.querySelectorAll('input[name^="docUpdates."], textarea[name^="docUpdates."], select[name^="docUpdates."]').forEach(el => {
+        if (el.type === 'checkbox') formData.append(el.name, el.checked ? 'true' : 'false'); 
+        else if (el.type === 'radio') { if (el.checked) formData.append(el.name, el.value); } 
+        else if (el.type === 'file') { if (el.files.length > 0) formData.append('UploadCertA1', el.files[0]); } 
+        else formData.append(el.name, el.value); 
+    });
+
+    const original = btn ? btn.innerHTML : null;
+    if (btn) { btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...'; btn.disabled = true; }
+
+    fetch('?handler=GuardarCertificado', { method: 'POST', headers: { 'RequestVerificationToken': token }, body: formData })
+    .then(r => r.json()).then(data => {
+        if (btn) { btn.innerHTML = original; btn.disabled = false; }
+        if (data.success) {
+            Swal.fire({ icon: 'success', title: 'Guardado', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+            setTimeout(() => window.location.reload(), 800);
+        } else { Swal.fire('Atención', data.message || 'No se pudo guardar.', 'warning'); }
+    }).catch(() => { 
+        if (btn) { btn.innerHTML = original; btn.disabled = false; } 
+        Swal.fire('Error', 'Fallo de conexión.', 'error');
+    });
+};
 
     window.guardarCertificadoAjax = function(certKey, idBase, enviarFinanzas, btn) {
         const ctx = modalCtx() || document; const paneId = PANE_ID_MAP[certKey](idBase);
@@ -8353,6 +8661,39 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
         }
         new bootstrap.Modal(document.getElementById('modalHistorial')).show();
     };
+
+    window.cancelarInterplanta = function(idOp) {
+    // 1. Desactivamos el switch visualmente
+    let chk = document.getElementById('chkInterplanta-' + idOp);
+    if (chk) chk.checked = false;
+
+    // 2. Ocultamos la caja de interplanta y vaciamos los campos
+    let box = document.getElementById('interplanta-box-' + idOp);
+    if(box) {
+        box.style.display = 'none';
+
+        // Vaciamos los selects y gatillamos el "change" para evitar cruces con el motor de rutas
+        box.querySelectorAll('select').forEach(s => { 
+            s.value = ''; 
+            s.dispatchEvent(new Event('change')); 
+        });
+
+        // Vaciamos los inputs de links
+        box.querySelectorAll('input[type="url"]').forEach(i => i.value = '');
+
+        // Ocultamos la 3ra planta si el usuario la había desplegado
+        let boxP3 = document.getElementById('planta3-box-' + idOp);
+        if (boxP3) boxP3.style.display = 'none';
+
+        // Restauramos el estado visual del botón "Añadir 3ra Planta"
+        let btnP3 = document.getElementById('btn-add-p3-' + idOp);
+        if (btnP3) {
+             btnP3.style.display = 'block'; 
+             let btnChild = btnP3.querySelector('button');
+             if(btnChild) btnChild.classList.remove('hide-if-has-p3');
+        }
+    }
+};
 
     // ==========================================
     // 9. EVENTOS AUTOMÁTICOS UI (FILE, SELECTS)
@@ -8851,6 +9192,49 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
         }).catch((err) => { console.error(err); Swal.fire('Error de Sistema', 'Error interno: ' + err.message, 'error'); });
     });
 
+    window.archivarSolicitudCotizacion = function(idCotizacion, btn, event) {
+    if (event) { event.stopPropagation(); event.preventDefault(); }
+    
+    Swal.fire({
+        title: '¿Descartar Solicitud?',
+        text: "Esta solicitud se marcará como gestionada y desaparecerá.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Sí, descartar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            let formData = new FormData();
+            formData.append('idCotizacion', idCotizacion);
+
+            fetch('?handler=ArchivarCotizacion', {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': token },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    let row = btn.closest('tr');
+                    if (row) row.remove();
+                    Swal.fire({ icon: 'success', title: 'Gestionada', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+                    
+                    // Si no quedan más filas, recargamos para ocultar el botón general de la campana
+                    let tbody = document.querySelector('#modalSolicitudesCotizacion tbody');
+                    if (tbody && tbody.children.length === 0) {
+                        setTimeout(() => window.location.reload(), 1500);
+                    }
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo procesar.', 'error');
+                }
+            })
+            .catch(() => Swal.fire('Error', 'Fallo de conexión.', 'error'));
+        }
+    });
+};
+
     window.enviarBorradorCliente = function(idOp, booking) {
         let correoPredefinido = document.querySelector('#asig-pre-' + idOp + ' input[name="CorreosCliente"]')?.value || document.querySelector('#asig-pre-sub-' + idOp.replace('sub-', '') + ' input[name="CorreosCliente"]')?.value || "";
 
@@ -9040,6 +9424,78 @@ bool certFinalSanV3 = !string.IsNullOrEmpty(d?.EvidenciaSanitario1) || !string.I
             }
         });
     };
+
+    window.procesarCambioInterplanta = function(select, idOp, numPlanta) {
+    const form = select.closest('form');
+    if (!form) return;
+
+    // 1. Rellenar automáticamente el Link de Maps
+    const option = select.options[select.selectedIndex];
+    const linkMaps = option ? option.getAttribute('data-url') : '';
+    const inputLink = form.querySelector(`input[name="LinkMaps${numPlanta}"]`);
+    if (inputLink) inputLink.value = linkMaps || '';
+
+    // 2. Disparar la evaluación de la ruta
+    evaluarRutaLogistica(idOp, form);
+};
+
+window.evaluarRutaLogistica = async function(idOp, form) {
+    const chkAplica = form.querySelector(`input[name="AplicaInterplanta"]`);
+    if (!chkAplica || !chkAplica.checked) return; // Si no aplica interplanta, no hacemos nada
+
+    const selP1 = form.querySelector('select[name="PlantaCarga"]');
+    const selP2 = form.querySelector('select[name="PlantaCarga2"]');
+    
+    if (!selP1 || !selP2 || selP1.value === "" || selP2.value === "") return;
+
+    // Extraemos las ciudades de los data-attributes
+    const ciudad1 = selP1.options[selP1.selectedIndex].getAttribute('data-ciudad') || '';
+    const ciudad2 = selP2.options[selP2.selectedIndex].getAttribute('data-ciudad') || '';
+
+    if (ciudad1 && ciudad2 && ciudad1 !== ciudad2) {
+        try {
+            // Llamada asíncrona al backend de C#
+            let response = await fetch(`?handler=CalcularDistanciaLogistica&origen=${encodeURIComponent(ciudad1)}&destino=${encodeURIComponent(ciudad2)}`);
+            
+            if (response.ok) {
+                let data = await response.json();
+                if (data.success) {
+                    let dist = data.distanciaKm;
+                    console.log(`[ATILSON] Trayecto Interplanta Evaluado: ${dist} km`);
+
+                    if (dist > 70) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: `Trayecto largo (${dist} km)`,
+                            text: 'El trayecto supera el límite interplanta. El sistema dividirá esta operación en 2 Tramos Terrestres independientes para su facturación.',
+                            confirmButtonColor: '#0f172a',
+                            target: document.getElementById('megaModal')
+                        });
+                    } else if (dist > 20) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: `Alerta de Distancia (${dist} km)`,
+                            text: 'La distancia supera los 20 km. Se requiere ingresar y justificar un ACUERDO COMERCIAL ESPECIAL para procesar esta interplanta.',
+                            confirmButtonColor: '#d97706',
+                            target: document.getElementById('megaModal')
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: `Interplanta Corta (${dist} km)`,
+                            text: 'Aplica tarifa plana automática de porteo.',
+                            timer: 2000,
+                            showConfirmButton: false,
+                            target: document.getElementById('megaModal')
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error al procesar el motor de rutas", e);
+        }
+    }
+};
 
     // Modal de PDF Booking Cliente
     document.addEventListener('click', function(e) {

@@ -35,8 +35,10 @@ public partial class AtilsonContext : DbContext
     public virtual DbSet<Operacione> Operaciones { get; set; }
 
     public virtual DbSet<OperacionesDocumentale> OperacionesDocumentales { get; set; }
-
+     
     public virtual DbSet<OperacionesTerrestre> OperacionesTerrestres { get; set; }
+    public virtual DbSet<TarifasAlmacenamiento> TarifasAlmacenamientos { get; set; }
+    public virtual DbSet<OperacionesAlmacenamiento> OperacionesAlmacenamientos { get; set; }
 
     public virtual DbSet<Origenescarga> Origenescargas { get; set; }
 
@@ -841,6 +843,10 @@ public partial class AtilsonContext : DbContext
             entity.HasOne(d => d.IdProveedorNavigation).WithMany(p => p.Tarifasterrestres)
                 .HasForeignKey(d => d.IdProveedor)
                 .HasConstraintName("FK__tarifaste__IdPro__70DDC3D8");
+            entity.HasOne(d => d.IdCiudadPlantaNavigation)
+          .WithMany()
+          .HasForeignKey(d => d.IdCiudadPlanta)
+          .HasConstraintName("FK_tarifasterrestres_ciudades_planta");
         });
 
         modelBuilder.Entity<Unidadestecnica>(entity =>

@@ -1,263 +1,158 @@
 ﻿@page
 @model AtilsonCargoSpa.Pages.Finanzas.OrdenesCompraModel
+@using AtilsonCargoSpa.Models
 @{
-    ViewData["Title"] = "Panel de Órdenes de Compra (AP)";
+    ViewData["Title"] = "Órdenes de Compra (OC)";
 }
 
 <style>
-    /* ATILSON FINTECH DESIGN SYSTEM */
+    /* VARIABLES CORPORATIVAS ATILSON */
     :root {
-        --atilson-dark: #0f172a;
-        --txt-main: #1e293b;
-        --txt-muted: #64748b;
-        --bg-main: #ffffff;
-        --bg-soft: #f8fafc;
-        --border-soft: #e2e8f0;
-        --color-venta: #0284c7;
-        --color-costo: #dc2626;
+        --atilson-slate-900: #0f172a;
+        --atilson-slate-500: #64748b;
+        --atilson-bg-soft: #f8fafc;
+        --atilson-border: #e2e8f0;
     }
 
     body {
-        background-color: #f1f5f9;
-        font-family: 'Inter', system-ui, sans-serif;
-        color: var(--txt-main);
+        background-color: #f8fafc;
     }
 
-    /* NAVEGACIÓN SUPERIOR UNIFICADA */
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    /* MENU DE NAVEGACIÓN PRINCIPAL */
     .workspace-nav {
-        background: var(--bg-main);
-        padding: 5px;
-        border-radius: 8px;
-        border: 1px solid var(--border-soft);
-        display: inline-flex;
+        display: flex;
         gap: 2px;
-        margin-bottom: 24px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        background: #ffffff;
+        padding: 6px;
+        border-radius: 8px;
+        border: 1px solid var(--atilson-border);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
 
     .ws-btn {
         font-size: 11px;
         font-weight: 800;
         text-transform: uppercase;
-        padding: 8px 18px;
+        padding: 10px 20px;
         border-radius: 6px;
-        color: var(--txt-muted);
+        color: var(--atilson-slate-500);
         text-decoration: none;
         transition: all 0.2s;
+        letter-spacing: 0.5px;
         display: flex;
         align-items: center;
-        letter-spacing: 0.5px;
+        gap: 8px;
     }
 
         .ws-btn:hover {
-            background: var(--bg-soft);
-            color: var(--txt-main);
+            background: var(--atilson-bg-soft);
+            color: var(--atilson-slate-900);
         }
 
         .ws-btn.active {
-            background: var(--atilson-dark);
+            background: var(--atilson-slate-900);
             color: #ffffff;
             box-shadow: 0 2px 5px rgba(15, 23, 42, 0.15);
         }
 
-        .ws-btn i {
-            font-size: 14px;
-            margin-right: 6px;
-        }
-
-    /* KPI CARDS GLOBALES */
-    .kpi-card {
-        border-radius: 12px;
-        padding: 20px 24px;
-        position: relative;
+    /* GRILLA PRINCIPAL TIPO EXCEL */
+    .fin-table-wrapper {
+        background: #ffffff;
+        border-radius: 8px;
+        border: 1px solid var(--atilson-border);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        color: #ffffff;
     }
 
-        .kpi-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    .table-main-grid {
+        margin-bottom: 0;
+        width: 100%;
+    }
+
+        .table-main-grid > thead > tr > th {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--atilson-slate-500);
+            font-weight: 700;
+            background-color: #f1f5f9;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 12px 20px;
+            letter-spacing: 0.5px;
         }
 
-    .kpi-bg-icon {
-        position: absolute;
-        right: -15px;
-        bottom: -20px;
-        font-size: 90px;
-        color: rgba(255, 255, 255, 0.08);
-        transform: rotate(-15deg);
-        pointer-events: none;
-        transition: all 0.4s ease;
+        .table-main-grid > tbody > tr.main-row > td {
+            padding: 14px 20px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--atilson-border);
+            background-color: #ffffff;
+            vertical-align: middle;
+        }
+
+        .table-main-grid > tbody > tr.main-row:hover > td {
+            background-color: var(--atilson-bg-soft);
+        }
+
+    .row-egreso > td:first-child {
+        border-left: 3px solid #f59e0b;
     }
 
-    .kpi-card:hover .kpi-bg-icon {
-        transform: rotate(0deg) scale(1.1);
-        color: rgba(255, 255, 255, 0.15);
+    /* GRILLA ANIDADA (DETALLE DE LA OC) */
+    .nested-container {
+        padding: 0;
+        background-color: var(--atilson-bg-soft);
+        border-bottom: 2px solid var(--atilson-border);
     }
 
-    .kpi-title {
-        font-size: 11px;
+    .nested-table {
+        background-color: transparent;
+        border: none;
+        margin: 0;
+    }
+
+        .nested-table thead th {
+            background-color: #e2e8f0;
+            font-size: 9px;
+            text-transform: uppercase;
+            color: var(--atilson-slate-900);
+            font-weight: 800;
+            padding: 8px 20px;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .nested-table tbody td {
+            padding: 8px 20px;
+            font-size: 11.5px;
+            border-bottom: 1px solid var(--atilson-border);
+            color: #334155;
+            vertical-align: middle;
+        }
+
+    /* SEPARADOR DE TRANSPORTISTA */
+    .row-group-header td {
+        background-color: #f8fafc;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 12px 20px 4px 20px !important;
+        color: var(--atilson-slate-900);
+        font-size: 10px;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 8px;
-        z-index: 1;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        opacity: 0.9;
     }
 
-    .kpi-value {
-        font-size: 26px;
-        font-weight: 900;
-        letter-spacing: -1px;
-        z-index: 1;
-        line-height: 1.1;
-        font-family: 'SFMono-Regular', Consolas, monospace;
-    }
-
-    .kpi-desc {
+    /* BOTONES */
+    .btn-oc-pdf {
         font-size: 10px;
-        font-weight: 600;
-        margin-top: 8px;
-        z-index: 1;
-        opacity: 0.8;
-    }
-
-    .card-alert {
-        background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
-        border-color: #fca5a5;
-    }
-
-    .card-dark {
-        background: linear-gradient(135deg, var(--atilson-dark) 0%, #1e293b 100%);
-        border-color: rgba(255,255,255,0.1);
-    }
-
-    /* TABS MODERNOS */
-    .modern-tabs {
-        display: flex;
-        gap: 4px;
-        border-bottom: 1px solid var(--border-soft);
-        margin-bottom: 0;
-        padding-bottom: 0;
-        padding-left: 10px;
-    }
-
-        .modern-tabs .nav-link {
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 12px 24px;
-            border-radius: 8px 8px 0 0;
-            color: var(--txt-muted);
-            background: transparent;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
-            margin-bottom: -1px;
-        }
-
-            .modern-tabs .nav-link:hover {
-                color: var(--atilson-dark);
-                background: #e2e8f0;
-            }
-
-            .modern-tabs .nav-link.active {
-                background: #ffffff !important;
-                color: #0284c7 !important;
-                border-color: var(--border-soft) var(--border-soft) #ffffff var(--border-soft) !important;
-                border-top: 3px solid #0284c7 !important;
-                z-index: 2;
-                position: relative;
-            }
-
-    /* TABLA PRINCIPAL */
-    .fin-table-wrapper {
-        background: var(--bg-main);
-        border-radius: 0 8px 8px 8px;
-        border: 1px solid var(--border-soft);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-        overflow-x: auto;
-    }
-
-    .table-exec {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        margin-bottom: 0;
-    }
-
-        .table-exec th {
-            background-color: var(--bg-soft);
-            color: var(--txt-muted);
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 14px 20px;
-            border-bottom: 1px solid var(--border-soft);
-            white-space: nowrap;
-        }
-
-        .table-exec td {
-            padding: 16px 20px;
-            vertical-align: middle;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--txt-main);
-            border-bottom: 1px solid #f1f5f9;
-            transition: background-color 0.2s;
-        }
-
-        .table-exec tbody tr:hover td {
-            background-color: var(--bg-soft);
-        }
-
-    /* BADGES Y BOTONES */
-    .badge-estado {
-        font-size: 9px;
         font-weight: 800;
-        padding: 5px 10px;
+        padding: 6px 14px;
         border-radius: 4px;
         text-transform: uppercase;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
         letter-spacing: 0.5px;
-        border: 1px solid transparent;
-    }
-
-        .badge-estado.ok {
-            background-color: #f0fdfa;
-            color: #0369a1;
-            border-color: #bae6fd;
-        }
-
-        .badge-estado.warn {
-            background-color: #fef2f2;
-            color: #dc2626;
-            border-color: #fecaca;
-        }
-
-    .btn-oc {
-        font-size: 10px;
-        font-weight: 800;
-        padding: 8px 16px;
-        border-radius: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        background-color: #f0f9ff;
-        color: #0284c7;
-        border: 1px solid #bae6fd;
+        background-color: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
         transition: all 0.2s;
         display: inline-flex;
         align-items: center;
@@ -265,202 +160,179 @@
         text-decoration: none;
     }
 
-        .btn-oc:hover {
-            background-color: #0284c7;
+        .btn-oc-pdf:hover {
+            background-color: #2563eb;
             color: white;
-            border-color: #0284c7;
-            box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2);
-        }
-
-    .btn-warning-oc {
-        font-size: 10px;
-        font-weight: 800;
-        padding: 8px 16px;
-        border-radius: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        background-color: #fffbeb;
-        color: #d97706;
-        border: 1px solid #fde68a;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-
-        .btn-warning-oc:hover {
-            background-color: #d97706;
-            color: white;
-            box-shadow: 0 4px 6px rgba(217, 119, 6, 0.2);
+            border-color: #2563eb;
         }
 </style>
 
-<div class="container-fluid py-4" style="padding-left: 30px; padding-right: 30px; max-width: 1650px;">
+<div class="container-fluid px-4 py-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-light flex-wrap gap-3">
+    <!-- HEADER DE LA PÁGINA -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 style="font-size: 24px; font-weight: 900; color: var(--txt-main); margin: 0; letter-spacing: -0.5px;">EMISIÓN DE ÓRDENES DE COMPRA (AP)</h1>
-            <p class="text-muted small m-0 fw-medium mt-1">Control de pagos a proveedores y validación de tarifas logísticas.</p>
-        </div>
-        <div>
-            <button class="btn btn-dark btn-sm fw-bold px-4 shadow-sm" style="background-color: var(--color-venta); border: none; font-size: 11px;">
-                <i class="bi bi-cloud-arrow-down-fill me-2"></i> DESCARGAR REPORTE
-            </button>
+            <h1 style="font-size: 24px; font-weight: 900; color: var(--atilson-slate-900); margin: 0; letter-spacing: -0.5px;">EMISIÓN DE ÓRDENES DE COMPRA (OC)</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Generación de respaldos para pago de proveedores terrestres y extracostos.</p>
         </div>
     </div>
 
-    <div class="workspace-nav">
-        <a asp-page="/Finanzas/Index" class="ws-btn"><i class="bi bi-graph-up-arrow"></i> Rentabilidad Operativa</a>
-        <a asp-page="/Finanzas/OrdenesCompra" class="ws-btn active"><i class="bi bi-receipt"></i> Órdenes de Compra (Costo)</a>
-        <a asp-page="/Finanzas/Facturacion" class="ws-btn"><i class="bi bi-file-earmark-spreadsheet"></i> Facturación (Ingreso)</a>
-    </div>
-
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="kpi-card card-dark">
-                <i class="bi bi-truck kpi-bg-icon"></i>
-                <div class="kpi-title"><i class="bi bi-circle-fill text-info" style="font-size: 8px;"></i> Viajes Terrestres (Mes)</div>
-                <div class="kpi-value">@Model.TotalOrdenes <span style="font-size:14px; font-weight:500;">Viajes</span></div>
-                <div class="kpi-desc">Total de servicios asignados a proveedores.</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">
-                <i class="bi bi-cash-coin kpi-bg-icon"></i>
-                <div class="kpi-title"><i class="bi bi-circle-fill text-white" style="font-size: 8px;"></i> Cuentas por Pagar</div>
-                <div class="kpi-value text-white">@Model.TotalAPagar.ToString("C0", new System.Globalization.CultureInfo("es-CL"))</div>
-                <div class="kpi-desc">Monto total comprometido a proveedores.</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
-                <i class="bi bi-file-earmark-pdf kpi-bg-icon"></i>
-                <div class="kpi-title"><i class="bi bi-circle-fill text-white" style="font-size: 8px;"></i> Listas para Emitir OC</div>
-                <div class="kpi-value text-white">@Model.OpsListasEmitir <span style="font-size:14px; font-weight:500;">Docs</span></div>
-                <div class="kpi-desc">Tarifa ingresada, PDF listo para enviar.</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card card-alert">
-                <i class="bi bi-exclamation-octagon kpi-bg-icon"></i>
-                <div class="kpi-title"><i class="bi bi-circle-fill text-danger" style="font-size: 8px;"></i> Viajes sin Tarifa Asignada</div>
-                <div class="kpi-value text-white">@Model.OpsSinTarifa <span style="font-size:14px; font-weight:500;">Viajes</span></div>
-                <div class="kpi-desc">Requieren urgente ingreso de costo terrestre.</div>
-            </div>
+    <!-- MENÚ UNIFICADO -->
+    <div class="d-flex mb-4">
+        <div class="workspace-nav">
+            <a asp-page="/Finanzas/MainBoard" class="ws-btn"><i class="bi bi-grid-1x2-fill"></i> Main Board</a>
+            <a asp-page="/Finanzas/ControlFinanciero" class="ws-btn"><i class="bi bi-sliders"></i> Control Financiero</a>
+            <a asp-page="/Finanzas/OrdenesCompra" class="ws-btn active"><i class="bi bi-receipt"></i> Órdenes de Compra</a>
+            <a asp-page="/Finanzas/Facturacion" class="ws-btn"><i class="bi bi-file-earmark-spreadsheet-fill"></i> Facturación</a>
         </div>
     </div>
 
-    <ul class="nav nav-pills modern-tabs" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active fin-filter-btn" data-filter="all"><i class="bi bi-list-ul me-1"></i> Todos los Viajes</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link fin-filter-btn" data-filter="listas"><i class="bi bi-check2-circle me-1"></i> Listas para OC (@Model.OpsListasEmitir)</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link fin-filter-btn" data-filter="sin-tarifa" style="color: #dc2626;"><i class="bi bi-exclamation-circle-fill me-1"></i> Falta Tarifa (@Model.OpsSinTarifa)</button>
-        </li>
-    </ul>
-
-    <div class="fin-table-wrapper border-top border-3" style="border-top-color: var(--color-venta) !important;">
+    <!-- GRILLA PRINCIPAL -->
+    <div class="fin-table-wrapper">
         <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center bg-white">
-            <h6 class="m-0 fw-bold text-dark" style="font-size: 13px;"><i class="bi bi-truck me-2 text-primary"></i> CONTROL DE PROVEEDORES TERRESTRES</h6>
+            <h6 class="m-0 fw-bold text-dark" style="font-size: 13px;"><i class="bi bi-truck me-2 text-warning"></i> OPERACIONES CON COSTOS TERRESTRES</h6>
             <form method="get" class="input-group input-group-sm shadow-sm" style="width: 300px;">
                 <button type="submit" class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></button>
-                <input type="text" asp-for="SearchString" class="form-control border-start-0 bg-light" placeholder="Buscar empresa o booking..." style="font-size: 12px; font-weight: 600;">
+                <input type="text" asp-for="SearchString" class="form-control border-start-0 bg-light" placeholder="Buscar Booking o Proveedor..." style="font-size: 12px; font-weight: 600;">
             </form>
         </div>
 
         <div class="table-responsive">
-            <table class="table table-exec">
-                <thead style="background-color: #f0f9ff;">
+            <table class="table table-main-grid">
+                <thead>
                     <tr>
-                        <th class="ps-4">Operación (BKG)</th>
-                        <th>Proveedor Logístico</th>
-                        <th>Tramo / Ruta (Inland)</th>
-                        <th class="text-center">Estado Costo</th>
-                        <th class="text-end">Tarifa a Pagar (OC)</th>
-                        <th class="text-center pe-4">Acción Requerida</th>
+                        <th class="ps-4">Operación (Booking) / Cliente</th>
+                        <th>Ruta Inland (Referencial)</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model.ListaOrdenes != null && Model.ListaOrdenes.Any())
+                    @foreach (var op in Model.ListaOrdenes)
                     {
-                        @foreach (var o in Model.ListaOrdenes)
-                        {
-                            var terr = o.OperacionesTerrestres.FirstOrDefault();
-                            var fin = o.Finanzasoperacions?.FirstOrDefault();
+                        var txTerrestres = op.TransaccionesFinancieras.Where(t =>
+                            t.TipoMovimiento == "EGRESO" && t.GrupoCobro != null &&
+                            (t.GrupoCobro.ToUpper().Contains("TERRESTRE") || t.GrupoCobro.ToUpper().Contains("TRANSPORTE") || t.GrupoCobro.ToUpper().Contains("EXTRACOSTO"))).ToList();
 
-                            bool tieneTarifa = fin != null && (fin.CostoTerrestreNeto ?? 0) > 0;
-                            var montoStr = tieneTarifa ? $"{fin.CostoTerrestreNeto?.ToString("C0", new System.Globalization.CultureInfo("es-CL"))}" : "Falta Tarifa";
-                            string filterClass = tieneTarifa ? "fila-oc f-listas" : "fila-oc f-sin-tarifa";
+                        if (!txTerrestres.Any()) continue;
 
-                            <tr class="@filterClass">
-                                <td class="ps-4">
-                                    <div class="d-flex flex-column">
-                                        <span class="fw-bold" style="color: var(--atilson-dark); font-size: 14px;">@o.NumeroBooking</span>
-                                        <span class="text-muted text-truncate" style="font-size: 11px; max-width: 150px;" title="@o.IdClienteNavigation?.RazonSocial">
-                                            <i class="bi bi-person-fill"></i> @(o.IdClienteNavigation?.RazonSocial ?? "Sin Cliente")
-                                        </span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex flex-column">
-                                        <span class="fw-bold text-truncate text-uppercase" style="color: var(--color-venta); max-width: 250px;" title="@terr?.EmpresaTransporte">
-                                            @(terr?.EmpresaTransporte ?? "SIN ASIGNAR")
-                                        </span>
-                                        <span class="text-muted" style="font-size: 10px;">RUT: @(terr?.RutTransporte ?? "S/R") | Carga: @(terr?.FechaCarga?.ToString("dd/MM/yy") ?? "-")</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex flex-column text-muted" style="font-size: 11px; line-height: 1.4;">
-                                        <span class="text-truncate" style="max-width: 200px;" title="@terr?.PlantaCarga"><i class="bi bi-building me-1"></i> @(terr?.PlantaCarga ?? "TBA")</span>
-                                        <span class="text-truncate" style="max-width: 200px;" title="@terr?.PuertoEntrega"><i class="bi bi-geo-alt-fill me-1"></i> @(terr?.PuertoEntrega ?? "TBA")</span>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    @if (tieneTarifa)
-                                    {
-                                        <span class="badge-estado ok" title="Tarifa lista para emitir OC"><i class="bi bi-check-circle-fill"></i> Ingresado</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge-estado warn" title="Falta ingresar el costo logístico"><i class="bi bi-exclamation-triangle-fill"></i> Sin Tarifa</span>
-                                    }
-                                </td>
-                                <td class="text-end">
-                                    @if (tieneTarifa)
-                                    {
-                                        <span class="fw-black text-dark font-monospace" style="font-size: 15px;">@montoStr</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-danger fw-bold" style="font-size: 12px;">--</span>
-                                    }
-                                </td>
-                                <td class="text-center pe-4">
-                                    @if (tieneTarifa)
-                                    {
-                                        <a href="/Operaciones/OrdenCompraPdf/@o.Id" target="_blank" class="btn-oc shadow-sm">
-                                            <i class="bi bi-file-earmark-pdf-fill"></i> Generar OC
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <a href="/Finanzas/Edit?id=@o.Id" class="btn-warning-oc shadow-sm">
-                                            <i class="bi bi-currency-dollar"></i> Ingresar Costo
-                                        </a>
-                                    }
-                                </td>
-                            </tr>
-                        }
+                        var terr = op.OperacionesTerrestres?.FirstOrDefault();
+
+                        <tr data-bs-toggle="collapse" data-bs-target="#oc-@op.Id" class="cursor-pointer main-row row-egreso">
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-chevron-right text-muted me-3" style="font-size: 10px;"></i>
+                                    <span style="font-weight: 800; color: #0f172a; font-size: 14px;">@op.NumeroBooking</span>
+                                    <span class="text-muted mx-2">|</span>
+                                    <span style="font-weight:500; color:#475569; font-size: 12px;">@(op.IdClienteNavigation?.RazonSocial ?? "Sin Cliente")</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column text-muted" style="font-size: 11px;">
+                                    <span class="text-truncate text-uppercase fw-bold">
+                                        <i class="bi bi-geo-alt-fill me-1 text-danger"></i>
+                                        @(terr?.DepositoRetiro ?? "Retiro")
+                                        <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                                        @(terr?.PlantaCarga ?? "Planta")
+                                        <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                                        @(terr?.PuertoEntrega ?? "Puerto")
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <span class="badge bg-light text-dark border px-2 py-1"><i class="bi bi-list-ul"></i> Ver Detalle</span>
+                            </td>
+                        </tr>
+
+                        <tr id="oc-@op.Id" class="collapse">
+                            <td colspan="3" class="p-0 border-0">
+                                <div class="nested-container">
+                                    <table class="table table-sm nested-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-4">Concepto Terrestre</th>
+                                                <th class="text-end">Monto Neto</th>
+                                                <th class="text-end">IVA (19%)</th>
+                                                <th class="text-end">Total a Pagar</th>
+                                                <th class="text-center pe-4">Documento (OC)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                var gruposProv = txTerrestres.GroupBy(t => t.IdProveedorNavigation?.NombreProveedor ?? "PROVEEDOR SIN ASIGNAR");
+                                            }
+
+                                            @foreach (var prov in gruposProv)
+                                            {
+                                                decimal sumNeto = 0m;
+
+                                                <tr class="row-group-header">
+                                                    <td colspan="5" class="ps-4"><i class="bi bi-truck text-warning me-2"></i> @prov.Key</td>
+                                                </tr>
+
+                                                foreach (var tx in prov)
+                                                {
+                                                    sumNeto += tx.MontoNeto;
+                                                    decimal ivaItem = tx.MontoNeto * 0.19m;
+                                                    decimal totalItem = tx.MontoNeto + ivaItem;
+
+                                                    <tr>
+                                                        <td class="fw-bold text-dark ps-4">@tx.Concepto</td>
+                                                        <td class="text-end font-monospace text-muted">@(tx.Moneda == "CLP" ? "$" : "USD") @tx.MontoNeto.ToString("N0")</td>
+                                                        <td class="text-end font-monospace text-muted">@(tx.Moneda == "CLP" ? "$" : "USD") @ivaItem.ToString("N0")</td>
+                                                        <td class="text-end font-monospace fw-bold text-dark">@(tx.Moneda == "CLP" ? "$" : "USD") @totalItem.ToString("N0")</td>
+                                                        <td class="text-center pe-4"></td>
+                                                    </tr>
+                                                }
+
+                                                // --- FILA TOTALIZADORA Y GENERADOR DE OC ---
+                                                decimal sumIva = sumNeto * 0.19m;
+                                                decimal sumTotal = sumNeto + sumIva;
+
+                                                // Obtenemos los IDs y verificamos si ya existe un N° de OC
+                                                string txIds = string.Join(",", prov.Select(x => x.Id));
+                                                string ocActual = prov.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.NumeroOrdenCompra))?.NumeroOrdenCompra;
+
+                                                <tr style="background-color: #f1f5f9; border-top: 2px solid #cbd5e1;">
+                                                    <td class="ps-4 fw-black text-dark" style="font-size: 10px;">TOTAL PROVEEDOR</td>
+                                                    <td class="text-end font-monospace fw-bold" style="color: #475569;">$ @sumNeto.ToString("N0")</td>
+                                                    <td class="text-end font-monospace fw-bold" style="color: #475569;">$ @sumIva.ToString("N0")</td>
+                                                    <td class="text-end font-monospace fw-black" style="color: #dc2626; font-size: 13px;">$ @sumTotal.ToString("N0")</td>
+                                                    <!-- Reemplaza la celda del formulario en la fila totalizadora con esto: -->
+                                                    <td class="text-center pe-4">
+                                                        @if (string.IsNullOrWhiteSpace(ocActual))
+                                                        {
+                                                            <!-- NO HAY OC: Botón de auto-generación -->
+                                                            <form method="post" asp-page-handler="AsignarOC" class="d-flex align-items-center justify-content-end m-0 p-0">
+                                                                <input type="hidden" name="transaccionesIds" value="@txIds" />
+                                                                <button type="submit" class="btn btn-outline-success shadow-sm d-flex align-items-center justify-content-center w-100" style="height: 26px; padding: 0 10px; font-size: 10px; font-weight: 800; border-width: 2px;" title="Generar OC Automática">
+                                                                    <i class="bi bi-magic me-1"></i> GENERAR OC
+                                                                </button>
+                                                            </form>
+                                                        }
+                                                        else
+                                                        {
+                                                            <!-- YA HAY OC: Mostrar botón de PDF -->
+                                                            <div class="d-flex align-items-center justify-content-end gap-2">
+                                                                <span class="badge bg-dark shadow-sm" style="font-size: 10px; padding: 6px 10px; letter-spacing: 0.5px;">@ocActual</span>
+                                                                <a href="/Operaciones/OrdenCompraPdf/@op.Id?oc=@ocActual" target="_blank" class="btn-oc-pdf shadow-sm">
+                                                                    <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                                                                </a>
+                                                            </div>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
                     }
-                    else
+                    @if (!Model.ListaOrdenes.Any())
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
-                                <i class="bi bi-truck fs-1 d-block mb-3 opacity-25"></i>
+                            <td colspan="3" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
                                 <span class="fw-bold fs-6">Sin requerimientos logísticos</span><br />
                                 <span style="font-size: 12px;">No hay viajes terrestres asignados.</span>
                             </td>
@@ -471,29 +343,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll('.fin-filter-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    document.querySelectorAll('.fin-filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-
-                    const filter = this.getAttribute('data-filter');
-
-                    document.querySelectorAll('.fila-oc').forEach(row => {
-                        if (filter === 'all') {
-                            row.style.display = '';
-                        } else if (filter === 'listas') {
-                            row.style.display = row.classList.contains('f-listas') ? '' : 'none';
-                        } else if (filter === 'sin-tarifa') {
-                            row.style.display = row.classList.contains('f-sin-tarifa') ? '' : 'none';
-                        }
-                    });
-                });
-            });
-        });
-    </script>
-}

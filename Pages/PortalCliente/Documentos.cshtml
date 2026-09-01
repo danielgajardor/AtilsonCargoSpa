@@ -1,0 +1,351 @@
+﻿@page
+@model AtilsonCargoSpa.Pages.PortalCliente.DocumentosModel
+@{
+    ViewData["Title"] = "Repositorio Documental";
+    Layout = "_LayoutCliente";
+}
+
+<style>
+    /* COMPARTIENDO EL MISMO ESTÁNDAR VISUAL ERP */
+    :root {
+        --atilson-dark: #0f172a;
+        --text-main: #334155;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --atilson-purple: #6d2d9e;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', system-ui, sans-serif;
+        color: var(--text-main);
+    }
+
+    /* BARRA DE FILTROS UNIFICADA */
+    .erp-filter-bar {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 6px;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        flex-wrap: wrap;
+    }
+
+    .filter-item {
+        display: flex;
+        align-items: center;
+        background: var(--bg-light);
+        border-radius: 6px;
+        padding: 6px 12px;
+        flex-grow: 1;
+        border: 1px solid transparent;
+        transition: border 0.2s;
+    }
+
+        .filter-item:focus-within {
+            border-color: var(--atilson-purple);
+            background: #ffffff;
+        }
+
+        .filter-item i {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-right: 8px;
+        }
+
+        .filter-item input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+            width: 100%;
+        }
+
+    .btn-filter {
+        background: var(--atilson-dark);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 8px 24px;
+        border-radius: 6px;
+        border: none;
+        transition: background 0.2s;
+        letter-spacing: 0.5px;
+    }
+
+    /* TABLA ERP ALTA DENSIDAD */
+    .table-container {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .table-erp {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+        .table-erp th {
+            background: var(--bg-light);
+            color: var(--text-muted);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        .table-erp td {
+            padding: 14px 20px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: background 0.2s;
+        }
+
+    .row-clickable {
+        cursor: pointer;
+    }
+
+        .row-clickable:hover td {
+            background-color: var(--bg-light);
+        }
+
+    /* ESTADOS HOLLOW (HUECOS) */
+    .badge-hollow {
+        font-size: 9px;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        background: transparent;
+    }
+
+    .badge-proceso {
+        color: #6d2d9e;
+        border: 1px solid #e9d5ff;
+    }
+
+    /* VISTA DE LISTA HORIZONTAL (NUEVO DISEÑO PARA DESCARGAS) */
+    .row-detail td {
+        padding: 0 !important;
+        background-color: #fafbfd;
+        border-bottom: 2px solid var(--border-color) !important;
+    }
+
+    .file-vault {
+        padding: 10px 30px 30px 30px;
+    }
+
+    .file-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-top: 12px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.01);
+        transition: all 0.2s;
+    }
+
+        .file-row:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+            transform: translateY(-1px);
+        }
+
+    .file-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-right: 16px;
+        flex-shrink: 0;
+    }
+
+    .icon-red {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .icon-green {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+    .icon-blue {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .file-info h6 {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--atilson-dark);
+        margin: 0 0 2px 0;
+    }
+
+    .file-info p {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .btn-download {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        color: var(--atilson-dark);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 8px 16px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+        .btn-download:hover:not(:disabled) {
+            background: var(--bg-light);
+            border-color: #94a3b8;
+        }
+
+        .btn-download:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+</style>
+
+<div class="container-fluid py-4" style="max-width: 1200px;">
+
+    <div class="d-flex justify-content-between align-items-end mb-4 pb-2 border-bottom">
+        <div>
+            <h1 style="font-size: 22px; font-weight: 900; color: var(--atilson-dark); margin: 0; letter-spacing: -0.5px;">BÓVEDA DOCUMENTAL</h1>
+            <p class="text-muted small m-0 fw-medium mt-1">Accede, revisa y descarga el set documental oficial de tus embarques.</p>
+        </div>
+    </div>
+
+    <!-- Barra de Filtros Integrada -->
+    <form method="get" class="erp-filter-bar mb-4 reveal">
+        <div class="filter-item" style="max-width: 400px;">
+            <i class="bi bi-search"></i>
+            <input type="text" asp-for="SearchString" placeholder="Buscar por Booking o Referencia...">
+        </div>
+        <button type="submit" class="btn-filter ms-auto">BUSCAR</button>
+        <a href="/PortalCliente/Documentos" class="btn btn-sm btn-light border fw-bold text-muted px-3 ms-2" style="font-size: 11px;"><i class="bi bi-eraser-fill"></i></a>
+    </form>
+
+    <!-- Grilla ERP Alta Densidad -->
+    <div class="table-container reveal mb-5">
+        <table class="table-erp">
+            <thead>
+                <tr>
+                    <th class="ps-4">Booking / Referencia</th>
+                    <th>Ruta Operativa</th>
+                    <th class="text-center">Estado Bóveda</th>
+                    <th class="pe-4"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.OperacionesDocumentales.Any())
+                {
+                    @foreach (var op in Model.OperacionesDocumentales)
+                    {
+                        var docs = op.OperacionesDocumentales.FirstOrDefault();
+
+                        <tr class="row-clickable" data-bs-toggle="collapse" data-bs-target="#docs-@op.Id">
+                            <td class="ps-4" style="color: var(--atilson-purple); font-weight: 800;"><i class="bi bi-folder2-open me-2"></i>@(op.NumeroBooking ?? "S/N")</td>
+                            <td>
+                                <span class="fw-bold text-dark">@(op.IdPuertoOrigenNavigation?.NombrePuerto ?? "S/N")</span>
+                                <i class="bi bi-arrow-right mx-2 text-muted" style="font-size: 10px;"></i>
+                                <span class="text-muted">@(op.IdPuertoDestinoNavigation?.NombrePuerto ?? "S/N")</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge-hollow badge-proceso"><i class="bi bi-circle-fill me-1" style="font-size: 5px;"></i> @(docs?.EstadoDocumental ?? "EN TRÁMITE")</span>
+                            </td>
+                            <td class="text-end pe-4"><i class="bi bi-chevron-down text-muted"></i></td>
+                        </tr>
+
+                        <!-- Detalle Lista de Archivos (Estilo Stripe/AWS) -->
+                        <tr class="collapse row-detail" id="docs-@op.Id">
+                            <td colspan="4">
+                                <div class="file-vault">
+
+                                    <!-- Fila 1: B/L -->
+                                    <div class="file-row">
+                                        <div class="d-flex align-items-center">
+                                            <div class="file-icon icon-red"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                                            <div class="file-info">
+                                                <h6>Bill of Lading (MBL)</h6>
+                                                <p>Documento oficial de transporte marítimo</p>
+                                            </div>
+                                        </div>
+                                        <button class="btn-download" disabled><i class="bi bi-cloud-download me-1"></i> Descargar</button>
+                                    </div>
+
+                                    <!-- Fila 2: Certificados -->
+                                    <div class="file-row">
+                                        <div class="d-flex align-items-center">
+                                            <div class="file-icon icon-green"><i class="bi bi-shield-check"></i></div>
+                                            <div class="file-info">
+                                                <h6>Certificados Especiales</h6>
+                                                <p>Fitosanitario / SAG / Origen / Captura</p>
+                                            </div>
+                                        </div>
+                                        <button class="btn-download" disabled><i class="bi bi-cloud-download me-1"></i> Descargar</button>
+                                    </div>
+
+                                    <!-- Fila 3: Full Set -->
+                                    <div class="file-row">
+                                        <div class="d-flex align-items-center">
+                                            <div class="file-icon icon-blue"><i class="bi bi-file-earmark-medical-fill"></i></div>
+                                            <div class="file-info">
+                                                <h6>Full Set Documental</h6>
+                                                <p>Paquete consolidado de todos los documentos visados</p>
+                                            </div>
+                                        </div>
+                                        <button class="btn-download" disabled><i class="bi bi-cloud-download me-1"></i> Descargar</button>
+                                    </div>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="4" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-2 opacity-25 d-block mb-2"></i> No se registran documentos en su bóveda.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                reveals[i].classList.add("active");
+            }
+        });
+    </script>
+}

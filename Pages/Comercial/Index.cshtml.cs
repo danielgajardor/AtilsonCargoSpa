@@ -7,9 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
-using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 
 namespace AtilsonCargoSpa.Pages.Comercial
 {
@@ -24,17 +22,17 @@ namespace AtilsonCargoSpa.Pages.Comercial
             _env = env;
         }
 
-        public SelectList ListaAgencias { get; set; } = default!;
-        public IList<TarifasDocumentale> CostosAgencias { get; set; } = default!;
-
-        [BindProperty]
-        public TarifasDocumentale NuevoCostoDocumental { get; set; } = new TarifasDocumentale();
         // ==================== LISTAS PARA TABLAS ====================
         public IList<TarifasCliente> TarifasClientes { get; set; } = default!;
         public IList<TarifasMaritima> TarifasMaritimas { get; set; } = default!;
         public IList<Tarifasterrestre> TarifasTerrestres { get; set; } = default!;
-        public IList<TarifasMaestra> TarifasMaestrasDocumentales { get; set; } = default!; // <-- NUEVO
+        public IList<TarifasMaestra> TarifasMaestrasDocumentales { get; set; } = default!;
+        public IList<TarifasDocumentale> CostosAgencias { get; set; } = default!;
+        public IList<AgenciasAduana> AgenciasConCostos { get; set; } = default!;
+        public IList<TarifasAlmacenamiento> TarifasAlmacenamientos { get; set; } = default!;
+        [BindProperty] public TarifasAlmacenamiento NuevaTarifaAlmacenamiento { get; set; } = new();
 
+        public IList<TarifaGate> TarifasGate { get; set; } = default!;
 
         // ==================== MÉTRICAS (KPIs) ====================
         public int CountClientesActivas { get; set; }
@@ -42,28 +40,55 @@ namespace AtilsonCargoSpa.Pages.Comercial
         public int CountTerrestresActivas { get; set; }
         public int CountPorExpirar { get; set; }
 
-        // ==================== BINDINGS PARA MODALES ====================
+        // ==================== FILTROS ====================
+        [BindProperty(SupportsGet = true)] public int? FiltroIdCliente { get; set; }
+        [BindProperty(SupportsGet = true)] public int? FiltroIdProveedor { get; set; }
+        [BindProperty(SupportsGet = true)] public int? FiltroIdNaviera { get; set; }
+
+        [BindProperty(SupportsGet = true)] public int? FiltroIdCiudadOrigen { get; set; }
+        [BindProperty(SupportsGet = true)] public int? FiltroIdCiudadPlanta { get; set; }
+        [BindProperty(SupportsGet = true)] public int? FiltroIdCiudadDestino { get; set; }
+        [BindProperty(SupportsGet = true)] public int? FiltroIdTipoCarga { get; set; }
+
+        [BindProperty(SupportsGet = true)] public string? FiltroVigencia { get; set; }
+        [BindProperty(SupportsGet = true)] public string? FiltroRuta { get; set; }
+        [BindProperty(SupportsGet = true)] public string? FiltroPol { get; set; }
+        [BindProperty(SupportsGet = true)] public string? FiltroPlanta { get; set; }
+        [BindProperty(SupportsGet = true)] public string? FiltroPod { get; set; }
+
+        // ==================== BINDINGS PARA FORMULARIOS ====================
         [BindProperty] public TarifasCliente NuevaVentaMaritima { get; set; } = new();
         [BindProperty] public TarifasCliente NuevaVentaTerrestre { get; set; } = new();
         [BindProperty] public TarifasMaritima NuevoCostoMaritimo { get; set; } = new();
         [BindProperty] public Tarifasterrestre NuevoCostoTerrestre { get; set; } = new();
-
-        // RESTAURADOS: Bindings para los Maestros Superiores
+        [BindProperty] public TarifasMaestra NuevaTarifaDocumental { get; set; } = new();
+        [BindProperty] public TarifasDocumentale NuevoCostoDocumental { get; set; } = new();
         [BindProperty] public Proveedore NuevoProveedor { get; set; } = new();
         [BindProperty] public Conductore NuevoConductor { get; set; } = new();
+        [BindProperty] public AgenciasAduana NuevaAgencia { get; set; } = new();
+        [BindProperty] public Tarifasterrestre EditarCostoTerrestre { get; set; } = new();
+        [BindProperty] public TarifasCliente NuevaVentaAlmacenamiento { get; set; } = new();
 
+        [BindProperty] public TarifasMaritima EditarCostoMaritimo { get; set; } = new();
         // ==================== SELECT LISTS ====================
         public SelectList ListaClientes { get; set; } = default!;
         public SelectList ListaProveedores { get; set; } = default!;
         public SelectList ListaCiudades { get; set; } = default!;
         public SelectList ListaNavieras { get; set; } = default!;
+        public SelectList ListaAgencias { get; set; } = default!;
+        public SelectList ListaConceptosDocumentales { get; set; } = default!;
+        public SelectList ListaPols { get; set; } = default!;
+        public SelectList ListaPods { get; set; } = default!;
 
         public async Task OnGetAsync()
         {
-            // Cargar lista de Agencias de Aduana para el Select
             ListaAgencias = new SelectList(await _context.AgenciasAduanas.Where(a => a.Activo == 1).ToListAsync(), "Id", "NombreAgencia");
 
-            // Cargar los costos documentales que estén asociados a una agencia
+            AgenciasConCostos = await _context.AgenciasAduanas
+                .Include(a => a.TarifasDocumentales)
+                .Where(a => a.Activo == 1)
+                .ToListAsync();
+
             CostosAgencias = await _context.TarifasDocumentales
                 .Include(t => t.IdAgenciaAduanaNavigation)
                 .Where(t => t.EsActiva == true && t.IdAgenciaAduana != null)
@@ -76,186 +101,281 @@ namespace AtilsonCargoSpa.Pages.Comercial
         {
             DateTime hoyDt = DateTime.Now.Date;
             DateTime limiteExpiracionDt = hoyDt.AddDays(30);
+            DateTime limite90 = hoyDt.AddDays(90);
 
-            // 1. Cargar Maestros Base
             var clientes = await _context.Clientes.Where(c => c.Activo == 1).OrderBy(c => c.RazonSocial).ToListAsync();
             ListaClientes = new SelectList(clientes, "Id", "RazonSocial");
 
             var proveedores = await _context.Proveedores.Where(p => p.Activo == 1).OrderBy(p => p.NombreProveedor).ToListAsync();
             ListaProveedores = new SelectList(proveedores, "Id", "NombreProveedor");
 
-            ListaCiudades = new SelectList(await _context.Set<Ciudade>().OrderBy(c => c.Nombre).ToListAsync(), "Id", "Nombre");
-            ListaNavieras = new SelectList(await _context.Navieras.Where(n => n.Activo == 1).OrderBy(n => n.NombreNaviera).ToListAsync(), "Id", "NombreNaviera");
+            var ciudadesList = await _context.Set<Ciudade>().OrderBy(c => c.Nombre).ToListAsync();
+            ListaCiudades = new SelectList(ciudadesList, "Id", "Nombre"); // Para Costos (Guarda el ID)
+            ViewData["ListaCiudadesNombre"] = new SelectList(ciudadesList, "Nombre", "Nombre"); // Para Ventas (Guarda el Texto)
 
-            // 2. Cargar Tarifas y Tablas
-            TarifasClientes = await _context.TarifasClientes
-                .Include(t => t.IdClienteNavigation)
-                .Include(t => t.IdNavieraNavigation)
-                .Where(t => t.EsActiva == true)
-                .OrderByDescending(t => t.Id)
+            var navieras = await _context.Navieras.Where(n => n.Activo == 1).OrderBy(n => n.NombreNaviera).ToListAsync();
+            ListaNavieras = new SelectList(navieras, "Id", "NombreNaviera");
+
+            var conceptosDoc = await _context.TarifasMaestras
+                .Where(t => t.EsActiva && t.Categoria == "Documental")
+                .Select(t => t.Concepto)
+                .Distinct()
                 .ToListAsync();
+            ListaConceptosDocumentales = new SelectList(conceptosDoc);
 
-            TarifasMaritimas = await _context.TarifasMaritimas
-                .Include(t => t.IdNavieraNavigation)
-                .OrderByDescending(t => t.Id)
-                .ToListAsync();
+            // Cargar Puertos Únicos (POL y POD) para los desplegables
+            var polsVentas = await _context.TarifasClientes.Where(t => t.GrupoCobro == "Marítimo" && !string.IsNullOrEmpty(t.Pol)).Select(t => t.Pol).ToListAsync();
+            var polsCostos = await _context.TarifasMaritimas.Where(t => !string.IsNullOrEmpty(t.Pol)).Select(t => t.Pol).ToListAsync();
+            ListaPols = new SelectList(polsVentas.Concat(polsCostos).Distinct().OrderBy(p => p).ToList());
 
-            TarifasTerrestres = await _context.Tarifasterrestres
+            var podsVentas = await _context.TarifasClientes.Where(t => t.GrupoCobro == "Marítimo" && !string.IsNullOrEmpty(t.Pod)).Select(t => t.Pod).ToListAsync();
+            var podsCostos = await _context.TarifasMaritimas.Where(t => !string.IsNullOrEmpty(t.Pod)).Select(t => t.Pod).ToListAsync();
+            ListaPods = new SelectList(podsVentas.Concat(podsCostos).Distinct().OrderBy(p => p).ToList());
+
+            // 1. FILTRO DE VENTAS (Clientes)
+            var queryVentas = _context.TarifasClientes.Include(t => t.IdClienteNavigation).Include(t => t.IdNavieraNavigation).Where(t => t.EsActiva == true);
+            if (FiltroIdCliente.HasValue) queryVentas = queryVentas.Where(t => t.IdCliente == FiltroIdCliente.Value);
+
+            if (!string.IsNullOrEmpty(FiltroPol)) queryVentas = queryVentas.Where(t => t.Pol == FiltroPol);
+            if (!string.IsNullOrEmpty(FiltroPlanta)) queryVentas = queryVentas.Where(t => t.ZonaPlanta == FiltroPlanta);
+            if (!string.IsNullOrEmpty(FiltroPod)) queryVentas = queryVentas.Where(t => t.Pod == FiltroPod);
+            
+            if (!string.IsNullOrEmpty(FiltroRuta))
+            {
+                var rutaQuery = FiltroRuta.ToLower();
+                queryVentas = queryVentas.Where(t =>
+                    (t.Pol != null && t.Pol.ToLower().Contains(rutaQuery)) ||
+                    (t.Pod != null && t.Pod.ToLower().Contains(rutaQuery)) ||
+                    (t.ZonaPlanta != null && t.ZonaPlanta.ToLower().Contains(rutaQuery)));
+            }
+
+            if (!string.IsNullOrEmpty(FiltroVigencia))
+            {
+                if (FiltroVigencia == "VENCIDOS") queryVentas = queryVentas.Where(t => t.FechaFinVigencia < hoyDt);
+                else if (FiltroVigencia == "30DIAS") queryVentas = queryVentas.Where(t => t.FechaFinVigencia >= hoyDt && t.FechaFinVigencia <= limiteExpiracionDt);
+                else if (FiltroVigencia == "90DIAS") queryVentas = queryVentas.Where(t => t.FechaFinVigencia >= hoyDt && t.FechaFinVigencia <= limite90);
+            }
+
+            TarifasClientes = await queryVentas.OrderByDescending(t => t.Id).ToListAsync();
+
+            TarifasGate = await _context.TarifasGate
+    .Include(t => t.IdDepositoNavigation)
+    .Where(t => t.EsActiva)
+    .OrderByDescending(t => t.Id)
+    .ToListAsync();
+
+            TarifasAlmacenamientos = await _context.TarifasAlmacenamientos
+    .Include(t => t.IdProveedorNavigation)
+    .Where(t => t.EsActiva)
+    .OrderByDescending(t => t.Id)
+    .ToListAsync();
+
+            // 2. FILTRO MARÍTIMO (Costos)
+            var queryMaritimas = _context.TarifasMaritimas.Include(t => t.IdNavieraNavigation).AsQueryable();
+            if (FiltroIdNaviera.HasValue) queryMaritimas = queryMaritimas.Where(t => t.IdNaviera == FiltroIdNaviera.Value);
+            if (!string.IsNullOrEmpty(FiltroPol)) queryMaritimas = queryMaritimas.Where(t => t.Pol == FiltroPol);
+            if (!string.IsNullOrEmpty(FiltroPod)) queryMaritimas = queryMaritimas.Where(t => t.Pod == FiltroPod);
+
+            TarifasMaritimas = await queryMaritimas.OrderByDescending(t => t.Id).ToListAsync();
+
+            // 3. FILTRO TERRESTRE (Costos)
+            var queryTerrestres = _context.Tarifasterrestres
                 .Include(t => t.IdProveedorNavigation)
                 .Include(t => t.IdCiudadOrigenNavigation)
+                .Include(t => t.IdCiudadPlantaNavigation)
                 .Include(t => t.IdCiudadDestinoNavigation)
-                .OrderByDescending(t => t.Id)
-                .ToListAsync();
+                .AsQueryable();
 
-            TarifasMaestrasDocumentales = await _context.TarifasMaestras
-                .Where(t => t.EsActiva && t.Categoria == "Documental")
-                .OrderByDescending(t => t.Id)
-                .ToListAsync();
+            if (FiltroIdProveedor.HasValue) queryTerrestres = queryTerrestres.Where(t => t.IdProveedor == FiltroIdProveedor.Value);
+            if (FiltroIdCiudadOrigen.HasValue) queryTerrestres = queryTerrestres.Where(t => t.IdCiudadOrigen == FiltroIdCiudadOrigen.Value);
+            if (FiltroIdCiudadPlanta.HasValue) queryTerrestres = queryTerrestres.Where(t => t.IdCiudadPlanta == FiltroIdCiudadPlanta.Value);
+            if (FiltroIdCiudadDestino.HasValue) queryTerrestres = queryTerrestres.Where(t => t.IdCiudadDestino == FiltroIdCiudadDestino.Value);
+            if (FiltroIdTipoCarga.HasValue) queryTerrestres = queryTerrestres.Where(t => t.IdTipoCarga == FiltroIdTipoCarga.Value);
 
-            // 3. Métricas
+            TarifasTerrestres = await queryTerrestres.OrderByDescending(t => t.Id).ToListAsync();
+            TarifasMaestrasDocumentales = await _context.TarifasMaestras.Where(t => t.EsActiva && t.Categoria == "Documental").OrderByDescending(t => t.Id).ToListAsync();
+
             CountClientesActivas = TarifasClientes.Count(t => t.FechaFinVigencia.Date >= hoyDt);
             CountMaritimasActivas = TarifasMaritimas.Count;
             CountTerrestresActivas = TarifasTerrestres.Count;
             CountPorExpirar = TarifasClientes.Count(t => t.FechaFinVigencia.Date >= hoyDt && t.FechaFinVigencia.Date <= limiteExpiracionDt);
         }
 
-        // ==================== HANDLERS: VENTAS A CLIENTES ====================
+        public async Task<IActionResult> OnPostCrearVentaAlmacenamientoAsync()
+        {
+            NuevaVentaAlmacenamiento.GrupoCobro = "Almacenamiento";
+            NuevaVentaAlmacenamiento.EsActiva = true;
+            NuevaVentaAlmacenamiento.UsuarioCreador = User.Identity?.Name ?? "Comercial";
 
+            // 1. Aseguramos que la fecha de vigencia (que llenas en el HTML) no esté vacía
+            if (NuevaVentaAlmacenamiento.FechaFinVigencia <= new DateTime(2000, 1, 1))
+            {
+                NuevaVentaAlmacenamiento.FechaFinVigencia = DateTime.Now.AddYears(1);
+            }
+
+            // 2. Truco Antibug: Escaneamos cualquier otra fecha oculta requerida por tu BD y la llenamos con HOY
+            var propiedades = typeof(TarifasCliente).GetProperties();
+            foreach (var prop in propiedades)
+            {
+                if (prop.PropertyType == typeof(DateTime))
+                {
+                    var valorActual = (DateTime)prop.GetValue(NuevaVentaAlmacenamiento);
+                    if (valorActual <= new DateTime(1900, 1, 1))
+                    {
+                        prop.SetValue(NuevaVentaAlmacenamiento, DateTime.Now);
+                    }
+                }
+            }
+
+            _context.TarifasClientes.Add(NuevaVentaAlmacenamiento);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("./Index");
+        }
+
+        // ==================== HANDLERS ====================
         public async Task<IActionResult> OnPostCrearVentaMaritimaAsync()
         {
             NuevaVentaMaritima.GrupoCobro = "Marítimo";
             NuevaVentaMaritima.EsActiva = true;
             NuevaVentaMaritima.UsuarioCreador = User.Identity?.Name ?? "Comercial";
 
+            var prop = NuevaVentaMaritima.GetType().GetProperty("PlacPlug");
+            if (prop != null && decimal.TryParse(Request.Form["PlacPlug_Venta"], out decimal plugVal))
+            {
+                prop.SetValue(NuevaVentaMaritima, plugVal);
+            }
+
             _context.TarifasClientes.Add(NuevaVentaMaritima);
             await _context.SaveChangesAsync();
             return RedirectToPage("./Index");
         }
 
-        public async Task<IActionResult> OnPostCrearVentaTerrestreAsync()
-        {
-            NuevaVentaTerrestre.GrupoCobro = "Terrestre";
-            NuevaVentaTerrestre.EsActiva = true;
-            NuevaVentaTerrestre.UsuarioCreador = User.Identity?.Name ?? "Comercial";
-
-            _context.TarifasClientes.Add(NuevaVentaTerrestre);
-            await _context.SaveChangesAsync();
-            return RedirectToPage("./Index");
-        }
-
-        public async Task<IActionResult> OnPostEliminarTarifaClienteAsync(int idTarifa)
-        {
-            var tarifa = await _context.TarifasClientes.FindAsync(idTarifa);
-            if (tarifa != null)
-            {
-                tarifa.EsActiva = false; // Soft delete para historial financiero
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToPage("./Index");
-        }
-
-        // ==================== HANDLERS: COSTOS DE PROVEEDORES ====================
-
         public async Task<IActionResult> OnPostCrearCostoMaritimoAsync()
         {
             NuevoCostoMaritimo.EsActiva = true;
+
+            var prop = NuevoCostoMaritimo.GetType().GetProperty("PlacPlug");
+            if (prop != null && decimal.TryParse(Request.Form["PlacPlug_Costo"], out decimal plugVal))
+            {
+                prop.SetValue(NuevoCostoMaritimo, plugVal);
+            }
+
             _context.TarifasMaritimas.Add(NuevoCostoMaritimo);
             await _context.SaveChangesAsync();
             return RedirectToPage("./Index");
         }
 
-        public async Task<IActionResult> OnPostEliminarCostoMaritimoAsync(int idTarifa)
+        public async Task<IActionResult> OnPostCrearVentaTerrestreAsync() { NuevaVentaTerrestre.GrupoCobro = "Terrestre"; NuevaVentaTerrestre.EsActiva = true; NuevaVentaTerrestre.UsuarioCreador = User.Identity?.Name ?? "Comercial"; _context.TarifasClientes.Add(NuevaVentaTerrestre); await _context.SaveChangesAsync(); return RedirectToPage("./Index"); }
+        public async Task<IActionResult> OnPostCrearVentaDocumentalAsync() { NuevaVentaMaritima.GrupoCobro = "Documental"; NuevaVentaMaritima.EsActiva = true; NuevaVentaMaritima.UsuarioCreador = User.Identity?.Name ?? "Comercial"; _context.TarifasClientes.Add(NuevaVentaMaritima); await _context.SaveChangesAsync(); return RedirectToPage("./Index"); }
+
+        public async Task<IActionResult> OnPostEliminarTarifaClienteAsync(int idTarifa) { var tarifa = await _context.TarifasClientes.FindAsync(idTarifa); if (tarifa != null) { tarifa.EsActiva = false; await _context.SaveChangesAsync(); } return RedirectToPage("./Index"); }
+        public async Task<IActionResult> OnPostEliminarCostoMaritimoAsync(int idTarifa) { var tarifa = await _context.TarifasMaritimas.FindAsync(idTarifa); if (tarifa != null) { _context.TarifasMaritimas.Remove(tarifa); await _context.SaveChangesAsync(); } return RedirectToPage("./Index"); }
+        public async Task<IActionResult> OnPostEliminarTarifaAlmacenamientoAsync(int idTarifa)
         {
-            var tarifa = await _context.TarifasMaritimas.FindAsync(idTarifa);
+            var tarifa = await _context.TarifasAlmacenamientos.FindAsync(idTarifa);
             if (tarifa != null)
             {
-                _context.TarifasMaritimas.Remove(tarifa);
+                tarifa.EsActiva = false; // Borrado lógico para no romper Finanzas
                 await _context.SaveChangesAsync();
             }
             return RedirectToPage("./Index");
         }
+        public async Task<IActionResult> OnPostCrearTarifaAlmacenamientoAsync()
+        {
+            NuevaTarifaAlmacenamiento.EsActiva = true;
+            NuevaTarifaAlmacenamiento.FechaCreacion = DateTime.Now;
+            NuevaTarifaAlmacenamiento.UsuarioCreador = User.Identity?.Name ?? "Comercial";
 
+            _context.TarifasAlmacenamientos.Add(NuevaTarifaAlmacenamiento);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("./Index");
+        }
+        public async Task<IActionResult> OnPostEditarCostoMaritimoAsync()
+        {
+            var tarifaExistente = await _context.TarifasMaritimas.FindAsync(EditarCostoMaritimo.Id);
+
+            if (tarifaExistente != null && EditarCostoMaritimo.TarifaUsd > 0)
+            {
+                // Actualizamos el Flete Base
+                tarifaExistente.TarifaUsd = EditarCostoMaritimo.TarifaUsd;
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToPage("./Index");
+        }
         public async Task<IActionResult> OnPostCrearCostoTerrestreAsync()
         {
             NuevoCostoTerrestre.FechaCreacion = DateTime.Now;
             NuevoCostoTerrestre.UsuarioCreador = User.Identity?.Name ?? "Comercial";
+            if (!NuevoCostoTerrestre.HorasLibresPlanta.HasValue) NuevoCostoTerrestre.HorasLibresPlanta = 7;
+            if (!NuevoCostoTerrestre.HorasLibresPuerto.HasValue) NuevoCostoTerrestre.HorasLibresPuerto = 3;
+
+            if (NuevoCostoTerrestre.ValorNeto.HasValue)
+            {
+                if (!NuevoCostoTerrestre.FalsoFletePlanta.HasValue) NuevoCostoTerrestre.FalsoFletePlanta = NuevoCostoTerrestre.ValorNeto * 0.90m;
+                if (!NuevoCostoTerrestre.FalsoFleteRutaMayor50.HasValue) NuevoCostoTerrestre.FalsoFleteRutaMayor50 = NuevoCostoTerrestre.ValorNeto * 0.80m;
+                if (!NuevoCostoTerrestre.FalsoFleteRutaMenor50.HasValue) NuevoCostoTerrestre.FalsoFleteRutaMenor50 = NuevoCostoTerrestre.ValorNeto * 0.70m;
+            }
 
             _context.Tarifasterrestres.Add(NuevoCostoTerrestre);
             await _context.SaveChangesAsync();
             return RedirectToPage("./Index");
         }
 
+        public async Task<IActionResult> OnPostEditarCostoTerrestreAsync()
+        {
+            var tarifaExistente = await _context.Tarifasterrestres.FindAsync(EditarCostoTerrestre.Id);
+
+            if (tarifaExistente != null && EditarCostoTerrestre.ValorNeto.HasValue)
+            {
+                // 1. Actualizamos el Flete Base
+                tarifaExistente.ValorNeto = EditarCostoTerrestre.ValorNeto;
+
+                // 2. Recálculo automático de los falsos fletes (90%, 80%, 70%)
+                tarifaExistente.FalsoFletePlanta = tarifaExistente.ValorNeto * 0.90m;
+                tarifaExistente.FalsoFleteRutaMayor50 = tarifaExistente.ValorNeto * 0.80m;
+                tarifaExistente.FalsoFleteRutaMenor50 = tarifaExistente.ValorNeto * 0.70m;
+
+                // 3. Dejamos el rastro de auditoría
+                tarifaExistente.Comentarios = EditarCostoTerrestre.Comentarios;
+                tarifaExistente.FechaModificacion = DateTime.Now;
+                tarifaExistente.UsuarioModificador = User.Identity?.Name ?? "Comercial";
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToPage("./Index");
+        }
+
         public async Task<IActionResult> OnPostEliminarCostoTerrestreAsync(int idTarifa)
         {
             var tarifa = await _context.Tarifasterrestres.FindAsync(idTarifa);
-            if (tarifa != null)
-            {
-                _context.Tarifasterrestres.Remove(tarifa);
-                await _context.SaveChangesAsync();
-            }
+            if (tarifa != null) { _context.Tarifasterrestres.Remove(tarifa); await _context.SaveChangesAsync(); }
             return RedirectToPage("./Index");
         }
 
-        // ==================== HANDLERS: COSTOS DOCUMENTALES (TARIFAS MAESTRAS) ====================
-        [BindProperty] public TarifasMaestra NuevaTarifaDocumental { get; set; } = new();
 
-        public async Task<IActionResult> OnPostCrearTarifaDocumentalAsync()
-        {
-            NuevaTarifaDocumental.Categoria = "Documental";
-            NuevaTarifaDocumental.EsActiva = true;
-            _context.TarifasMaestras.Add(NuevaTarifaDocumental);
-            await _context.SaveChangesAsync();
-            return RedirectToPage("./Index");
-        }
 
-        public async Task<IActionResult> OnPostEliminarTarifaDocumentalAsync(int idTarifa)
-        {
-            var tarifa = await _context.TarifasMaestras.FindAsync(idTarifa);
-            if (tarifa != null)
-            {
-                tarifa.EsActiva = false; // Soft delete
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToPage("./Index");
-        }
-
-        // ==================== HANDLERS: MAESTROS (PROVEEDORES Y CONDUCTORES) ====================
-
-        public async Task<IActionResult> OnPostCrearProveedorAsync()
-        {
-            NuevoProveedor.Activo = 1;
-            _context.Proveedores.Add(NuevoProveedor);
-            await _context.SaveChangesAsync();
-            return RedirectToPage("./Index");
-        }
-
-        public async Task<IActionResult> OnPostCrearConductorAsync()
-        {
-            NuevoConductor.Activo = true;
-            _context.Conductores.Add(NuevoConductor);
-            await _context.SaveChangesAsync();
-            return RedirectToPage("./Index");
-        }
+        public async Task<IActionResult> OnPostCrearTarifaDocumentalAsync() { NuevaTarifaDocumental.Categoria = "Documental"; NuevaTarifaDocumental.EsActiva = true; _context.TarifasMaestras.Add(NuevaTarifaDocumental); await _context.SaveChangesAsync(); return RedirectToPage("./Index"); }
+        public async Task<IActionResult> OnPostEliminarTarifaDocumentalAsync(int idTarifa) { var tarifa = await _context.TarifasMaestras.FindAsync(idTarifa); if (tarifa != null) { tarifa.EsActiva = false; await _context.SaveChangesAsync(); } return RedirectToPage("./Index"); }
 
         public async Task<IActionResult> OnPostCrearCostoDocumentalAsync()
         {
+            var tarifaAnterior = await _context.TarifasDocumentales.FirstOrDefaultAsync(t => t.IdAgenciaAduana == NuevoCostoDocumental.IdAgenciaAduana && t.Concepto == NuevoCostoDocumental.Concepto && t.EsActiva == true);
+            if (tarifaAnterior != null) tarifaAnterior.EsActiva = false;
             NuevoCostoDocumental.EsActiva = true;
+            NuevoCostoDocumental.FechaCreacion = DateTime.Now;
             _context.TarifasDocumentales.Add(NuevoCostoDocumental);
             await _context.SaveChangesAsync();
-            TempData["SuccessMsg"] = "Tarifa de Agencia Aduanal registrada correctamente.";
-            return RedirectToPage();
+            return RedirectToPage("./Index");
         }
 
-        public async Task<IActionResult> OnPostEliminarCostoDocumentalAsync(int idTarifa)
-        {
-            var tarifa = await _context.TarifasDocumentales.FindAsync(idTarifa);
-            if (tarifa != null)
-            {
-                tarifa.EsActiva = false; // Borrado lógico (lo archivamos)
-                await _context.SaveChangesAsync();
-                TempData["SuccessMsg"] = "Costo de Agencia archivado.";
-            }
-            return RedirectToPage();
-        }
+        public async Task<IActionResult> OnPostEliminarCostoDocumentalAsync(int idTarifa) { var tarifa = await _context.TarifasDocumentales.FindAsync(idTarifa); if (tarifa != null) { tarifa.EsActiva = false; await _context.SaveChangesAsync(); } return RedirectToPage(); }
+        public async Task<IActionResult> OnPostCrearProveedorAsync() { NuevoProveedor.Activo = 1; _context.Proveedores.Add(NuevoProveedor); await _context.SaveChangesAsync(); return RedirectToPage("./Index"); }
+        public async Task<IActionResult> OnPostCrearAgenciaAduanaAsync() { NuevaAgencia.Activo = 1; NuevaAgencia.FechaCreacion = DateTime.Now; NuevaAgencia.UsuarioCreador = User.Identity?.Name ?? "Comercial"; _context.AgenciasAduanas.Add(NuevaAgencia); await _context.SaveChangesAsync(); return RedirectToPage("./Index"); }
+        public async Task<IActionResult> OnPostCrearConductorAsync() { NuevoConductor.Activo = true; _context.Conductores.Add(NuevoConductor); await _context.SaveChangesAsync(); return RedirectToPage("./Index"); }
     }
 }
