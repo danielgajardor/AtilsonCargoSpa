@@ -29,6 +29,8 @@ public partial class TarifasDocumentale
 
     public bool AplicaIva { get; set; } = true;
 
+    public DateTime? FechaModificacion { get; set; }
+    public string? UsuarioModificador { get; set; }
     public bool EsActiva { get; set; } = true;
 
     [Column(TypeName = "date")]

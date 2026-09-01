@@ -5,6 +5,8 @@ namespace AtilsonCargoSpa.Models
 {
     public partial class TarifaGate
     {
+        public DateTime? FechaModificacion { get; set; }
+        public string? UsuarioModificador { get; set; }
         public int Id { get; set; }
         public int? IdNaviera { get; set; }
         public int? IdDeposito { get; set; }

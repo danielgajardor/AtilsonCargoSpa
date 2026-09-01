@@ -11,6 +11,8 @@ namespace AtilsonCargoSpa.Models
         [Key]
         public int Id { get; set; }
 
+        public DateTime? FechaModificacion { get; set; }
+        public string? UsuarioModificador { get; set; }
         public int IdProveedor { get; set; }
 
         public int DiasLibres { get; set; } = 5;

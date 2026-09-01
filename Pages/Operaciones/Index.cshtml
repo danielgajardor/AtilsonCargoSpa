@@ -7966,19 +7966,33 @@ if(idOpForm) {
                 }
             }
         }
+
+        if (certKey === 'fit') {
+            const chkSag = ctx.querySelector(`#chkSag-${idOp}`);
+            if (chkSag && chkSag.checked !== aplica) { chkSag.checked = aplica; handleTipoTramite(idOp, 'sag'); }
+        } else if (certKey === 'san' || certKey === 'cap') {
+            const chkSerna = ctx.querySelector(`#chkSerna-${idOp}`);
+            if (chkSerna && chkSerna.checked !== aplica) { chkSerna.checked = aplica; handleTipoTramite(idOp, 'sernapesca'); }
+        }
     };
 
-    window.handleTipoTramite = function(idOp, tipoModificado) {
+        window.handleTipoTramite = function(idOp, tipoModificado) {
         const ctx = modalCtx() || document;
         let baseId = idOp.replace('v3-', '').replace('sub-', '');
         
         const chkSag   = ctx.querySelector(`#chkSag-${idOp}`);
         const chkSerna = ctx.querySelector(`#chkSerna-${idOp}`);
 
+        // OJO: nunca disparar dispatchEvent('change') aquí. Esta función ya continúa
+        // su ejecución con el estado final correcto de ambos checkboxes; si además
+        // disparamos 'change' en el otro checkbox, se vuelve a invocar esta misma
+        // función de forma recursiva y termina lanzando DOS guardados casi
+        // simultáneos (AUTO-GUARDADO), lo que genera transacciones y/o registros
+        // documentales duplicados en Finanzas por condición de carrera.
         if (tipoModificado === 'sag' && chkSag && chkSag.checked) {
-            if (chkSerna) { chkSerna.checked = false; chkSerna.dispatchEvent(new Event('change')); }
+            if (chkSerna) { chkSerna.checked = false; }
         } else if (tipoModificado === 'sernapesca' && chkSerna && chkSerna.checked) {
-            if (chkSag) { chkSag.checked = false; chkSag.dispatchEvent(new Event('change')); }
+            if (chkSag) { chkSag.checked = false; }
         }
 
         const sagActivo   = chkSag   && chkSag.checked;
@@ -8001,21 +8015,20 @@ if(idOpForm) {
             togglePanelPro(`v3-fit-wrapper-${baseId}`, sagActivo);
             togglePanelPro(`v3-san-wrapper-${baseId}`, sernaActivo);
             togglePanelPro(`v3-cap-wrapper-${baseId}`, sernaActivo);
-            
-            // REGLA: SELECCIÓN AUTOMÁTICA ORIGEN
-            if (sagActivo || sernaActivo) {
-                 let radioSiOri = ctx.querySelector(`#si_ori_${idOp}`);
-                 if (radioSiOri && !radioSiOri.checked) {
-                     radioSiOri.checked = true;
-                     radioSiOri.dispatchEvent(new Event('change'));
-                     if (typeof window.toggleAplicaCert === 'function') {
-                         window.toggleAplicaCert('ori', idOp, 'si');
-                     }
-                 }
+
+            // AUTO-GUARDADO A FINANZAS
+            const formContainer = ctx.querySelector(`#doc-global-form-${idOp}`) || ctx.querySelector(`#doc-global-form-sub-${baseId}`);
+            if (formContainer) {
+                const formEl = formContainer.closest('form');
+                if (formEl) {
+                    const formDataSave = new FormData(formEl);
+                    fetch('?handler=QuickEditDocumental', { method: 'POST', body: formDataSave, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .catch(e => console.warn("Aviso auto-guardado Trámites:", e));
+                }
             }
             return;
         }
-    }; // <--- ESTA ES LA LLAVE DE CIERRE QUE FALTABA
+    };
 
     window.toggleSubcertsDependientes = function(idOp, isChecked) {
         const subCerts = ['chkCoa', 'chkDt', 'chkCod', 'chkCla', 'chkNep'];

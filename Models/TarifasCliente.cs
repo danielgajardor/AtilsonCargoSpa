@@ -23,7 +23,10 @@ namespace AtilsonCargoSpa.Models
         public bool EsServicioGratuito { get; set; }
         public string? Comentarios { get; set; }
         // ... otras propiedades ...
-        public bool AplicaIva { get; set; } 
+        public bool AplicaIva { get; set; }
+
+        public DateTime? FechaModificacion { get; set; }
+        public string? UsuarioModificador { get; set; }
 
         // ================= NUEVOS CAMPOS MARÍTIMOS =================
         public int? IdNaviera { get; set; }

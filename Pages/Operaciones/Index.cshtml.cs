@@ -344,12 +344,8 @@ namespace AtilsonCargoSpa.Pages.Operaciones
                 int? FInt(string key) { var val = Request.Form[key].FirstOrDefault(); return int.TryParse(val, out var r) ? r : null; }
                 int? ParseDinero(string key) { var val = Request.Form[key].FirstOrDefault(); if (string.IsNullOrWhiteSpace(val)) return null; var clean = new string(val.Where(c => char.IsDigit(c) || c == '-').ToArray()); if (string.IsNullOrWhiteSpace(clean)) return null; return int.TryParse(clean, out var r) ? r : null; }
 
-                bool checkFit = Request.Form.Keys.Any(k => k.Contains("aplica_fit_") && Request.Form[k] == "si");
-                bool checkSan = Request.Form.Keys.Any(k => k.Contains("aplica_san_") && Request.Form[k] == "si");
-                bool checkCap = Request.Form.Keys.Any(k => k.Contains("aplica_cap_") && Request.Form[k] == "si");
-
-                docDb.AplicaSag = checkFit || FBoolPreserve("docUpdates.AplicaSag", docDb.AplicaSag);
-                docDb.AplicaSernapesca = checkSan || checkCap || FBoolPreserve("docUpdates.AplicaSernapesca", docDb.AplicaSernapesca);
+                docDb.AplicaSag = Request.Form["docUpdates.AplicaSag"].Contains("true");
+                docDb.AplicaSernapesca = Request.Form["docUpdates.AplicaSernapesca"].Contains("true");
 
                 // REGLA: ORIGEN 100% AUTOMÁTICO SI ES DOCUMENTAL, SAG O SERNAPESCA
                 bool isReqDocumental = new[] { 1, 3, 4, 7, 8, 10, 11, 14 }.Contains(op.IdTipoServicio ?? 0);
@@ -548,6 +544,15 @@ namespace AtilsonCargoSpa.Pages.Operaciones
 
             if (EnviarFinanzas && !SinNumero && string.IsNullOrWhiteSpace(F(campoNumPrincipal)) && !string.IsNullOrWhiteSpace(campoNumPrincipal))
                 return new JsonResult(new { success = false, message = "Falta N° de documento. Marca 'Enviar sin número' si corresponde." });
+
+            if (Request.Form.ContainsKey("docUpdates.AplicaSag"))
+                docDb.AplicaSag = FBoolPreserve("docUpdates.AplicaSag", docDb.AplicaSag);
+
+            if (Request.Form.ContainsKey("docUpdates.AplicaSernapesca"))
+                docDb.AplicaSernapesca = FBoolPreserve("docUpdates.AplicaSernapesca", docDb.AplicaSernapesca);
+
+            bool isReqDocumental = new[] { 1, 3, 4, 7, 8, 10, 11, 14 }.Contains(op.IdTipoServicio ?? 0);
+            docDb.CertificadoOrigen = isReqDocumental || docDb.AplicaSag || docDb.AplicaSernapesca;
 
             switch (CertKey)
             {
@@ -1356,8 +1361,17 @@ namespace AtilsonCargoSpa.Pages.Operaciones
 
             async Task GenerarEspejoDocumental(string conceptoEspejo, bool activo, string busquedaTarifa, int? idAgenciaAduana, decimal? valorOverride = null, string? numeroDocumento = null)
             {
-                var txIngreso = txExistentes.FirstOrDefault(t => t.Concepto == conceptoEspejo && t.TipoMovimiento == "INGRESO");
-                var txEgreso = txExistentes.FirstOrDefault(t => t.Concepto == conceptoEspejo && t.TipoMovimiento == "EGRESO");
+                var txsIngreso = txExistentes.Where(t => t.Concepto == conceptoEspejo && t.TipoMovimiento == "INGRESO").ToList();
+                var txsEgreso = txExistentes.Where(t => t.Concepto == conceptoEspejo && t.TipoMovimiento == "EGRESO").ToList();
+
+                var txIngreso = txsIngreso.FirstOrDefault();
+                var txEgreso = txsEgreso.FirstOrDefault();
+
+                // Auto-saneamiento: si quedaron filas duplicadas para el mismo concepto
+                // (por una carrera de guardados u otra causa), dejamos solo la primera
+                // y eliminamos el resto — mismo criterio que ya usa GenerarEspejo.
+                if (txsIngreso.Count > 1) _context.TransaccionesFinancieras.RemoveRange(txsIngreso.Skip(1));
+                if (txsEgreso.Count > 1) _context.TransaccionesFinancieras.RemoveRange(txsEgreso.Skip(1));
 
                 if (activo)
                 {
@@ -1378,6 +1392,17 @@ namespace AtilsonCargoSpa.Pages.Operaciones
                             {
                                 montoCosto = tarifaDoc.ValorNeto;
                                 moneda = tarifaDoc.Moneda ?? "CLP";
+                            }
+                        }
+
+                        if (montoCosto == 0m)
+                        {
+                            var tarifaMaestra = await _context.TarifasMaestras
+                                .FirstOrDefaultAsync(t => t.EsActiva && t.Categoria == "Documental" && t.Concepto.ToUpper().Contains(busquedaTarifa.ToUpper()));
+                            if (tarifaMaestra != null)
+                            {
+                                montoCosto = tarifaMaestra.ValorNeto;
+                                moneda = tarifaMaestra.Moneda ?? "CLP";
                             }
                         }
 
@@ -1469,7 +1494,16 @@ namespace AtilsonCargoSpa.Pages.Operaciones
             await GenerarEspejo("Transporte", $"Flete Terrestre ({ruta})", isTerrestre, "Flete Terrestre", tarifaTranspDb, "CLP");
 
             // 3. DOCUMENTAL
-            foreach (var doc in op.OperacionesDocumentales)
+            // Si por una carrera de guardados llegaron a crearse más de un registro
+            // OperacionesDocumentale para el mismo contenedor (IdUnidadTecnica),
+            // procesamos solo el más antiguo de cada grupo — igual criterio que usa
+            // la vista Razor (d = op.OperacionesDocumentales?.OrderBy(x => x.Id).FirstOrDefault()).
+            // Esto evita que se generen espejos financieros duplicados en cada sync.
+            var docsAProcesar = op.OperacionesDocumentales
+                .GroupBy(d => d.IdUnidadTecnica)
+                .Select(g => g.OrderBy(x => x.Id).First());
+
+            foreach (var doc in docsAProcesar)
             {
                 int? idAg = doc.IdAgenciaAduana;
                 string sufijoUnidad = doc.IdUnidadTecnica.HasValue ? $" (U{doc.IdUnidadTecnica})" : "";
@@ -1530,7 +1564,13 @@ namespace AtilsonCargoSpa.Pages.Operaciones
                 await GenerarEspejoDocumental($"Trámite CLAVE{sufijoUnidad}", !string.IsNullOrEmpty(doc.NumCla1), "CLAVE", idAg, doc.ValCla1);
                 await GenerarEspejoDocumental($"Trámite NEPPEX{sufijoUnidad}", !string.IsNullOrEmpty(doc.NumNep1), "NEPPEX", idAg, doc.ValNep1);
 
-                var conceptosLegacyAEliminar = new[] { $"Emisión DUS{sufijoUnidad}", $"Emisión DIN{sufijoUnidad}", $"Legalización Documental{sufijoUnidad}" };
+                var conceptosLegacyAEliminar = new[] {
+                    $"Emisión DUS{sufijoUnidad}", $"Emisión DIN{sufijoUnidad}", $"Legalización Documental{sufijoUnidad}",
+                    $"CERTIFICADO ORIGEN{sufijoUnidad}", $"CERTIFICADO SANITARIO SERNAPESCA{sufijoUnidad}",
+                    $"CERTIFICADO CAPTURA SERNAPESCA{sufijoUnidad}", $"FITO{sufijoUnidad}",
+                    $"Certificado Sanitario Sernapesca{sufijoUnidad}", $"Certificado Fitosanitario SAG{sufijoUnidad}",
+                    $"Certificado de Origen FNG{sufijoUnidad}", $"Trámite COA Aduana{sufijoUnidad}"
+                };
                 var txsLegacy = txExistentes.Where(t => conceptosLegacyAEliminar.Contains(t.Concepto) && (t.EstadoFila == "PROVISIÓN" || t.EstadoFila == "PENDIENTE VALORIZAR")).ToList();
                 foreach (var txLegacy in txsLegacy) _context.TransaccionesFinancieras.Remove(txLegacy);
 

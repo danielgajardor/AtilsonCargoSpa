@@ -18,6 +18,9 @@ public partial class TarifasMaritima
     public string? RutaRespaldo { get; set; }
 
     // --- NUEVO HISTORIAL COMERCIAL ---
+    public DateTime? FechaModificacion { get; set; }
+    public string? UsuarioModificador { get; set; }
+
     public DateOnly FechaInicioVigencia { get; set; }
     public DateOnly? FechaFinVigencia { get; set; }
     public bool EsActiva { get; set; } = true;
